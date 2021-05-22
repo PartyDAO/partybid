@@ -1,0 +1,41 @@
+{
+  "name": "partybid",
+  "version": "1.0.0",
+  "description": "PartyBid contracts",
+  "main": "",
+  "scripts": {
+    "prettier": "prettier --write './contracts' ./test",
+    "compile": "hardhat compile && npm run prettier",
+    "test": "npm run compile && hardhat test",
+    "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PartyDAO/partybid"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart-contracts"
+  ],
+  "author": "Anna Carroll",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PartyDAO/partybid/issues"
+  },
+  "homepage": "https://github.com/PartyDAO/partybid#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "hardhat": "^2.0.8",
+    "hardhat-gas-reporter": "^1.0.4",
+    "ethers": "^5.0.29",
+    "chai": "^4.3.0",
+    "eslint": "^7.20.0",
+    "ethereum-waffle": "^3.2.2",
+    "prettier": "2.2.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.5",
+    "solhint-plugin-prettier": "^0.0.5"
+  }
+}
