@@ -194,14 +194,14 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         if (_auctionStatus == AuctionStatus.WON) {
             // calculate the amount of this contributor's ETH
             // that was used for the winning bid
-            uint256 _totalUsed = _totalEthUsed(_contributor);
-            if (_totalUsed > 0) {
-                _tokenAmount = valueToTokens(_totalUsed);
+            uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
+            if (_totalUsedForBid > 0) {
+                _tokenAmount = valueToTokens(_totalUsedForBid);
                 // transfer tokens to contributor for their portion of ETH used
                 _transfer(address(this), _contributor, _tokenAmount);
             }
             // return the rest of the contributor's ETH
-            _excessEth = _totalContributed - _totalUsed;
+            _excessEth = _totalContributed - _totalUsedForBid;
         } else if (_auctionStatus == AuctionStatus.LOST) {
             // return all of the contributor's ETH
             _excessEth = _totalContributed;
@@ -222,7 +222,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @return _total the sum of the contributor's funds that were
      * used towards the winning auction bid
      */
-    function _totalEthUsed(address _contributor)
+    function _totalEthUsedForBid(address _contributor)
         internal
         view
         returns (uint256 _total)
@@ -231,7 +231,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         Contribution[] memory _contributions = contributions[_contributor];
         for (uint256 i = 0; i < _contributions.length; i++) {
             // calculate how much was used from this individual contribution
-            uint256 _amount = _ethUsed(_contributions[i]);
+            uint256 _amount = _ethUsedForBid(_contributions[i]);
             // if we reach a contribution that was not used,
             // no subsequent contributions will have been used either,
             // so we can stop calculating to save some gas
@@ -247,7 +247,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @return _amount the amount of funds from this contribution
      * that were used towards the winning auction bid
      */
-    function _ethUsed(Contribution memory _contribution)
+    function _ethUsedForBid(Contribution memory _contribution)
         internal
         view
         returns (uint256 _amount)
