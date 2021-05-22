@@ -1,0 +1,43 @@
+{
+  "testCases": [
+    {
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 0.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 1,
+          "amount": 0.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 1
+        }
+      ],
+      "bids": [3],
+      "claim": {
+        "0": {
+          "tokens": 2000,
+          "excessEth": 0.5
+        },
+        "1": {
+          "tokens": 1000,
+          "excessEth": 1.5
+        }
+      }
+    }
+  ]
+}
