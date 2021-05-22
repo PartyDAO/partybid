@@ -60,6 +60,10 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         uint256 contractBalance
     );
 
+    event Bid(uint256 amount);
+
+    event Finalized(AuctionStatus result);
+
     event Claimed(
         address indexed contributor,
         uint256 totalContributed,
@@ -101,7 +105,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     /**
      * @notice Contribute to the PartyBid's treasury
      * while the auction is still open
-     * @dev Emits a Contributed event upon success
+     * @dev Emits a Contributed event upon success; callable by anyone
      */
     function contribute(address _contributor, uint256 _amount)
         external
@@ -128,13 +132,69 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         );
     }
 
+    //======== External: Bid =========
+
+    /**
+     * @notice Submit a bid to the NFT
+     * @dev Emits a Bid event upon success; callable by any contributor
+     */
+    function bid()
+    external
+    nonReentrant
+    {
+        require(
+            auctionStatus == AuctionStatus.ACTIVE,
+            "auction not active"
+        );
+        require(
+            totalContributed[msg.sender] > 0,
+            "only contributors can bid"
+        );
+        // TODO: implement
+        // get current highest bid / bidder
+        // if not current highest bidder
+        // & there is enough ETH in contract for highest bid * 1.1 bid increment * 1.05 PartyDAO fee,
+            // submit bid to Auction contract
+        emit Bid(0);
+    }
+
+    //======== External: Finalize =========
+
+    /**
+     * @notice Finalize the state of the auction
+     * @dev Emits a Finalized event upon success; callable by anyone
+     */
+    function finalize()
+        external
+        nonReentrant
+    {
+        require(
+            auctionStatus == AuctionStatus.ACTIVE,
+            "auction not active"
+        );
+        // TODO: implement
+        // verify the auction is over / determine result
+        AuctionStatus _result;
+        // if the auction was won,
+            // _result = AuctionStatus.WON;
+            // transfer the NFT to address(this) (if not already done)
+            // transfer 5% fee to PartyDAO
+            // mint total token supply to PartyBid
+            // _mint(address(this), valueToTokens(totalContributedToParty));
+        // if the auction was lost,
+            // _result = AuctionStatus.LOST;
+        // set the contract status & emit result
+        auctionStatus = _result;
+        emit Finalized(_result);
+    }
+
     //======== External: Claim =========
 
     /**
      * @notice Claim the tokens and excess ETH owed
      * to a single contributor after the auction has ended
      * @dev Emits a Claimed event upon success
-     * can be called by anyone (doesn't have to be the contributor)
+     * callable by anyone (doesn't have to be the contributor)
      */
     function claim(address _contributor) external nonReentrant {
         // load auction status once from storage
