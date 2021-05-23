@@ -24,7 +24,10 @@
     "url": "https://github.com/PartyDAO/partybid/issues"
   },
   "homepage": "https://github.com/PartyDAO/partybid#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@openzeppelin/contracts": "4.1.0",
+    "@openzeppelin/contracts-upgradeable": "3.4.0"
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
