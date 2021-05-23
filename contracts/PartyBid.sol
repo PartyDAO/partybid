@@ -138,23 +138,14 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @notice Submit a bid to the NFT
      * @dev Emits a Bid event upon success; callable by any contributor
      */
-    function bid()
-    external
-    nonReentrant
-    {
-        require(
-            auctionStatus == AuctionStatus.ACTIVE,
-            "auction not active"
-        );
-        require(
-            totalContributed[msg.sender] > 0,
-            "only contributors can bid"
-        );
+    function bid() external nonReentrant {
+        require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
+        require(totalContributed[msg.sender] > 0, "only contributors can bid");
         // TODO: implement
         // get current highest bid / bidder
         // if not current highest bidder
         // & there is enough ETH in contract for highest bid * 1.1 bid increment * 1.05 PartyDAO fee,
-            // submit bid to Auction contract
+        // submit bid to Auction contract
         emit Bid(0);
     }
 
@@ -164,25 +155,19 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @notice Finalize the state of the auction
      * @dev Emits a Finalized event upon success; callable by anyone
      */
-    function finalize()
-        external
-        nonReentrant
-    {
-        require(
-            auctionStatus == AuctionStatus.ACTIVE,
-            "auction not active"
-        );
+    function finalize() external nonReentrant {
+        require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
         // TODO: implement
         // verify the auction is over / determine result
         AuctionStatus _result;
         // if the auction was won,
-            // _result = AuctionStatus.WON;
-            // transfer the NFT to address(this) (if not already done)
-            // transfer 5% fee to PartyDAO
-            // mint total token supply to PartyBid
-            // _mint(address(this), valueToTokens(totalContributedToParty));
+        // _result = AuctionStatus.WON;
+        // transfer the NFT to address(this) (if not already done)
+        // transfer 5% fee to PartyDAO
+        // mint total token supply to PartyBid
+        // _mint(address(this), valueToTokens(totalContributedToParty));
         // if the auction was lost,
-            // _result = AuctionStatus.LOST;
+        // _result = AuctionStatus.LOST;
         // set the contract status & emit result
         auctionStatus = _result;
         emit Finalized(_result);
