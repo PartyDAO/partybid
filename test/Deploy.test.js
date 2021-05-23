@@ -4,9 +4,9 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth } = require('./utils');
-const { deployTestContractSetup } = require('./deploy');
-const { AUCTION_STATUS } = require('./constants');
+const { eth } = require('./helpers/utils');
+const { deployTestContractSetup } = require('./helpers/deploy');
+const { AUCTION_STATUS } = require('./helpers/constants');
 
 describe('Deploy', async () => {
   let partyBid, signer, artist;

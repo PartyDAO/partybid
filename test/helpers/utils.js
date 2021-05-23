@@ -1,5 +1,3 @@
-const { NFT_TYPE_ENUM, NFT_TYPES } = require('./constants');
-
 function eth(num) {
   return ethers.utils.parseEther(num.toString());
 }

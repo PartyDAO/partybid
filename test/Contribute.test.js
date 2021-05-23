@@ -4,8 +4,12 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, initExpectedTotalContributed, contribute } = require('./utils');
-const { deployTestContractSetup } = require('./deploy');
+const {
+  eth,
+  initExpectedTotalContributed,
+  contribute,
+} = require('./helpers/utils');
+const { deployTestContractSetup } = require('./helpers/deploy');
 const { testCases } = require('./testCases.json');
 
 testCases.map((testCase) => {
