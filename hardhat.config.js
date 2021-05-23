@@ -6,13 +6,39 @@ require('@nomiclabs/hardhat-waffle');
  */
 module.exports = {
   solidity: {
-    version: '0.8.4',
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 999999,
+    compilers: [
+      {
+        version: '0.8.4',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+        },
       },
-    },
+      {
+        version: '0.7.5',
+        settings: {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1337
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi"
+              ]
+            }
+          },
+          "metadata": {
+            "useLiteralContent": true
+          },
+          "libraries": {}
+        },
+      }
+    ],
   },
 
   gasReporter: {
