@@ -2,6 +2,17 @@
 pragma solidity 0.8.4;
 
 interface IMarket {
+    struct ReserveAuction {
+        address nftContract;
+        uint256 tokenId;
+        address payable seller;
+        uint256 duration;
+        uint256 extensionDuration;
+        uint256 endTime;
+        address payable bidder;
+        uint256 amount;
+    }
+
     function getReserveAuctionIdFor(address nftContract, uint256 tokenId)
         external
         view
@@ -10,4 +21,11 @@ interface IMarket {
     function getMinBidAmount(uint256 auctionId) external view returns (uint256);
 
     function placeBid(uint256 auctionId) external payable;
+
+    function getReserveAuction(uint256 auctionId)
+        external
+        view
+        returns (ReserveAuction memory);
+
+    function finalizeReserveAuction(uint256 auctionId) external;
 }

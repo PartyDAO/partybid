@@ -7,6 +7,7 @@ async function deploy(name, arguments = []) {
 }
 
 async function deployPartyBid(
+  partyDAOMultisig,
   market,
   nftContract,
   tokenId = 100,
@@ -15,6 +16,7 @@ async function deployPartyBid(
   tokenSymbol = 'PARTY',
 ) {
   return deploy('PartyBid', [
+    partyDAOMultisig,
     market,
     nftContract,
     tokenId,
@@ -25,9 +27,9 @@ async function deployPartyBid(
 }
 
 async function deployFoundationMarket() {
-  const treasury = await deploy('FakeFoundationTreasury');
+  const foundationTreasury = await deploy('PayableContract');
   const foundationMarket = await deploy('FNDNFTMarket');
-  await foundationMarket.initialize(treasury.address);
+  await foundationMarket.initialize(foundationTreasury.address);
   return foundationMarket;
 }
 
@@ -55,8 +57,12 @@ async function deployTestSetupFoundation(
     eth(reservePrice),
   );
 
+  // Deploy PartyDAO multisig
+  const partyDAOMultisig = await deploy('PayableContract');
+
   // Deploy PartyBid
   const partyBid = await deployPartyBid(
+    partyDAOMultisig.address,
     foundationMarket.address,
     nftContract.address,
     tokenId,
@@ -66,6 +72,7 @@ async function deployTestSetupFoundation(
     nftContract,
     market: foundationMarket,
     partyBid,
+    partyDAOMultisig,
   };
 }
 

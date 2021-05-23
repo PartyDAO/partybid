@@ -35,9 +35,9 @@ describe('Deploy', async () => {
     expect(highestBid).to.equal(eth(0));
   });
 
-  it('Highest bid plus fee is zero', async () => {
-    const highestBidPlusFee = await partyBid.highestBidPlusFee();
-    expect(highestBidPlusFee).to.equal(eth(0));
+  it('Total spent is zero', async () => {
+    const totalSpent = await partyBid.totalSpent();
+    expect(totalSpent).to.equal(eth(0));
   });
 
   it('ERC-20 name is right', async () => {

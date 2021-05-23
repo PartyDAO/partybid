@@ -2,10 +2,12 @@
 pragma solidity 0.8.4;
 
 // ============ External Imports ============
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {
+    IERC721Metadata
+} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
 // ============ Internal Imports ============
-import {IERC721} from "./interfaces/IERC721.sol";
 import {IMarket} from "./interfaces/IMarket.sol";
 import {ERC20} from "./ERC20.sol";
 import {ETHOrWETHTransferrer} from "./ETHOrWETHTransferrer.sol";
@@ -28,20 +30,21 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     // tokens are minted at a rate of 1 ETH : 1000 tokens
     uint16 internal constant TOKEN_SCALE = 1000;
-    // PartyBid pays a 5% fee to PartyDAO, so it can bid max 95% of its balance
-    uint8 internal constant MAX_BID_PERCENT = 95;
+    // PartyBid pays a 5% fee to PartyDAO
+    uint8 internal constant FEE_PERCENT = 5;
 
     // ============ Public Immutables ============
 
+    address partyDAOMultisig;
     // market contract auctioning the NFT
-    IMarket public immutable market;
-    // address of the NFT contract
-    address public immutable nftContract;
-    uint256 public immutable auctionId;
-    uint256 public immutable tokenId;
+    IMarket public market;
+    // NFT contract
+    IERC721Metadata public nftContract;
+    uint256 public auctionId;
+    uint256 public tokenId;
     // percent (from 1 - 100) of the total token supply
     // required to vote to successfully execute a sale proposal
-    uint256 public immutable quorumPercent;
+    uint256 public quorumPercent;
 
     // ============ Public Mutable Storage ============
 
@@ -49,13 +52,13 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     AuctionStatus public auctionStatus;
     // total ETH deposited by all contributors
     uint256 public totalContributedToParty;
-    // total amount of contributions claimed
-    uint256 public totalContributionsClaimed;
     // the highest bid submitted by PartyBid
     uint256 public highestBid;
-    // the total Cost to PartyBid; 0 if the NFT is lost,
-    // highest bid + 5% PartyDAO fee if NFT is won
-    uint256 public totalCost;
+    // the total spent by PartyBid after the auction;
+    // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
+    uint256 public totalSpent;
+    // total amount of contributions claimed
+    uint256 public totalContributionsClaimed;
     // contributor => array of Contributions
     mapping(address => Contribution[]) public contributions;
     // contributor => total amount contributed
@@ -91,6 +94,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     //======== Constructor =========
 
     constructor(
+        address _partyDAOMultisig,
         address _market,
         address _nftContract,
         uint256 _tokenId,
@@ -99,18 +103,19 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         string memory _symbol
     ) ERC20(_name, _symbol) {
         // validate token exists - this call should revert if not
-        IERC721(_nftContract).tokenURI(_tokenId);
+        IERC721Metadata(_nftContract).tokenURI(_tokenId);
         // validate FOUNDATION reserve auction exists (TODO: generalize Foundation / Zora)
         uint256 _auctionId =
             IMarket(_market).getReserveAuctionIdFor(_nftContract, _tokenId);
         require(_auctionId != 0, "auction doesn't exist");
         // validate quorum percent
-        require(_quorumPercent < 0 && _quorumPercent <= 100, "!valid quorum");
+        require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
         // set storage variables
+        partyDAOMultisig = _partyDAOMultisig;
         market = IMarket(_market);
-        nftContract = _nftContract;
-        tokenId = _tokenId;
+        nftContract = IERC721Metadata(_nftContract);
         auctionId = _auctionId;
+        tokenId = _tokenId;
         quorumPercent = _quorumPercent;
     }
 
@@ -181,17 +186,23 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      */
     function finalize() external nonReentrant {
         require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
-        // TODO: implement
-        // verify the auction is over / determine result
-        AuctionStatus _result;
+        // finalize auction if it hasn't already been done
+        _finalizeAuctionIfNecessary();
+        // after the auction has been finalized,
+        // if the NFT is owned by the PartyBid, then the PartyBid won the auction
+        AuctionStatus _result =
+            nftContract.ownerOf(tokenId) == address(this)
+                ? AuctionStatus.WON
+                : AuctionStatus.LOST;
         // if the auction was won,
-        // _result = AuctionStatus.WON;
-        // transfer the NFT to address(this) (if not already done)
-        // transfer 5% fee to PartyDAO
-        // mint total token supply to PartyBid
-        // _mint(address(this), valueToTokens(totalContributedToParty));
-        // if the auction was lost,
-        // _result = AuctionStatus.LOST;
+        if (_result == AuctionStatus.WON) {
+            // transfer 5% fee to PartyDAO
+            uint256 _fee = _getFee(highestBid);
+            _transferETHOrWETH(partyDAOMultisig, _fee);
+            totalSpent = highestBid.add(_fee);
+            // mint total token supply to PartyBid
+            _mint(address(this), valueToTokens(totalContributedToParty));
+        }
         // set the contract status & emit result
         auctionStatus = _result;
         emit Finalized(_result);
@@ -252,7 +263,35 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @return _maxBid the maximum bid
      */
     function _getMaximumBid() internal view returns (uint256 _maxBid) {
-        _maxBid = address(this).balance.mul(MAX_BID_PERCENT).div(100);
+        uint256 _balance = address(this).balance;
+        _maxBid = _balance.sub(_getFee(_balance));
+    }
+
+    /**
+     * @notice Calculate 5% fee for PartyDAO
+     * @return _fee 5% of the given amount
+     */
+    function _getFee(uint256 _amount) internal pure returns (uint256 _fee) {
+        _fee = _amount.mul(FEE_PERCENT).div(100);
+    }
+
+    // ============ Internal: Finalize ============
+
+    /**
+     * @notice Finalize the auction if it hasn't already been done
+     * note: FOUNDATION only right now TODO: generalize Foundation / Zora
+     */
+    function _finalizeAuctionIfNecessary() internal {
+        IMarket.ReserveAuction memory _auction =
+            market.getReserveAuction(auctionId);
+        // check if the auction has already been finalized
+        // by seeing if it has been deleted from the contract
+        bool _auctionFinalized = _auction.amount == 0;
+        if (!_auctionFinalized) {
+            // finalize the auction
+            // will revert if auction has not started or still in progress
+            market.finalizeReserveAuction(auctionId);
+        }
     }
 
     // ============ Internal: Claim ============
@@ -336,7 +375,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         returns (uint256 _amount)
     {
         // load total amount spent once from storage
-        uint256 _totalSpent = highestBidPlusFee;
+        uint256 _totalSpent = totalSpent;
         if (
             _contribution.contractBalance + _contribution.amount <= _totalSpent
         ) {
