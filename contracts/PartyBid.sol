@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
+// ============ External Imports ============
+import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+
 // ============ Internal Imports ============
 import {IERC721} from "./interfaces/IERC721.sol";
-import {INFTMarket} from "./interfaces/INFTMarket.sol";
+import {IMarket} from "./interfaces/IMarket.sol";
 import {ERC20} from "./ERC20.sol";
 import {ETHOrWETHTransferrer} from "./ETHOrWETHTransferrer.sol";
 import {NonReentrant} from "./NonReentrant.sol";
@@ -13,6 +16,9 @@ import {NonReentrant} from "./NonReentrant.sol";
  * @author Anna Carroll
  */
 contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
+    // Use OpenZeppelin's SafeMath library to prevent overflows.
+    using SafeMath for uint256;
+
     // ============ Enums ============
 
     enum AuctionStatus {ACTIVE, WON, LOST}
@@ -20,22 +26,36 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     // ============ Internal Constants ============
 
+    // tokens are minted at a rate of 1 ETH : 1000 tokens
     uint16 internal constant TOKEN_SCALE = 1000;
+    // PartyBid pays a 5% fee to PartyDAO, so it can bid max 95% of its balance
+    uint8 internal constant MAX_BID_PERCENT = 95;
 
     // ============ Public Immutables ============
 
-    address public immutable market;
+    // market contract auctioning the NFT
+    IMarket public immutable market;
+    // address of the NFT contract
     address public immutable nftContract;
+    uint256 public immutable auctionId;
     uint256 public immutable tokenId;
+    // percent (from 1 - 100) of the total token supply
+    // required to vote to successfully execute a sale proposal
     uint256 public immutable quorumPercent;
 
     // ============ Public Mutable Storage ============
 
+    // state of the contract
     AuctionStatus public auctionStatus;
+    // total ETH deposited by all contributors
     uint256 public totalContributedToParty;
+    // total amount of contributions claimed
     uint256 public totalContributionsClaimed;
+    // the highest bid submitted by PartyBid
     uint256 public highestBid;
-    uint256 public highestBidPlusFee;
+    // the total Cost to PartyBid; 0 if the NFT is lost,
+    // highest bid + 5% PartyDAO fee if NFT is won
+    uint256 public totalCost;
     // contributor => array of Contributions
     mapping(address => Contribution[]) public contributions;
     // contributor => total amount contributed
@@ -80,20 +100,17 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     ) ERC20(_name, _symbol) {
         // validate token exists - this call should revert if not
         IERC721(_nftContract).tokenURI(_tokenId);
-        // validate Foundation reserve auction exists
-        require(
-            INFTMarket(_market).getReserveAuctionIdFor(
-                _nftContract,
-                _tokenId
-            ) != 0,
-            "auction doesn't exist"
-        );
+        // validate FOUNDATION reserve auction exists (TODO: generalize Foundation / Zora)
+        uint256 _auctionId =
+            IMarket(_market).getReserveAuctionIdFor(_nftContract, _tokenId);
+        require(_auctionId != 0, "auction doesn't exist");
         // validate quorum percent
-        require(_quorumPercent <= 100, "!valid quorum");
+        require(_quorumPercent < 0 && _quorumPercent <= 100, "!valid quorum");
         // set storage variables
-        market = _market;
+        market = IMarket(_market);
         nftContract = _nftContract;
         tokenId = _tokenId;
+        auctionId = _auctionId;
         quorumPercent = _quorumPercent;
     }
 
@@ -132,18 +149,28 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     //======== External: Bid =========
 
     /**
-     * @notice Submit a bid to the NFT
-     * @dev Emits a Bid event upon success; callable by any contributor
+     * @notice Submit a bid to the Market
+     * @dev Reverts if insufficient funds to place the bid and pay PartyDAO fees,
+     * or if any external auction checks fail (including if PartyBid is current high bidder)
+     * Emits a Bid event upon success.
+     * Callable by any contributor
      */
     function bid() external nonReentrant {
         require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
         require(totalContributed[msg.sender] > 0, "only contributors can bid");
-        // TODO: implement
-        // get current highest bid / bidder
-        // if not current highest bidder
-        // & there is enough ETH in contract for highest bid * 1.1 bid increment * 1.05 PartyDAO fee,
+        // Place FOUNDATION bid TODO: generalize Foundation / Zora
+        // get the minimum next bid for the auction
+        uint256 _auctionMinimumBid = market.getMinBidAmount(auctionId);
+        // ensure there is enough ETH to place the bid including PartyDAO fee
+        require(
+            _auctionMinimumBid <= _getMaximumBid(),
+            "insufficient funds to bid"
+        );
         // submit bid to Auction contract
-        emit Bid(0);
+        market.placeBid{value: _auctionMinimumBid}(auctionId);
+        // update highest bid submitted & emit success event
+        highestBid = _auctionMinimumBid;
+        emit Bid(_auctionMinimumBid);
     }
 
     //======== External: Finalize =========
@@ -217,12 +244,26 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         tokens = value * (TOKEN_SCALE);
     }
 
+    // ============ Internal: Bid ============
+
+    /**
+     * @notice The maximum bid that can be submitted
+     * while leaving 5% fee for PartyDAO
+     * @return _maxBid the maximum bid
+     */
+    function _getMaximumBid() internal view returns (uint256 _maxBid) {
+        _maxBid = address(this).balance.mul(MAX_BID_PERCENT).div(100);
+    }
+
     // ============ Internal: Claim ============
 
     /**
      * @notice Claim the tokens and excess ETH owed
      * to a single contributor after the auction has ended
      * @dev Emits a Claimed event upon success
+     * @param _contributor the address of the contributor
+     * @param _auctionStatus the result of the Auction (WON or LOST)
+     * passed as a param so we only need to access storage once
      */
     function _claim(address _contributor, AuctionStatus _auctionStatus)
         internal
