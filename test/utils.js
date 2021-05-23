@@ -18,6 +18,16 @@ async function approve(signer, tokenContract, to, tokenId) {
   });
 }
 
+async function placeBid(signer, marketContract, auctionId, value) {
+  const data = encodeData(marketContract, 'placeBid', [auctionId]);
+
+  return signer.sendTransaction({
+    to: marketContract.address,
+    data,
+    value,
+  });
+}
+
 async function contribute(partyBidContract, contributorSigner, value) {
   const data = encodeData(partyBidContract, 'contribute', [
     contributorSigner.address,
@@ -63,6 +73,7 @@ module.exports = {
   encodeData,
   approve,
   contribute,
+  placeBid,
   createReserveAuction,
   initExpectedTotalContributed,
 };

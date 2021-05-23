@@ -33,7 +33,7 @@ async function deployFoundationMarket() {
   return foundationMarket;
 }
 
-async function deployTestSetupFoundation(
+async function deployTestContractSetup(
   artistSigner,
   tokenId = 100,
   reservePrice = 1,
@@ -78,7 +78,7 @@ async function deployTestSetupFoundation(
 
 module.exports = {
   deployPartyBid,
-  deployTestSetupFoundation,
+  deployTestContractSetup,
   deployFoundationMarket,
   deploy,
 };

@@ -5,7 +5,7 @@ const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
 const { eth, initExpectedTotalContributed, contribute } = require('./utils');
-const { deployTestSetupFoundation } = require('./deploy');
+const { deployTestContractSetup } = require('./deploy');
 const { testCases } = require('./testCases.json');
 
 testCases.map((testCase) => {
@@ -20,7 +20,7 @@ testCases.map((testCase) => {
 
     before(async () => {
       // DEPLOY PARTY BID CONTRACT
-      const contracts = await deployTestSetupFoundation(signers[0]);
+      const contracts = await deployTestContractSetup(signers[0]);
       partyBid = contracts.partyBid;
     });
 

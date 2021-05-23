@@ -5,7 +5,7 @@ const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
 const { eth } = require('./utils');
-const { deployTestSetupFoundation } = require('./deploy');
+const { deployTestContractSetup } = require('./deploy');
 const { AUCTION_STATUS } = require('./constants');
 
 describe('Deploy', async () => {
@@ -16,7 +16,7 @@ describe('Deploy', async () => {
     [signer, artist] = provider.getWallets();
 
     // DEPLOY PARTY BID CONTRACT
-    const contracts = await deployTestSetupFoundation(artist);
+    const contracts = await deployTestContractSetup(artist);
     partyBid = contracts.partyBid;
   });
 

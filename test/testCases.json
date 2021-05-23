@@ -1,6 +1,7 @@
 {
   "testCases": [
     {
+      "auctionReservePrice": 1,
       "contributions": [
         {
           "signerIndex": 0,
@@ -27,15 +28,36 @@
           "amount": 1
         }
       ],
-      "bids": [3],
+      "bids": [
+        {
+          "placedByPartyBid": false,
+          "amount": 1,
+          "success": true
+        },
+        {
+          "placedByPartyBid": true,
+          "success": true
+        },
+        {
+          "placedByPartyBid": false,
+          "amount": 1.5,
+          "success": true
+        },
+        {
+          "placedByPartyBid": true,
+          "success": true
+        }
+      ],
+      "finalBid": 1.65,
+      "fee": 0.0825,
       "claim": {
         "0": {
-          "tokens": 2000,
-          "excessEth": 0.5
+          "tokens": 1500,
+          "excessEth": 1
         },
         "1": {
-          "tokens": 1000,
-          "excessEth": 1.5
+          "tokens": 2325,
+          "excessEth": 2.2675
         }
       }
     }
