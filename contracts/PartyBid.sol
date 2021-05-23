@@ -3,9 +3,10 @@ pragma solidity 0.8.4;
 
 // ============ Internal Imports ============
 import {IERC721} from "./interfaces/IERC721.sol";
+import {INFTMarket} from "./interfaces/INFTMarket.sol";
 import {ERC20} from "./ERC20.sol";
 import {ETHOrWETHTransferrer} from "./ETHOrWETHTransferrer.sol";
-import "./NonReentrant.sol";
+import {NonReentrant} from "./NonReentrant.sol";
 
 /**
  * @title PartyBid
@@ -20,17 +21,13 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     // ============ Internal Constants ============
 
     uint16 internal constant TOKEN_SCALE = 1000;
-    // TODO: triple check addresses
-    address internal constant ZORA_NFT_CONTRACT =
-        address(0xabEFBc9fD2F806065b4f3C237d4b59D9A97Bcac7);
-    address internal constant FOUNDATION_NFT_CONTRACT =
-        address(0x3B3ee1931Dc30C1957379FAc9aba94D1C48a5405);
 
     // ============ Public Immutables ============
 
-    address public nftContract;
-    uint256 public tokenId;
-    uint256 public quorumPercent;
+    address public immutable market;
+    address public immutable nftContract;
+    uint256 public immutable tokenId;
+    uint256 public immutable quorumPercent;
 
     // ============ Public Mutable Storage ============
 
@@ -74,27 +71,27 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     //======== Constructor =========
 
     constructor(
-        NFTType _nftType,
+        address _market,
+        address _nftContract,
         uint256 _tokenId,
         uint256 _quorumPercent,
         string memory _name,
         string memory _symbol
     ) ERC20(_name, _symbol) {
-        // validate the NFT type
+        // validate token exists - this call should revert if not
+        IERC721(_nftContract).tokenURI(_tokenId);
+        // validate Foundation reserve auction exists
         require(
-            _nftType == NFTType.Zora || _nftType == NFTType.Foundation,
-            "!valid nft type"
+            INFTMarket(_market).getReserveAuctionIdFor(
+                _nftContract,
+                _tokenId
+            ) != 0,
+            "auction doesn't exist"
         );
-        address _nftContract =
-            _nftType == NFTType.Zora
-                ? ZORA_NFT_CONTRACT
-                : FOUNDATION_NFT_CONTRACT;
-        // validate tokenID - this call should revert if the token does not exist
-        // TODO: deploy Zora / Foundation contracts at given addresses for tests & create NFTs
-        // IERC721(_nftContract).tokenURI(_tokenId);
         // validate quorum percent
         require(_quorumPercent <= 100, "!valid quorum");
         // set storage variables
+        market = _market;
         nftContract = _nftContract;
         tokenId = _tokenId;
         quorumPercent = _quorumPercent;

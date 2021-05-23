@@ -4,42 +4,65 @@ function eth(num) {
   return ethers.utils.parseEther(num.toString());
 }
 
-async function deployPartyBid(
-  nftType = NFT_TYPES.ZORA,
-  tokenId = 100,
-  quorumPercent = 50,
-  tokenName = 'Party',
-  tokenSymbol = 'PARTY',
-) {
-  const PartyBid = await ethers.getContractFactory('PartyBid');
-  const partyBid = await PartyBid.deploy(
-    NFT_TYPE_ENUM[nftType],
-    tokenId,
-    quorumPercent,
-    tokenName,
-    tokenSymbol,
-  );
-  return partyBid.deployed();
+function encodeData(contract, functionName, arguments) {
+  const func = contract.interface.getFunction(functionName);
+  return contract.interface.encodeFunctionData(func, arguments);
+}
+
+async function approve(signer, tokenContract, to, tokenId) {
+  const data = encodeData(tokenContract, 'approve', [to, tokenId]);
+
+  return signer.sendTransaction({
+    to: tokenContract.address,
+    data,
+  });
 }
 
 async function contribute(partyBidContract, contributorSigner, value) {
-  const contributeFunction = partyBidContract.interface.getFunction(
-    'contribute',
-  );
-  const contributeData = partyBidContract.interface.encodeFunctionData(
-    contributeFunction,
-    [contributorSigner.address, value],
-  );
+  const data = encodeData(partyBidContract, 'contribute', [
+    contributorSigner.address,
+    value,
+  ]);
 
   return contributorSigner.sendTransaction({
     to: partyBidContract.address,
-    data: contributeData,
+    data,
     value,
   });
 }
 
+async function createReserveAuction(
+  artist,
+  marketContract,
+  nftContractAddress,
+  tokenId,
+  reservePrice,
+) {
+  const data = encodeData(marketContract, 'createReserveAuction', [
+    nftContractAddress,
+    tokenId,
+    reservePrice,
+  ]);
+
+  return artist.sendTransaction({
+    to: marketContract.address,
+    data,
+  });
+}
+
+function initExpectedTotalContributed(signers) {
+  const expectedTotalContributed = {};
+  signers.map((signer) => {
+    expectedTotalContributed[signer.address] = 0;
+  });
+  return expectedTotalContributed;
+}
+
 module.exports = {
   eth,
-  deployPartyBid,
+  encodeData,
+  approve,
   contribute,
+  createReserveAuction,
+  initExpectedTotalContributed,
 };

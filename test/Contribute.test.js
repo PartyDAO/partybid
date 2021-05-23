@@ -4,24 +4,24 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, deployPartyBid, contribute } = require('./utils');
+const { eth, initExpectedTotalContributed, contribute } = require('./utils');
+const { deployTestSetupFoundation } = require('./deploy');
 const { testCases } = require('./testCases.json');
 
 testCases.map((testCase) => {
   describe('Contribute', async () => {
     // get test case information
-    const { contributions } = testCase;
     let partyBid;
-    let expectedTotalContributedToParty = 0;
-    const expectedTotalContributed = {};
+    const { contributions } = testCase;
     const signers = provider.getWallets();
-    signers.map((signer) => {
-      expectedTotalContributed[signer.address] = 0;
-    });
+
+    let expectedTotalContributedToParty = 0;
+    const expectedTotalContributed = initExpectedTotalContributed(signers);
 
     before(async () => {
       // DEPLOY PARTY BID CONTRACT
-      partyBid = await deployPartyBid();
+      const contracts = await deployTestSetupFoundation(signers[0]);
+      partyBid = contracts.partyBid;
     });
 
     // submit each contribution & check test conditions

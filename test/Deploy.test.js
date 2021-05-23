@@ -4,17 +4,20 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, deployPartyBid } = require('./utils');
+const { eth } = require('./utils');
+const { deployTestSetupFoundation } = require('./deploy');
 const { AUCTION_STATUS } = require('./constants');
 
 describe('Deploy', async () => {
-  let partyBid, signer;
+  let partyBid, signer, artist;
 
   before(async () => {
+    // GET RANDOM SIGNER & ARTIST
+    [signer, artist] = provider.getWallets();
+
     // DEPLOY PARTY BID CONTRACT
-    partyBid = await deployPartyBid();
-    // GET RANDOM SIGNER
-    [signer] = provider.getWallets();
+    const contracts = await deployTestSetupFoundation(artist);
+    partyBid = contracts.partyBid;
   });
 
   it('Auction Status is Active', async () => {
