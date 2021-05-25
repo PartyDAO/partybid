@@ -27,9 +27,10 @@ async function deployPartyBid(
 }
 
 async function deployFoundationMarket() {
-  const foundationTreasury = await deploy('PayableContract');
+  const foundationTreasury = await deploy('MockFoundationTreasury');
   const foundationMarket = await deploy('FNDNFTMarket');
   await foundationMarket.initialize(foundationTreasury.address);
+  await foundationMarket.adminUpdateConfig(1000, 86400, 0, 0, 0);
   return foundationMarket;
 }
 
