@@ -1,5 +1,8 @@
-function eth(num) {
+function ethToWei(num) {
   return ethers.utils.parseEther(num.toString());
+}
+function weiToEth(num) {
+  return ethers.utils.formatEther(num.toString());
 }
 
 function encodeData(contract, functionName, arguments) {
@@ -67,7 +70,8 @@ function initExpectedTotalContributed(signers) {
 }
 
 module.exports = {
-  eth,
+  eth: ethToWei,
+  weiToEth,
   encodeData,
   approve,
   contribute,

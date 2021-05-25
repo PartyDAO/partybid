@@ -201,7 +201,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             _transferETHOrWETH(partyDAOMultisig, _fee);
             totalSpent = highestBid.add(_fee);
             // mint total token supply to PartyBid
-            _mint(address(this), valueToTokens(totalContributedToParty));
+            _mint(address(this), valueToTokens(totalSpent));
         }
         // set the contract status & emit result
         auctionStatus = _result;
