@@ -215,6 +215,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * to a single contributor after the auction has ended
      * @dev Emits a Claimed event upon success
      * callable by anyone (doesn't have to be the contributor)
+     * @param _contributor the address of the contributor
      */
     function claim(address _contributor) external nonReentrant {
         // load auction status once from storage
@@ -224,26 +225,34 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             _auctionStatus != AuctionStatus.ACTIVE,
             "auction not finalized"
         );
-        _claim(_contributor, _auctionStatus);
-    }
-
-    /**
-     * @notice Claim the tokens and excess ETH owed
-     * to a a batch of contributors after the auction has ended
-     * @dev Emits a Claimed event upon success,
-     * reverts if any of the contributors' claims fails
-     */
-    function claim(address[] calldata _contributors) external nonReentrant {
-        // load auction status once from storage
-        AuctionStatus _auctionStatus = auctionStatus;
-        // ensure auction has finalized
-        require(
-            _auctionStatus != AuctionStatus.ACTIVE,
-            "auction not finalized"
-        );
-        for (uint256 i = 0; i < _contributors.length; i++) {
-            _claim(_contributors[i], _auctionStatus);
+        // load amount contributed once from storage
+        uint256 _totalContributed = totalContributed[_contributor];
+        // ensure contributor submitted some ETH
+        require(_totalContributed != 0, "! a contributor");
+        uint256 _tokenAmount;
+        uint256 _excessEth;
+        if (_auctionStatus == AuctionStatus.WON) {
+            // calculate the amount of this contributor's ETH
+            // that was used for the winning bid
+            uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
+            if (_totalUsedForBid > 0) {
+                _tokenAmount = valueToTokens(_totalUsedForBid);
+                // transfer tokens to contributor for their portion of ETH used
+                _transfer(address(this), _contributor, _tokenAmount);
+            }
+            // return the rest of the contributor's ETH
+            _excessEth = _totalContributed - _totalUsedForBid;
+        } else if (_auctionStatus == AuctionStatus.LOST) {
+            // return all of the contributor's ETH
+            _excessEth = _totalContributed;
         }
+        // if there is excess ETH, send it back to the contributor
+        if (_excessEth > 0) {
+            _transferETHOrWETH(_contributor, _excessEth);
+        }
+        //increment total amount claimed & emit event
+        totalContributionsClaimed += _totalContributed;
+        emit Claimed(_contributor, _totalContributed, _excessEth, _tokenAmount);
     }
 
     // ======== Public: Utility =========
@@ -295,47 +304,6 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     }
 
     // ============ Internal: Claim ============
-
-    /**
-     * @notice Claim the tokens and excess ETH owed
-     * to a single contributor after the auction has ended
-     * @dev Emits a Claimed event upon success
-     * @param _contributor the address of the contributor
-     * @param _auctionStatus the result of the Auction (WON or LOST)
-     * passed as a param so we only need to access storage once
-     */
-    function _claim(address _contributor, AuctionStatus _auctionStatus)
-        internal
-    {
-        // load amount contributed once from storage
-        uint256 _totalContributed = totalContributed[_contributor];
-        // ensure contributor submitted some ETH
-        require(_totalContributed != 0, "! a contributor");
-        uint256 _tokenAmount;
-        uint256 _excessEth;
-        if (_auctionStatus == AuctionStatus.WON) {
-            // calculate the amount of this contributor's ETH
-            // that was used for the winning bid
-            uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
-            if (_totalUsedForBid > 0) {
-                _tokenAmount = valueToTokens(_totalUsedForBid);
-                // transfer tokens to contributor for their portion of ETH used
-                _transfer(address(this), _contributor, _tokenAmount);
-            }
-            // return the rest of the contributor's ETH
-            _excessEth = _totalContributed - _totalUsedForBid;
-        } else if (_auctionStatus == AuctionStatus.LOST) {
-            // return all of the contributor's ETH
-            _excessEth = _totalContributed;
-        }
-        // if there is excess ETH, send it back to the contributor
-        if (_excessEth > 0) {
-            _transferETHOrWETH(_contributor, _excessEth);
-        }
-        //increment total amount claimed & emit event
-        totalContributionsClaimed += _totalContributed;
-        emit Claimed(_contributor, _totalContributed, _excessEth, _tokenAmount);
-    }
 
     /**
      * @notice Calculate the total amount of a contributor's funds that were
