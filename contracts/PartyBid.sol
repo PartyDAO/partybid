@@ -134,7 +134,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         require(auctionStatus == AuctionStatus.ACTIVE, "contributions closed");
         require(_amount == msg.value, "amount != value");
         // get the current contract balance
-        uint256 _currentBalance = address(this).balance;
+        uint256 _currentBalance = address(this).balance - msg.value;
         // add contribution to contributor's array of contributions
         Contribution memory _contribution =
             Contribution({amount: _amount, contractBalance: _currentBalance});

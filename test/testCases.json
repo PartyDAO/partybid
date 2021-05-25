@@ -49,17 +49,18 @@
         }
       ],
       "finalBid": 1.65,
-      "fee": 0.0825,
-      "claim": {
-        "0": {
+      "claims": [
+        {
           "tokens": 1500,
-          "excessEth": 1
+          "excessEth": 1,
+          "totalContributed": 2.5
         },
-        "1": {
-          "tokens": 2325,
-          "excessEth": 2.2675
+        {
+          "tokens": 232.5,
+          "excessEth": 2.2675,
+          "totalContributed": 2.5
         }
-      }
+      ]
     }
   ]
 }

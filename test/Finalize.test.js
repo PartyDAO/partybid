@@ -4,9 +4,18 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, weiToEth, contribute, placeBid } = require('./helpers/utils');
+const {
+  eth,
+  weiToEth,
+  getTotalContributed,
+  contribute,
+  placeBid,
+} = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
-const { AUCTION_STATUS } = require('./helpers/constants');
+const {
+  AUCTION_STATUS,
+  FOURTY_EIGHT_HOURS_IN_SECONDS,
+} = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
 testCases.map((testCase) => {
@@ -20,11 +29,11 @@ testCases.map((testCase) => {
       partyDAOMultisig,
       auctionId,
       multisigBalanceBefore;
+    const totalContributed = getTotalContributed(contributions);
     const lastBid = bids[bids.length - 1];
     const partyBidWins = lastBid.placedByPartyBid && lastBid.success;
     const signers = provider.getWallets();
     const tokenId = 100;
-    const fourtyEightHoursInSeconds = 48 * 60 * 60;
 
     before(async () => {
       // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -39,6 +48,10 @@ testCases.map((testCase) => {
       nftContract = contracts.nftContract;
 
       auctionId = await partyBid.auctionId();
+
+      multisigBalanceBefore = await provider.getBalance(
+        partyDAOMultisig.address,
+      );
 
       // submit contributions before bidding begins
       for (let contribution of contributions) {
@@ -56,10 +69,6 @@ testCases.map((testCase) => {
           await placeBid(signers[0], market, auctionId, eth(amount));
         }
       }
-
-      multisigBalanceBefore = await provider.getBalance(
-        partyDAOMultisig.address,
-      );
     });
 
     it('Does not allow Finalize before the auction is over', async () => {
@@ -78,7 +87,7 @@ testCases.map((testCase) => {
 
     it('Does allow Finalize after the auction is over', async () => {
       // increase time on-chain so that auction can be finalized
-      await provider.send('evm_increaseTime', [fourtyEightHoursInSeconds]);
+      await provider.send('evm_increaseTime', [FOURTY_EIGHT_HOURS_IN_SECONDS]);
       await provider.send('evm_mine');
 
       // finalize auction
@@ -96,7 +105,7 @@ testCases.map((testCase) => {
         expect(owner).to.equal(partyBid.address);
       });
 
-      it('Has correct totalSpent, totalSupply of tokens, and balanceOf PartyBid', async () => {
+      it('Has correct totalSpent, totalSupply of tokens, and balanceOf PartyBid tokens', async () => {
         const expectedTotalSpent = eth(finalBid * 1.05);
         const expectedTotalSupply = eth(finalBid * 1.05 * 1000);
 
@@ -109,6 +118,8 @@ testCases.map((testCase) => {
         const partyBidTokenBalance = await partyBid.balanceOf(partyBid.address);
         expect(partyBidTokenBalance).to.equal(expectedTotalSupply);
       });
+
+      // TODO: check PartyBid ETH balance -- total contributed minus final bid minus fee
 
       it(`Transferred fee to multisig`, async () => {
         const balanceBeforeAsFloat = parseFloat(

@@ -71,6 +71,11 @@ testCases.map((testCase) => {
         expect(totalContributed).to.equal(eth(expectedTotalContributedToParty));
       });
 
+      it('PartyBid ETH balance is total contributed to party', async () => {
+        const balance = await provider.getBalance(partyBid.address);
+        expect(balance).to.equal(eth(expectedTotalContributedToParty));
+      });
+
       it('ERC-20 balance is zero for the contributor', async () => {
         const balance = await partyBid.balanceOf(signer.address);
         expect(balance).to.equal(eth(0));

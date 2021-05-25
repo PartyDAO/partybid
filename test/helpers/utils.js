@@ -10,6 +10,29 @@ function encodeData(contract, functionName, arguments) {
   return contract.interface.encodeFunctionData(func, arguments);
 }
 
+async function getBalances(provider, token, accounts) {
+  const balances = {};
+  for (let account of accounts) {
+    const { name, address } = account;
+    balances[name] = {};
+    balances[name]['eth'] = parseFloat(
+      weiToEth(await provider.getBalance(address)),
+    );
+    balances[name]['tokens'] = parseFloat(
+      weiToEth(await token.balanceOf(address)),
+    );
+  }
+  return balances;
+}
+
+function getTotalContributed(contributions) {
+  let totalContributed = 0;
+  contributions.map((contribution) => {
+    totalContributed += contribution.amount;
+  });
+  return totalContributed;
+}
+
 async function approve(signer, tokenContract, to, tokenId) {
   const data = encodeData(tokenContract, 'approve', [to, tokenId]);
 
@@ -73,9 +96,11 @@ module.exports = {
   eth: ethToWei,
   weiToEth,
   encodeData,
+  getBalances,
+  getTotalContributed,
+  initExpectedTotalContributed,
   approve,
   contribute,
   placeBid,
   createReserveAuction,
-  initExpectedTotalContributed,
 };
