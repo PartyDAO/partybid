@@ -46,6 +46,9 @@ module.exports = {
   },
 
   networks: {
+    hardhat: {
+      gasPrice: 0,
+    },
     localhost: {
       url: 'http://localhost:8545',
     },
