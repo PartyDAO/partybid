@@ -105,21 +105,23 @@ testCases.map((testCase) => {
         expect(owner).to.equal(partyBid.address);
       });
 
-      it('Has correct totalSpent, totalSupply of tokens, and balanceOf PartyBid tokens', async () => {
-        const expectedTotalSpent = eth(finalBid * 1.05);
-        const expectedTotalSupply = eth(finalBid * 1.05 * 1000);
+      it('Has correct totalSpent, totalSupply of tokens, balanceOf PartyBid tokens, and ETH balance', async () => {
+        const expectedTotalSpent = finalBid * 1.05;
+        const expectedTotalSupply = finalBid * 1.05 * 1000;
 
         const totalSpent = await partyBid.totalSpent();
-        expect(totalSpent).to.equal(expectedTotalSpent);
+        expect(totalSpent).to.equal(eth(expectedTotalSpent));
 
         const totalSupply = await partyBid.totalSupply();
-        expect(totalSupply).to.equal(expectedTotalSupply);
+        expect(totalSupply).to.equal(eth(expectedTotalSupply));
 
         const partyBidTokenBalance = await partyBid.balanceOf(partyBid.address);
-        expect(partyBidTokenBalance).to.equal(expectedTotalSupply);
-      });
+        expect(partyBidTokenBalance).to.equal(eth(expectedTotalSupply));
 
-      // TODO: check PartyBid ETH balance -- total contributed minus final bid minus fee
+        const expectedEthBalance = totalContributed - expectedTotalSpent;
+        const ethBalance = await provider.getBalance(partyBid.address);
+        expect(ethBalance).to.equal(eth(expectedEthBalance));
+      });
 
       it(`Transferred fee to multisig`, async () => {
         const balanceBeforeAsFloat = parseFloat(

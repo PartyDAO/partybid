@@ -91,6 +91,10 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         uint256 tokenAmount
     );
 
+    //======== Receive fallback =========
+
+    receive() external payable {} // solhint-disable-line no-empty-blocks
+
     //======== Constructor =========
 
     constructor(
