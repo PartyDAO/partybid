@@ -14,7 +14,7 @@ testCases.map((testCase) => {
     // get test case information
     const { auctionReservePrice, contributions, bids, claims } = testCase;
     // instantiate test vars
-    let partyBid, market, nftContract, partyDAOMultisig, auctionId;
+    let partyBid, market, auctionId;
     const signers = provider.getWallets();
     const firstSigner = signers[0];
     const tokenId = 100;
@@ -28,8 +28,6 @@ testCases.map((testCase) => {
       );
       partyBid = contracts.partyBid;
       market = contracts.market;
-      partyDAOMultisig = contracts.partyDAOMultisig;
-      nftContract = contracts.nftContract;
 
       auctionId = await partyBid.auctionId();
 

@@ -1,8 +1,8 @@
 const { eth, approve, createReserveAuction } = require('./utils');
 
-async function deploy(name, arguments = []) {
+async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
-  const contract = await Implementation.deploy(...arguments);
+  const contract = await Implementation.deploy(...args);
   return contract.deployed();
 }
 

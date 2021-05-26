@@ -5,9 +5,9 @@ function weiToEth(num) {
   return ethers.utils.formatEther(num.toString());
 }
 
-function encodeData(contract, functionName, arguments) {
+function encodeData(contract, functionName, args) {
   const func = contract.interface.getFunction(functionName);
-  return contract.interface.encodeFunctionData(func, arguments);
+  return contract.interface.encodeFunctionData(func, args);
 }
 
 async function getBalances(provider, token, accounts) {

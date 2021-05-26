@@ -35,7 +35,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     // ============ Public Immutables ============
 
-    address partyDAOMultisig;
+    address public partyDAOMultisig;
     // market contract auctioning the NFT
     IMarket public market;
     // NFT contract
