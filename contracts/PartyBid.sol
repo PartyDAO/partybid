@@ -12,6 +12,7 @@ import {IMarket} from "./interfaces/IMarket.sol";
 import {ERC20} from "./ERC20.sol";
 import {ETHOrWETHTransferrer} from "./ETHOrWETHTransferrer.sol";
 import {NonReentrant} from "./NonReentrant.sol";
+import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
 /**
  * @title PartyBid
@@ -40,6 +41,8 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     IMarket public market;
     // NFT contract
     IERC721Metadata public nftContract;
+    // whitelist of approved resellers
+    ResellerWhitelist public resellerWhitelist;
     uint256 public auctionId;
     uint256 public tokenId;
     // percent (from 1 - 100) of the total token supply
@@ -98,14 +101,15 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         uint256 redeemAmount
     );
 
-    //======== Receive fallback =========
+    // ======== Receive fallback =========
 
     receive() external payable {} // solhint-disable-line no-empty-blocks
 
-    //======== Constructor =========
+    // ======== Constructor =========
 
     constructor(
         address _partyDAOMultisig,
+        address _resellerWhitelist,
         address _market,
         address _nftContract,
         uint256 _tokenId,
@@ -123,6 +127,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
         // set storage variables
         partyDAOMultisig = _partyDAOMultisig;
+        resellerWhitelist = ResellerWhitelist(_resellerWhitelist);
         market = IMarket(_market);
         nftContract = IERC721Metadata(_nftContract);
         auctionId = _auctionId;
@@ -130,7 +135,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         quorumPercent = _quorumPercent;
     }
 
-    //======== External: Contribute =========
+    // ======== External: Contribute =========
 
     /**
      * @notice Contribute to the PartyBid's treasury
@@ -164,7 +169,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         );
     }
 
-    //======== External: Bid =========
+    // ======== External: Bid =========
 
     /**
      * @notice Submit a bid to the Market
@@ -191,7 +196,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         emit Bid(_auctionMinimumBid);
     }
 
-    //======== External: Finalize =========
+    // ======== External: Finalize =========
 
     /**
      * @notice Finalize the state of the auction
@@ -223,7 +228,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         emit Finalized(_result);
     }
 
-    //======== External: Claim =========
+    // ======== External: Claim =========
 
     /**
      * @notice Claim the tokens and excess ETH owed
@@ -274,7 +279,29 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         );
     }
 
-    //======== External: Redeem =========
+    // ======== External: ProposeResale =========
+
+    function proposeReseller(address _reseller) external nonReentrant {
+        // ensure that reseller is approve on managed whitelist
+        require(
+            resellerWhitelist.isWhitelisted(address(this), _reseller),
+            "reseller !whitelisted"
+        );
+        // approve reseller from msg.sender
+        // require that msg.sender has some shares
+        // increment the reseller's votes by that number of shares
+    }
+
+    // ======== External: ApproveResale =========
+
+    function approveReseller(address _reseller) external nonReentrant {
+        // check that reseller has been proposed
+        // approve reseller from msg.sender
+        // require that msg.sender has some shares
+        // increment the reseller's votes by that number of shares
+    }
+
+    // ======== External: Redeem =========
 
     /**
      * @notice Burn a portion of ERC-20 tokens in exchange for

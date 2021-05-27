@@ -8,6 +8,7 @@ async function deploy(name, args = []) {
 
 async function deployPartyBid(
   partyDAOMultisig,
+  whitelist,
   market,
   nftContract,
   tokenId = 100,
@@ -17,6 +18,7 @@ async function deployPartyBid(
 ) {
   return deploy('PartyBid', [
     partyDAOMultisig,
+    whitelist,
     market,
     nftContract,
     tokenId,
@@ -61,9 +63,14 @@ async function deployTestContractSetup(
   // Deploy PartyDAO multisig
   const partyDAOMultisig = await deploy('PayableContract');
 
+  // Deploy Reseller Whitelist & Approve PartyDAO multisig for all
+  const whitelist = await deploy('ResellerWhitelist');
+  await whitelist.updateWhitelistForAll(partyDAOMultisig.address, true);
+
   // Deploy PartyBid
   const partyBid = await deployPartyBid(
     partyDAOMultisig.address,
+    whitelist.address,
     foundationMarket.address,
     nftContract.address,
     tokenId,
