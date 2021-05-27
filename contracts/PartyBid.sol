@@ -54,11 +54,12 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     uint256 public totalContributedToParty;
     // the highest bid submitted by PartyBid
     uint256 public highestBid;
-    // the total spent by PartyBid after the auction;
+    // the total spent by PartyBid on the auction;
     // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
     uint256 public totalSpent;
-    // total amount of contributions claimed
-    uint256 public totalContributionsClaimed;
+    // the ETH balance of the contract from unclaimed contributions
+    // initially totalContributed - totalSpent, decremented each time excess is claimed
+    uint256 public excessContributions;
     // contributor => array of Contributions
     mapping(address => Contribution[]) public contributions;
     // contributor => total amount contributed
@@ -87,8 +88,14 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     event Claimed(
         address indexed contributor,
         uint256 totalContributed,
-        uint256 excessEth,
+        uint256 excessContribution,
         uint256 tokenAmount
+    );
+
+    event Redeemed(
+        address indexed tokenHolder,
+        uint256 tokenAmount,
+        uint256 redeemAmount
     );
 
     //======== Receive fallback =========
@@ -138,15 +145,17 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         require(auctionStatus == AuctionStatus.ACTIVE, "contributions closed");
         require(_amount == msg.value, "amount != value");
         // get the current contract balance
-        uint256 _currentBalance = address(this).balance - msg.value;
+        uint256 _currentBalance = address(this).balance.sub(msg.value);
         // add contribution to contributor's array of contributions
         Contribution memory _contribution =
             Contribution({amount: _amount, contractBalance: _currentBalance});
         contributions[_contributor].push(_contribution);
         // add to contributor's total contribution
-        totalContributed[_contributor] += _amount;
+        totalContributed[_contributor] = totalContributed[_contributor].add(
+            _amount
+        );
         // add to party's total contribution
-        totalContributedToParty += _amount;
+        totalContributedToParty = totalContributedToParty.add(_amount);
         emit Contributed(
             _contributor,
             _amount,
@@ -207,6 +216,8 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             // mint total token supply to PartyBid
             _mint(address(this), valueToTokens(totalSpent));
         }
+        // set excess contributions. note: totalSpent is zero if auction was lost
+        excessContributions = totalContributedToParty.sub(totalSpent);
         // set the contract status & emit result
         auctionStatus = _result;
         emit Finalized(_result);
@@ -234,7 +245,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // ensure contributor submitted some ETH
         require(_totalContributed != 0, "! a contributor");
         uint256 _tokenAmount;
-        uint256 _excessEth;
+        uint256 _excessContribution;
         if (_auctionStatus == AuctionStatus.WON) {
             // calculate the amount of this contributor's ETH
             // that was used for the winning bid
@@ -245,18 +256,48 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
                 _transfer(address(this), _contributor, _tokenAmount);
             }
             // return the rest of the contributor's ETH
-            _excessEth = _totalContributed - _totalUsedForBid;
+            _excessContribution = _totalContributed.sub(_totalUsedForBid);
         } else if (_auctionStatus == AuctionStatus.LOST) {
             // return all of the contributor's ETH
-            _excessEth = _totalContributed;
+            _excessContribution = _totalContributed;
         }
         // if there is excess ETH, send it back to the contributor
-        if (_excessEth > 0) {
-            _transferETHOrWETH(_contributor, _excessEth);
+        if (_excessContribution > 0) {
+            _transferETHOrWETH(_contributor, _excessContribution);
+            excessContributions = excessContributions.sub(_excessContribution);
         }
-        //increment total amount claimed & emit event
-        totalContributionsClaimed += _totalContributed;
-        emit Claimed(_contributor, _totalContributed, _excessEth, _tokenAmount);
+        emit Claimed(
+            _contributor,
+            _totalContributed,
+            _excessContribution,
+            _tokenAmount
+        );
+    }
+
+    //======== External: Redeem =========
+
+    /**
+     * @notice Burn a portion of ERC-20 tokens in exchange for
+     * a proportional amount of the redeemable ETH balance of the contract
+     * Note: Excess auction contributions must be retrieved via claim()
+     * @dev Emits a Redeem event upon success
+     * @param _tokenAmount the amount of tokens to burn for ETH
+     */
+    function redeem(uint256 _tokenAmount) external nonReentrant {
+        require(_tokenAmount != 0, "can't redeem zero tokens");
+        require(
+            balanceOf[msg.sender] >= _tokenAmount,
+            "redeem amount exceeds balance"
+        );
+        uint256 _redeemAmount = redeemAmount(_tokenAmount);
+        // prevent users from burning tokens for zero ETH
+        require(_redeemAmount > 0, "can't redeem for 0 ETH");
+        // burn redeemed tokens
+        _burn(msg.sender, _tokenAmount);
+        // transfer redeem amount to recipient
+        _transferETHOrWETH(msg.sender, _redeemAmount);
+        // emit event
+        emit Redeemed(msg.sender, _tokenAmount, _redeemAmount);
     }
 
     // ======== Public: Utility =========
@@ -264,8 +305,42 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     /**
      * @notice Convert ETH value to equivalent token amount
      */
-    function valueToTokens(uint256 value) public pure returns (uint256 tokens) {
-        tokens = value * (TOKEN_SCALE);
+    function valueToTokens(uint256 _value)
+        public
+        pure
+        returns (uint256 _tokens)
+    {
+        _tokens = _value * (TOKEN_SCALE);
+    }
+
+    /**
+     * @notice The redeemable ETH balance of the contract is equal to
+     * any ETH in the contract that is NOT attributed to excess auction contributions
+     * e.g. any ETH deposited to the contract EXCEPT via contribute() function
+     */
+    function redeemableEthBalance()
+        public
+        view
+        returns (uint256 _redeemableBalance)
+    {
+        _redeemableBalance = address(this).balance.sub(excessContributions);
+    }
+
+    /**
+     * @notice Helper view function to calculate the ETH amount redeemable
+     * in exchange for a given token amount
+     */
+    function redeemAmount(uint256 _tokenAmount)
+        public
+        view
+        returns (uint256 _redeemAmount)
+    {
+        // get total redeemable ETH in contract
+        uint256 _totalRedeemableBalance = redeemableEthBalance();
+        // calculate the proportion of redeemable ETH to be exchanged for this token amount
+        _redeemAmount = _totalRedeemableBalance.mul(_tokenAmount).div(
+            totalSupply
+        );
     }
 
     // ============ Internal: Bid ============
@@ -330,7 +405,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             // no subsequent contributions will have been used either,
             // so we can stop calculating to save some gas
             if (_amount == 0) break;
-            _total += _amount;
+            _total = _total.add(_amount);
         }
     }
 
@@ -349,13 +424,14 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
         if (
-            _contribution.contractBalance + _contribution.amount <= _totalSpent
+            _contribution.contractBalance.add(_contribution.amount) <=
+            _totalSpent
         ) {
             // contribution was fully used
             _amount = _contribution.amount;
         } else if (_contribution.contractBalance < _totalSpent) {
             // contribution was partially used
-            _amount = _totalSpent - _contribution.contractBalance;
+            _amount = _totalSpent.sub(_contribution.contractBalance);
         } else {
             // contribution was not used
             _amount = 0;

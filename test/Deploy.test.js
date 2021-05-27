@@ -25,9 +25,9 @@ describe('Deploy', async () => {
     expect(auctionStatus).to.equal(AUCTION_STATUS.ACTIVE);
   });
 
-  it('Contributions claimed is zero', async () => {
-    const totalClaimed = await partyBid.totalContributionsClaimed();
-    expect(totalClaimed).to.equal(eth(0));
+  it('Total contributed to party is zero', async () => {
+    const totalContributedToParty = await partyBid.totalContributedToParty();
+    expect(totalContributedToParty).to.equal(eth(0));
   });
 
   it('Highest bid is zero', async () => {
@@ -38,6 +38,16 @@ describe('Deploy', async () => {
   it('Total spent is zero', async () => {
     const totalSpent = await partyBid.totalSpent();
     expect(totalSpent).to.equal(eth(0));
+  });
+
+  it('Excess contributions is zero', async () => {
+    const excessContributions = await partyBid.excessContributions();
+    expect(excessContributions).to.equal(eth(0));
+  });
+
+  it('Total Contributed is zero for random account', async () => {
+    const totalContributed = await partyBid.totalContributed(signer.address);
+    expect(totalContributed).to.equal(eth(0));
   });
 
   it('ERC-20 name is right', async () => {

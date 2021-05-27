@@ -1,4 +1,6 @@
-function ethToWei(num) {
+const { expect } = require('chai');
+
+function eth(num) {
   return ethers.utils.parseEther(num.toString());
 }
 function weiToEth(num) {
@@ -65,6 +67,29 @@ async function contribute(partyBidContract, contributorSigner, value) {
   });
 }
 
+async function redeem(partyBidContract, contributorSigner, amount) {
+  const data = encodeData(partyBidContract, 'redeem', [amount]);
+
+  return contributorSigner.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
+async function transfer(
+  partyBidContract,
+  contributorSigner,
+  recipient,
+  amount,
+) {
+  const data = encodeData(partyBidContract, 'transfer', [recipient, amount]);
+
+  return contributorSigner.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
 async function createReserveAuction(
   artist,
   marketContract,
@@ -92,8 +117,37 @@ function initExpectedTotalContributed(signers) {
   return expectedTotalContributed;
 }
 
+// Validate state variables based on ETH amount added to contract
+async function expectRedeemable(
+  provider,
+  partyBid,
+  ethAmountAdded,
+  ethAmountRedeemed,
+) {
+  const redeemableEth = ethAmountAdded - ethAmountRedeemed;
+
+  // eth balance is equal to redeemableEth + excessContributions
+  const excessContributions = await partyBid.excessContributions();
+  const expectedBalance =
+    redeemableEth + parseFloat(weiToEth(excessContributions));
+  const ethBalance = await provider.getBalance(partyBid.address);
+  await expect(ethBalance).to.equal(eth(expectedBalance));
+
+  // redeemableEthBalance is equal to ethAmountAdded
+  const redeemableEthBalance = await partyBid.redeemableEthBalance();
+  await expect(redeemableEthBalance).to.equal(eth(redeemableEth));
+
+  // redeemAmount(tokenAmount) is expected portion
+  const tokenAmount = 100;
+  const totalSupply = await partyBid.totalSupply();
+  const expectedRedeemAmount =
+    redeemableEth * (tokenAmount / parseFloat(weiToEth(totalSupply)));
+  const redeemAmount = await partyBid.redeemAmount(eth(tokenAmount));
+  await expect(redeemAmount).to.equal(eth(expectedRedeemAmount));
+}
+
 module.exports = {
-  eth: ethToWei,
+  eth,
   weiToEth,
   encodeData,
   getBalances,
@@ -102,5 +156,8 @@ module.exports = {
   approve,
   contribute,
   placeBid,
+  redeem,
+  transfer,
   createReserveAuction,
+  expectRedeemable,
 };

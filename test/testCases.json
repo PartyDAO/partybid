@@ -51,11 +51,13 @@
       "finalBid": 1.65,
       "claims": [
         {
+          "signerIndex": 0,
           "tokens": 1500,
           "excessEth": 1,
           "totalContributed": 2.5
         },
         {
+          "signerIndex": 1,
           "tokens": 232.5,
           "excessEth": 2.2675,
           "totalContributed": 2.5

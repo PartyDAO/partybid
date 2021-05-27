@@ -64,10 +64,9 @@ testCases.map((testCase) => {
       await expect(partyBid.finalize()).to.emit(partyBid, 'Finalized');
     });
 
-    for (let i = 0; i < claims.length; i++) {
-      const claim = claims[i];
-      const contributor = signers[i];
-      const { tokens, excessEth, totalContributed } = claim;
+    for (let claim of claims) {
+      const { signerIndex, tokens, excessEth, totalContributed } = claim;
+      const contributor = signers[signerIndex];
       it(`Allows Claim, transfers ETH and tokens to contributors after Finalize`, async () => {
         const accounts = [
           {
