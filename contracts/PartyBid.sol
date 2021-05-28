@@ -24,8 +24,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     // ============ Enums ============
 
-    enum AuctionStatus {ACTIVE, WON, LOST}
-    enum NFTType {Zora, Foundation}
+    enum AuctionStatus {ACTIVE, WON, LOST, TRANSFERRED}
 
     // ============ Internal Constants ============
 
@@ -61,13 +60,20 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     // the total spent by PartyBid on the auction;
     // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
     uint256 public totalSpent;
+    // amount of votes for a reseller to pass quorum threshold
+    uint256 public supportNeededForQuorum;
     // the ETH balance of the contract from unclaimed contributions
-    // initially totalContributed - totalSpent, decremented each time excess is claimed
+    // decremented each time excess contributions are claimed
+    // used to determine the ETH balance of the contract from resale proceeds
     uint256 public excessContributions;
     // contributor => array of Contributions
     mapping(address => Contribution[]) public contributions;
     // contributor => total amount contributed
     mapping(address => uint256) public totalContributed;
+    // contributor => voting power (used to support resellers)
+    mapping(address => uint256) public votingPower;
+    // reseller => total support for reseller
+    mapping(address => uint256) public resellerSupport;
 
     // ============ Structs ============
 
@@ -101,6 +107,15 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         uint256 tokenAmount,
         uint256 redeemAmount
     );
+
+    event ResellerSupported(
+        address indexed reseller,
+        address indexed supporter,
+        uint256 votes,
+        uint256 totalVotesForReseller
+    );
+
+    event ResellerApproved(address indexed reseller);
 
     // ======== Receive fallback =========
 
@@ -197,13 +212,13 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         );
         // submit bid to Auction contract using delegatecall
         (bool success, ) =
-        address(marketWrapper).delegatecall(
-            abi.encodeWithSignature(
-                "bid(uint256,uint256)",
-                auctionId,
-                _auctionMinimumBid
-            )
-        );
+            address(marketWrapper).delegatecall(
+                abi.encodeWithSignature(
+                    "bid(uint256,uint256)",
+                    auctionId,
+                    _auctionMinimumBid
+                )
+            );
         require(success, "place bid failed");
         // update highest bid submitted & emit success event
         highestBid = _auctionMinimumBid;
@@ -233,7 +248,9 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             // transfer 5% fee to PartyDAO
             uint256 _fee = _getFee(highestBid);
             _transferETHOrWETH(partyDAOMultisig, _fee);
+            // record total spent by auction & quorum threshold
             totalSpent = highestBid.add(_fee);
+            supportNeededForQuorum = totalSpent.mul(quorumPercent).div(100);
             // mint total token supply to PartyBid
             _mint(address(this), valueToTokens(totalSpent));
         }
@@ -275,6 +292,9 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
                 _tokenAmount = valueToTokens(_totalUsedForBid);
                 // transfer tokens to contributor for their portion of ETH used
                 _transfer(address(this), _contributor, _tokenAmount);
+                // original contributors have fixed power to vote on resellers
+                // proportional to the amount of their contributions spent
+                votingPower[_contributor] = _totalUsedForBid;
             }
             // return the rest of the contributor's ETH
             _excessContribution = _totalContributed.sub(_totalUsedForBid);
@@ -295,26 +315,44 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         );
     }
 
-    // ======== External: ProposeResale =========
+    // ======== External: SupportReseller =========
 
-    function proposeReseller(address _reseller) external nonReentrant {
-        // ensure that reseller is approve on managed whitelist
+    function supportReseller(address _reseller) external nonReentrant {
         require(
-            resellerWhitelist.isWhitelisted(address(this), _reseller),
+            auctionStatus == AuctionStatus.WON,
+            "NFT not held; can't resell"
+        );
+        // ensure the caller has some voting power
+        uint256 _votingPower = votingPower[msg.sender];
+        require(_votingPower > 0, "no voting power");
+        // get the prior votes in support of this reseller
+        uint256 _currentSupport = resellerSupport[_reseller];
+        // if this is a newly proposed reseller, ensure that they are whitelisted
+        bool _isApprovedReseller = _currentSupport > 0;
+        require(
+            _isApprovedReseller ||
+                resellerWhitelist.isWhitelisted(address(this), _reseller),
             "reseller !whitelisted"
         );
-        // approve reseller from msg.sender
-        // require that msg.sender has some shares
-        // increment the reseller's votes by that number of shares
-    }
-
-    // ======== External: ApproveResale =========
-
-    function approveReseller(address _reseller) external nonReentrant {
-        // check that reseller has been proposed
-        // approve reseller from msg.sender
-        // require that msg.sender has some shares
-        // increment the reseller's votes by that number of shares
+        uint256 _updatedSupport = _currentSupport.add(_votingPower);
+        // update support for reseller
+        resellerSupport[_reseller] = _updatedSupport;
+        emit ResellerSupported(
+            _reseller,
+            msg.sender,
+            _votingPower,
+            _updatedSupport
+        );
+        // if this vote hits quorum, transfer the NFT to the reseller
+        if (_updatedSupport >= supportNeededForQuorum) {
+            IERC721Metadata(nftContract).transferFrom(
+                address(this),
+                _reseller,
+                tokenId
+            );
+            auctionStatus = AuctionStatus.TRANSFERRED;
+            emit ResellerApproved(_reseller);
+        }
     }
 
     // ======== External: Redeem =========
