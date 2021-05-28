@@ -8,7 +8,7 @@ import {
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
 // ============ Internal Imports ============
-import {IMarket} from "./interfaces/IMarket.sol";
+import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
 import {ERC20} from "./ERC20.sol";
 import {ETHOrWETHTransferrer} from "./ETHOrWETHTransferrer.sol";
 import {NonReentrant} from "./NonReentrant.sol";
@@ -37,8 +37,9 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     // ============ Public Immutables ============
 
     address public partyDAOMultisig;
-    // market contract auctioning the NFT
-    IMarket public market;
+    // market wrapper contract exposing interface for
+    // market auctioning the NFT
+    IMarketWrapper public marketWrapper;
     // NFT contract
     IERC721Metadata public nftContract;
     // whitelist of approved resellers
@@ -110,7 +111,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     constructor(
         address _partyDAOMultisig,
         address _resellerWhitelist,
-        address _market,
+        address _marketWrapper,
         address _nftContract,
         uint256 _tokenId,
         uint256 _quorumPercent,
@@ -119,16 +120,22 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     ) ERC20(_name, _symbol) {
         // validate token exists - this call should revert if not
         IERC721Metadata(_nftContract).tokenURI(_tokenId);
-        // validate FOUNDATION reserve auction exists (TODO: generalize Foundation / Zora)
+        // validate reserve auction exists
+        require(
+            IMarketWrapper(_marketWrapper).auctionExists(
+                _nftContract,
+                _tokenId
+            ),
+            "auction doesn't exist"
+        );
         uint256 _auctionId =
-            IMarket(_market).getReserveAuctionIdFor(_nftContract, _tokenId);
-        require(_auctionId != 0, "auction doesn't exist");
+            IMarketWrapper(_marketWrapper).getAuctionId(_nftContract, _tokenId);
         // validate quorum percent
         require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
         // set storage variables
         partyDAOMultisig = _partyDAOMultisig;
         resellerWhitelist = ResellerWhitelist(_resellerWhitelist);
-        market = IMarket(_market);
+        marketWrapper = IMarketWrapper(_marketWrapper);
         nftContract = IERC721Metadata(_nftContract);
         auctionId = _auctionId;
         tokenId = _tokenId;
@@ -181,16 +188,15 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     function bid() external nonReentrant {
         require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
         require(totalContributed[msg.sender] > 0, "only contributors can bid");
-        // Place FOUNDATION bid TODO: generalize Foundation / Zora
         // get the minimum next bid for the auction
-        uint256 _auctionMinimumBid = market.getMinBidAmount(auctionId);
+        uint256 _auctionMinimumBid = marketWrapper.getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
         require(
             _auctionMinimumBid <= _getMaximumBid(),
             "insufficient funds to bid"
         );
         // submit bid to Auction contract
-        market.placeBid{value: _auctionMinimumBid}(auctionId);
+        _bid(_auctionMinimumBid);
         // update highest bid submitted & emit success event
         highestBid = _auctionMinimumBid;
         emit Bid(_auctionMinimumBid);
@@ -205,7 +211,9 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     function finalize() external nonReentrant {
         require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
         // finalize auction if it hasn't already been done
-        _finalizeAuctionIfNecessary();
+        if (!marketWrapper.isFinalized(auctionId)) {
+            marketWrapper.finalize(auctionId);
+        }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
         AuctionStatus _result =
@@ -373,6 +381,19 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     // ============ Internal: Bid ============
 
     /**
+     * @notice Bid on the auction in a generic way using low-level call
+     * @param _auctionMinimumBid the amount to bid on the auction
+     */
+    function _bid(uint256 _auctionMinimumBid) internal {
+        address _market = marketWrapper.getMarketAddress();
+        bytes memory _bidCallData =
+            marketWrapper.getBidData(auctionId, _auctionMinimumBid);
+        (bool success, ) =
+            _market.call{value: _auctionMinimumBid}(_bidCallData);
+        require(success, "place bid failed");
+    }
+
+    /**
      * @notice The maximum bid that can be submitted
      * while leaving 5% fee for PartyDAO
      * @return _maxBid the maximum bid
@@ -388,25 +409,6 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      */
     function _getFee(uint256 _amount) internal pure returns (uint256 _fee) {
         _fee = _amount.mul(FEE_PERCENT).div(100);
-    }
-
-    // ============ Internal: Finalize ============
-
-    /**
-     * @notice Finalize the auction if it hasn't already been done
-     * note: FOUNDATION only right now TODO: generalize Foundation / Zora
-     */
-    function _finalizeAuctionIfNecessary() internal {
-        IMarket.ReserveAuction memory _auction =
-            market.getReserveAuction(auctionId);
-        // check if the auction has already been finalized
-        // by seeing if it has been deleted from the contract
-        bool _auctionFinalized = _auction.amount == 0;
-        if (!_auctionFinalized) {
-            // finalize the auction
-            // will revert if auction has not started or still in progress
-            market.finalizeReserveAuction(auctionId);
-        }
     }
 
     // ============ Internal: Claim ============

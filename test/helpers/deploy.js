@@ -45,8 +45,11 @@ async function deployTestContractSetup(
   const nftContract = await deploy('TestERC721');
   await nftContract.mint(artistSigner.address, tokenId);
 
-  // Deploy Foundation Market
+  // Deploy Foundation Market and Market Wrapper Contract
   const foundationMarket = await deployFoundationMarket();
+  const marketWrapper = await deploy('FoundationMarketWrapper', [
+    foundationMarket.address,
+  ]);
 
   // Approve NFT Transfer to Foundation Market
   await approve(artistSigner, nftContract, foundationMarket.address, tokenId);
@@ -71,7 +74,7 @@ async function deployTestContractSetup(
   const partyBid = await deployPartyBid(
     partyDAOMultisig.address,
     whitelist.address,
-    foundationMarket.address,
+    marketWrapper.address,
     nftContract.address,
     tokenId,
   );

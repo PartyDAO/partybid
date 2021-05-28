@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-interface IMarket {
+interface IFoundationMarket {
     struct ReserveAuction {
         address nftContract;
         uint256 tokenId;

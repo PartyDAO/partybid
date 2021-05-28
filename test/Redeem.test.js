@@ -28,7 +28,6 @@ testCases.map((testCase) => {
     const tokenId = 100;
     let ethAmountAdded = 0;
     let ethAmountRedeemed = 0;
-    const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
 
     before(async () => {
       // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -136,10 +135,10 @@ testCases.map((testCase) => {
       const { signerIndex, tokens } = claim;
       const contributor = signers[signerIndex];
       const redeemAmount = tokens;
-      let balanceBefore;
 
       it(`Allows Redeem FULL token amount`, async () => {
-        balanceBefore = await partyBid.balanceOf(contributor.address);
+        // TODO: check balance after
+        // const balanceBefore = await partyBid.balanceOf(contributor.address);
         await expect(redeem(partyBid, contributor, eth(redeemAmount))).to.emit(
           partyBid,
           'Redeemed',
