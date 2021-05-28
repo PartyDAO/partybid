@@ -14,12 +14,6 @@ pragma solidity 0.8.4;
  */
 interface IMarketWrapper {
     /**
-     * @notice Get the address of the Market being wrapped
-     * @return address of the underlying market
-     */
-    function getMarketAddress() external view returns (address);
-
-    /**
      * @notice Determine whether there is an existing auction
      * for this token on the underlying market
      * @return TRUE if the auction exists
@@ -45,13 +39,9 @@ interface IMarketWrapper {
     function getMinimumBid(uint256 auctionId) external view returns (uint256);
 
     /**
-     * @notice Encode the data to call the bidding function
-     * @return bid calldata
+     * @notice Submit bid to Market contract
      */
-    function getBidData(uint256 auctionId, uint256 bidAmount)
-        external
-        pure
-        returns (bytes memory);
+    function bid(uint256 auctionId, uint256 bidAmount) external;
 
     /**
      * @notice Determine whether the auction has been finalized

@@ -24,14 +24,6 @@ contract FoundationMarketWrapper is IMarketWrapper {
     // ======== External Functions =========
 
     /**
-     * @notice Get the address of the Foundation Market
-     * @return address of the Foundation market
-     */
-    function getMarketAddress() external view override returns (address) {
-        return address(market);
-    }
-
-    /**
      * @notice Determine whether there is an existing auction
      * for this token on the Foundation market
      * @return TRUE if the auction exists
@@ -74,14 +66,14 @@ contract FoundationMarketWrapper is IMarketWrapper {
     }
 
     /**
-     * @notice Encode the data to call the placeBid function
-     * @return bid calldata
+     * @notice Submit bid to Market contract
      */
-    function getBidData(
-        uint256 auctionId,
-        uint256 bidAmount // solhint-disable-line no-unused-vars
-    ) external pure override returns (bytes memory) {
-        return abi.encodeWithSignature("placeBid(uint256)", auctionId);
+    function bid(uint256 auctionId, uint256 bidAmount) external override {
+        (bool success, ) =
+            address(market).call{value: bidAmount}(
+                abi.encodeWithSignature("placeBid(uint256)", auctionId)
+            );
+        require(success, "place bid failed");
     }
 
     /**

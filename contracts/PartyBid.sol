@@ -195,8 +195,16 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             _auctionMinimumBid <= _getMaximumBid(),
             "insufficient funds to bid"
         );
-        // submit bid to Auction contract
-        _bid(_auctionMinimumBid);
+        // submit bid to Auction contract using delegatecall
+        (bool success, ) =
+        address(marketWrapper).delegatecall(
+            abi.encodeWithSignature(
+                "bid(uint256,uint256)",
+                auctionId,
+                _auctionMinimumBid
+            )
+        );
+        require(success, "place bid failed");
         // update highest bid submitted & emit success event
         highestBid = _auctionMinimumBid;
         emit Bid(_auctionMinimumBid);
@@ -379,19 +387,6 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     }
 
     // ============ Internal: Bid ============
-
-    /**
-     * @notice Bid on the auction in a generic way using low-level call
-     * @param _auctionMinimumBid the amount to bid on the auction
-     */
-    function _bid(uint256 _auctionMinimumBid) internal {
-        address _market = marketWrapper.getMarketAddress();
-        bytes memory _bidCallData =
-            marketWrapper.getBidData(auctionId, _auctionMinimumBid);
-        (bool success, ) =
-            _market.call{value: _auctionMinimumBid}(_bidCallData);
-        require(success, "place bid failed");
-    }
 
     /**
      * @notice The maximum bid that can be submitted
