@@ -33,6 +33,7 @@ testCases.map((testCase) => {
     before(async () => {
       // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
       const contracts = await deployTestContractSetup(
+        provider,
         firstSigner,
         tokenId,
         auctionReservePrice,

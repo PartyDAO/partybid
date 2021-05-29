@@ -3,100 +3,17 @@ pragma solidity 0.8.4;
 
 // ============ External Imports ============
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {
-    IERC721Metadata
-} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
 // ============ Internal Imports ============
-import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
-import {ERC20} from "./ERC20.sol";
-import {ETHOrWETHTransferrer} from "./ETHOrWETHTransferrer.sol";
-import {NonReentrant} from "./NonReentrant.sol";
-import {ResellerWhitelist} from "./ResellerWhitelist.sol";
+import {PartyBidStorage} from "./PartyBidStorage.sol";
 
 /**
  * @title PartyBid
  * @author Anna Carroll
  */
-contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
+contract PartyBidLogic is PartyBidStorage {
     // Use OpenZeppelin's SafeMath library to prevent overflows.
     using SafeMath for uint256;
-
-    // ============ Enums ============
-
-    // State Transitions:
-    // Win Auction
-    // (1) AUCTION_ACTIVE on deploy
-    // (2) AUCTION_WON on finalize()
-    // (3) NFT_TRANSFERRED after supportReseller() passes quorum
-    // Lose Auction
-    // (1) AUCTION_ACTIVE on deploy
-    // (2) AUCTION_LOST on finalize()
-    enum PartyStatus {
-        AUCTION_ACTIVE,
-        AUCTION_WON,
-        AUCTION_LOST,
-        NFT_TRANSFERRED
-    }
-
-    // ============ Internal Constants ============
-
-    // tokens are minted at a rate of 1 ETH : 1000 tokens
-    uint16 internal constant TOKEN_SCALE = 1000;
-    // PartyBid pays a 5% fee to PartyDAO
-    uint8 internal constant FEE_PERCENT = 5;
-
-    // ============ Public Immutables ============
-
-    address public partyDAOMultisig;
-    // market wrapper contract exposing interface for
-    // market auctioning the NFT
-    IMarketWrapper public marketWrapper;
-    // NFT contract
-    IERC721Metadata public nftContract;
-    // whitelist of approved resellers
-    ResellerWhitelist public resellerWhitelist;
-    uint256 public auctionId;
-    uint256 public tokenId;
-    // percent (from 1 - 100) of the total token supply
-    // required to vote to successfully execute a sale proposal
-    uint256 public quorumPercent;
-
-    // ============ Public Mutable Storage ============
-
-    // state of the contract
-    PartyStatus public partyStatus;
-    // total ETH deposited by all contributors
-    uint256 public totalContributedToParty;
-    // the highest bid submitted by PartyBid
-    uint256 public highestBid;
-    // the total spent by PartyBid on the auction;
-    // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
-    uint256 public totalSpent;
-    // amount of votes for a reseller to pass quorum threshold
-    uint256 public supportNeededForQuorum;
-    // the ETH balance of the contract from unclaimed contributions
-    // decremented each time excess contributions are claimed
-    // used to determine the ETH balance of the contract from resale proceeds
-    uint256 public excessContributions;
-    // contributor => array of Contributions
-    mapping(address => Contribution[]) public contributions;
-    // contributor => total amount contributed
-    mapping(address => uint256) public totalContributed;
-    // contributor => voting power (used to support resellers)
-    mapping(address => uint256) public votingPower;
-    // contributor => reseller => reseller calldata => bool hasSupported
-    mapping(address => mapping(address => mapping(bytes => bool)))
-        public hasSupportedReseller;
-    // reseller => reseller calldata => total support for reseller
-    mapping(address => mapping(bytes => uint256)) public resellerSupport;
-
-    // ============ Structs ============
-
-    struct Contribution {
-        uint256 amount;
-        uint256 contractBalance;
-    }
 
     // ============ Events ============
 
@@ -133,40 +50,29 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     event ResellerApproved(address indexed reseller);
 
-    // ======== Receive fallback =========
+    // ============ ERC-20 Events ============
 
-    receive() external payable {} // solhint-disable-line no-empty-blocks
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 
-    // ======== Constructor =========
+    // ============ Modifiers ============
 
-    constructor(
-        address _partyDAOMultisig,
-        address _resellerWhitelist,
-        address _marketWrapper,
-        address _nftContract,
-        uint256 _tokenId,
-        uint256 _auctionId,
-        uint256 _quorumPercent,
-        string memory _name,
-        string memory _symbol
-    ) ERC20(_name, _symbol) {
-        // validate token exists - this call should revert if not
-        IERC721Metadata(_nftContract).tokenURI(_tokenId);
-        // validate auction exists
-        require(
-            IMarketWrapper(_marketWrapper).auctionExists(_auctionId),
-            "auction doesn't exist"
-        );
-        // validate quorum percent
-        require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
-        // set storage variables
-        partyDAOMultisig = _partyDAOMultisig;
-        resellerWhitelist = ResellerWhitelist(_resellerWhitelist);
-        marketWrapper = IMarketWrapper(_marketWrapper);
-        nftContract = IERC721Metadata(_nftContract);
-        auctionId = _auctionId;
-        tokenId = _tokenId;
-        quorumPercent = _quorumPercent;
+    /**
+     * @notice Prevent re-entrancy attacks
+     */
+    modifier nonReentrant() {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(reentrancyStatus != REENTRANCY_ENTERED, "no reentrance");
+        // Any calls to nonReentrant after this point will fail
+        reentrancyStatus = REENTRANCY_ENTERED;
+        _;
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        reentrancyStatus = REENTRANCY_NOT_ENTERED;
     }
 
     // ======== External: Contribute =========
@@ -430,7 +336,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         emit Redeemed(msg.sender, _tokenAmount, _redeemAmount);
     }
 
-    // ======== Public: Utility =========
+    // ======== Public: Utility Calculations =========
 
     /**
      * @notice Convert ETH value to equivalent token amount
@@ -563,11 +469,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         bytes memory _resellerCalldata
     ) internal {
         // transfer the NFT to the reseller
-        IERC721Metadata(nftContract).transferFrom(
-            address(this),
-            _reseller,
-            tokenId
-        );
+        nftContract.transferFrom(address(this), _reseller, tokenId);
         // call the reseller with the provided data
         if (_resellerCalldata.length > 0) {
             (bool success, ) = _reseller.call(_resellerCalldata);
@@ -576,5 +478,98 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // change status in order to close voting & emit event
         partyStatus = PartyStatus.NFT_TRANSFERRED;
         emit ResellerApproved(_reseller);
+    }
+
+    // ============ Internal: TransferEthOrWeth ============
+
+    /**
+     * @notice Attempt to transfer ETH to a recipient;
+     * if transferring ETH fails, transfer WETH insteads
+     * @param _to recipient of ETH or WETH
+     * @param _value amount of ETH or WETH
+     */
+    function _transferETHOrWETH(address _to, uint256 _value) internal {
+        // Try to transfer ETH to the given recipient.
+        if (!_attemptETHTransfer(_to, _value)) {
+            // If the transfer fails, wrap and send as WETH
+            WETH.deposit{value: _value}();
+            WETH.transfer(_to, _value);
+            // At this point, the recipient can unwrap WETH.
+        }
+    }
+
+    /**
+     * @notice Attempt to transfer ETH to a recipient
+     * @dev Sending ETH is not guaranteed to succeed
+     * this method will return false if it fails.
+     * We will limit the gas used in transfers, and handle failure cases.
+     * @param _to recipient of ETH
+     * @param _value amount of ETH
+     */
+    function _attemptETHTransfer(address _to, uint256 _value)
+        internal
+        returns (bool)
+    {
+        // Here increase the gas limit a reasonable amount above the default, and try
+        // to send ETH to the recipient.
+        // NOTE: This might allow the recipient to attempt a limited reentrancy attack.
+        (bool success, ) = _to.call{value: _value, gas: 30000}("");
+        return success;
+    }
+
+    // ============ ERC-20 Spec ============
+    // ============ ERC-20 External ============
+
+    function approve(address spender, uint256 value) external returns (bool) {
+        _approve(msg.sender, spender, value);
+        return true;
+    }
+
+    function transfer(address to, uint256 value) external returns (bool) {
+        _transfer(msg.sender, to, value);
+        return true;
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 value
+    ) external returns (bool) {
+        allowance[from][msg.sender] = allowance[from][msg.sender] - value;
+        _transfer(from, to, value);
+        return true;
+    }
+
+    // ============ ERC-20 Internal ============
+
+    function _mint(address to, uint256 value) internal {
+        totalSupply = totalSupply + value;
+        balanceOf[to] = balanceOf[to] + value;
+        emit Transfer(address(0), to, value);
+    }
+
+    function _burn(address from, uint256 value) internal {
+        balanceOf[from] = balanceOf[from] - value;
+        totalSupply = totalSupply - value;
+        emit Transfer(from, address(0), value);
+    }
+
+    function _approve(
+        address owner,
+        address spender,
+        uint256 value
+    ) internal {
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 value
+    ) internal {
+        balanceOf[from] = balanceOf[from] - value;
+        balanceOf[to] = balanceOf[to] + value;
+        emit Transfer(from, to, value);
     }
 }

@@ -16,7 +16,7 @@ describe('Deploy', async () => {
     [signer, artist] = provider.getWallets();
 
     // DEPLOY PARTY BID CONTRACT
-    const contracts = await deployTestContractSetup(artist);
+    const contracts = await deployTestContractSetup(provider, artist);
     partyBid = contracts.partyBid;
   });
 
@@ -52,12 +52,12 @@ describe('Deploy', async () => {
 
   it('ERC-20 name is right', async () => {
     const name = await partyBid.name();
-    expect(name).to.equal('Party');
+    expect(name).to.equal('Parrrrti');
   });
 
   it('ERC-20 symbol is right', async () => {
     const symbol = await partyBid.symbol();
-    expect(symbol).to.equal('PARTY');
+    expect(symbol).to.equal('PRTI');
   });
 
   it('ERC-20 decimals are right', async () => {

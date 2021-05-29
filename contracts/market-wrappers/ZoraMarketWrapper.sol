@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
-import {IZoraAuctionHouse} from "./interfaces/IZoraAuctionHouse.sol";
+import {IMarketWrapper} from "../interfaces/IMarketWrapper.sol";
+import {IZoraAuctionHouse} from "../interfaces/IZoraAuctionHouse.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**

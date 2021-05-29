@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
-import {IFoundationMarket} from "./interfaces/IFoundationMarket.sol";
+import {IMarketWrapper} from "../interfaces/IMarketWrapper.sol";
+import {IFoundationMarket} from "../interfaces/IFoundationMarket.sol";
 
 /**
  * @title FoundationMarketWrapper

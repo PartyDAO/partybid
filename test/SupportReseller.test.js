@@ -6,13 +6,9 @@ const { expect } = require('chai');
 // ============ Internal Imports ============
 const {
   eth,
-  weiToEth,
   contribute,
   placeBid,
-  redeem,
   supportReseller,
-  transfer,
-  expectRedeemable,
 } = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
 const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./helpers/constants');
@@ -37,6 +33,7 @@ testCases.map((testCase) => {
     before(async () => {
       // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
       const contracts = await deployTestContractSetup(
+        provider,
         firstSigner,
         tokenId,
         auctionReservePrice,
@@ -135,14 +132,6 @@ testCases.map((testCase) => {
       ).to.be.revertedWith('already supported this reseller');
     });
 
-    it(`Accepts vote for different whitelisted reseller`, async () => {
-      const randomSigner = provider.createEmptyWallet();
-      await whitelist.updateWhitelistForAll(randomSigner.address, true);
-      await expect(
-        supportReseller(partyBid, firstSigner, randomSigner.address, '0x'),
-      ).to.emit(partyBid, 'ResellerSupported');
-    });
-
     it(`Accepts vote for same reseller with different data`, async () => {
       await expect(
         supportReseller(
@@ -200,8 +189,10 @@ testCases.map((testCase) => {
       }
     });
 
-    // TODO: different voter
-    // Accepts address with no data for SECOND TIME from different voter
-    // Accepts address with data for SECOND TIME from different voter
+    // TODO: whitelist a new reseller & try supporting
+
+    // TODO: support from a different voter
+    //    Accepts address with no data for SECOND TIME from different voter
+    //    Accepts address with data for SECOND TIME from different voter
   });
 });

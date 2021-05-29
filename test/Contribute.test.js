@@ -24,7 +24,7 @@ testCases.map((testCase) => {
 
     before(async () => {
       // DEPLOY PARTY BID CONTRACT
-      const contracts = await deployTestContractSetup(signers[0]);
+      const contracts = await deployTestContractSetup(provider, signers[0]);
       partyBid = contracts.partyBid;
     });
 

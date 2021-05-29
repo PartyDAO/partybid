@@ -38,7 +38,40 @@ async function deployFoundationMarket() {
   return foundationMarket;
 }
 
+async function getResellerWhitelist(factory, artistSigner) {
+  const whitelistAddress = await factory.resellerWhitelist();
+  const Whitelist = await ethers.getContractFactory('ResellerWhitelist');
+  const whitelist = new ethers.Contract(
+      whitelistAddress,
+      Whitelist.interface,
+      artistSigner,
+  );
+  return whitelist;
+}
+
+async function getPartyBidContractFromEventLogs(provider, factory, artistSigner) {
+  // get logs emitted from PartyBid Factory
+  const logs = await provider.getLogs({address: factory.address});
+
+  // parse events from logs
+  const PartyBidFactory = await ethers.getContractFactory('PartyBidFactory');
+  const events = logs.map((log) => PartyBidFactory.interface.parseLog(log));
+
+  // extract PartyBid proxy address from PartyBidDeployed log
+  const partyBidProxyAddress = events[0]['args'][0];
+
+  // instantiate ethers contract with PartyBid Logic interface + proxy address
+  const PartyBidLogic = await ethers.getContractFactory('PartyBidLogic');
+  const partyBid = new ethers.Contract(
+      partyBidProxyAddress,
+      PartyBidLogic.interface,
+      artistSigner,
+  );
+  return partyBid;
+}
+
 async function deployTestContractSetup(
+  provider,
   artistSigner,
   tokenId = 100,
   reservePrice = 1,
@@ -69,19 +102,23 @@ async function deployTestContractSetup(
   // Deploy PartyDAO multisig
   const partyDAOMultisig = await deploy('PayableContract');
 
-  // Deploy Reseller Whitelist & Approve PartyDAO multisig for all
-  const whitelist = await deploy('ResellerWhitelist');
-  await whitelist.updateWhitelistForAll(partyDAOMultisig.address, true);
+  // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
+  const factory = await deploy('PartyBidFactory', [partyDAOMultisig.address]);
+  const whitelist = await getResellerWhitelist(factory, artistSigner);
 
-  // Deploy PartyBid
-  const partyBid = await deployPartyBid(
-    partyDAOMultisig.address,
-    whitelist.address,
+  // Deploy PartyBid proxy
+  await factory.startParty(
     marketWrapper.address,
     nftContract.address,
     tokenId,
     auctionId,
+    90,
+    'Parrrrti',
+    'PRTI',
   );
+
+  // Get PartyBid ethers contract
+  const partyBid = await getPartyBidContractFromEventLogs(provider, factory, artistSigner);
 
   return {
     nftContract,
