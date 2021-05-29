@@ -13,7 +13,7 @@ async function deployPartyBid(
   nftContract,
   tokenId = 100,
   auctionId = 1,
-  quorumPercent = 50,
+  quorumPercent = 90,
   tokenName = 'Party',
   tokenSymbol = 'PARTY',
 ) {
@@ -88,6 +88,7 @@ async function deployTestContractSetup(
     market: foundationMarket,
     partyBid,
     partyDAOMultisig,
+    whitelist,
   };
 }
 

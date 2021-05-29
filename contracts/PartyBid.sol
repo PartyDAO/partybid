@@ -365,14 +365,14 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // voting only possible after the auction has been won
         // and before the reseller has been finalized
         require(partyStatus == PartyStatus.AUCTION_WON, "voting not open");
+        // ensure the caller has some voting power
+        uint256 _votingPower = votingPower[msg.sender];
+        require(_votingPower > 0, "no voting power");
         // require that the caller has not already supported the reseller
         require(
             !hasSupportedReseller[msg.sender][_reseller][_resellerCalldata],
             "already supported this reseller"
         );
-        // ensure the caller has some voting power
-        uint256 _votingPower = votingPower[msg.sender];
-        require(_votingPower > 0, "no voting power");
         // get the prior votes in support of this reseller
         uint256 _currentSupport = resellerSupport[_reseller][_resellerCalldata];
         // if this is a newly proposed reseller, ensure that they are whitelisted

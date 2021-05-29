@@ -76,6 +76,23 @@ async function redeem(partyBidContract, contributorSigner, amount) {
   });
 }
 
+async function supportReseller(
+  partyBidContract,
+  contributorSigner,
+  reseller,
+  resellerCalldata,
+) {
+  const data = encodeData(partyBidContract, 'supportReseller', [
+    reseller,
+    resellerCalldata,
+  ]);
+
+  return contributorSigner.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
 async function transfer(
   partyBidContract,
   contributorSigner,
@@ -157,6 +174,7 @@ module.exports = {
   contribute,
   placeBid,
   redeem,
+  supportReseller,
   transfer,
   createReserveAuction,
   expectRedeemable,
