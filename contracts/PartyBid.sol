@@ -86,7 +86,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     // contributor => voting power (used to support resellers)
     mapping(address => uint256) public votingPower;
     // reseller => total support for reseller
-    mapping(address => uint256) public resellerSupport;
+    mapping(address => mapping(bytes => uint256)) public resellerSupport;
 
     // ============ Structs ============
 
@@ -339,16 +339,38 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     // ======== External: SupportReseller =========
 
-    function supportReseller(address _reseller) external nonReentrant {
-        require(
-            auctionStatus == AuctionStatus.WON,
-            "NFT not held; can't resell"
-        );
+    /**
+     * @notice Signal support for a reseller.
+     * Used to support a reseller for the first time (e.g. proposing a reseller)
+     * AND to add subsequent support (e.g. vote in favor).
+     * Only original contributors whose ETH was spent have voting power;
+     * voting power can never be transferred or burned.
+     * Anyone with voting power can add support for as many resellers as they wish.
+     * Once support is added, it cannot be removed.
+     * There is no function to vote *AGAINST* a reseller - support can only be added.
+     * Once a reseller gains enough support to surpass quorum,
+     * the reseller is automatically finalized; the NFT is transferred
+     * to the reseller and no further votes can be submitted.
+     * @dev Emits a ResellerSupported event each time support is added;
+     * Emits a ResellerApproved event when the reseller is finalized
+     * @param _reseller the address of the reseller to support
+     * @param _resellerCalldata the calldata that will be called on the _reseller
+     * when it is confirmed; empty for EOA resellers or if no function call is desired.
+     * Combination of _reseller + _resellerCalldata is like a "proposal" - submitting different
+     * calldata is an entirely different proposal whose votes start at zero.
+     */
+    function supportReseller(
+        address _reseller,
+        bytes calldata _resellerCalldata
+    ) external nonReentrant {
+        // voting only possible after the auction has been won
+        // and before the reseller has been finalized
+        require(partyStatus == PartyStatus.AUCTION_WON, "voting not open");
         // ensure the caller has some voting power
         uint256 _votingPower = votingPower[msg.sender];
         require(_votingPower > 0, "no voting power");
         // get the prior votes in support of this reseller
-        uint256 _currentSupport = resellerSupport[_reseller];
+        uint256 _currentSupport = resellerSupport[_reseller][_resellerCalldata];
         // if this is a newly proposed reseller, ensure that they are whitelisted
         bool _isApprovedReseller = _currentSupport > 0;
         require(
@@ -356,24 +378,19 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
                 resellerWhitelist.isWhitelisted(address(this), _reseller),
             "reseller !whitelisted"
         );
-        uint256 _updatedSupport = _currentSupport.add(_votingPower);
         // update support for reseller
-        resellerSupport[_reseller] = _updatedSupport;
+        uint256 _updatedSupport = _currentSupport.add(_votingPower);
+        resellerSupport[_reseller][_resellerCalldata] = _updatedSupport;
+        // emit event
         emit ResellerSupported(
             _reseller,
             msg.sender,
             _votingPower,
             _updatedSupport
         );
-        // if this vote hits quorum, transfer the NFT to the reseller
+        // if updated support passes quorum, transfer the NFT to the reseller & close voting
         if (_updatedSupport >= supportNeededForQuorum) {
-            IERC721Metadata(nftContract).transferFrom(
-                address(this),
-                _reseller,
-                tokenId
-            );
-            auctionStatus = AuctionStatus.TRANSFERRED;
-            emit ResellerApproved(_reseller);
+            _finalizeReseller(_reseller, _resellerCalldata);
         }
     }
 
@@ -525,5 +542,34 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             // contribution was not used
             _amount = 0;
         }
+    }
+
+    // ============ Internal: SupportReseller ============
+
+    /**
+     * @notice Transfer the NFT to the reseller
+     * and switch status to close further voting
+     * @dev Emits a ResellerApproved event
+     * @param _reseller the address of the reseller being finalized
+     * @param _resellerCalldata the calldata that will be sent if non-null
+     */
+    function _finalizeReseller(
+        address _reseller,
+        bytes memory _resellerCalldata
+    ) internal {
+        // transfer the NFT to the reseller
+        IERC721Metadata(nftContract).transferFrom(
+            address(this),
+            _reseller,
+            tokenId
+        );
+        // call the reseller with the provided data
+        if (_resellerCalldata.length > 0) {
+            (bool success, ) = _reseller.call(_resellerCalldata);
+            require(success, "reseller call failed");
+        }
+        // change status in order to close voting & emit event
+        partyStatus = PartyStatus.NFT_TRANSFERRED;
+        emit ResellerApproved(_reseller);
     }
 }
