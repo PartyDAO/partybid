@@ -24,7 +24,20 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     // ============ Enums ============
 
-    enum AuctionStatus {ACTIVE, WON, LOST, TRANSFERRED}
+    // State Transitions:
+    // Win Auction
+    // (1) AUCTION_ACTIVE on deploy
+    // (2) AUCTION_WON on finalize()
+    // (3) NFT_TRANSFERRED after supportReseller() passes quorum
+    // Lose Auction
+    // (1) AUCTION_ACTIVE on deploy
+    // (2) AUCTION_LOST on finalize()
+    enum PartyStatus {
+        AUCTION_ACTIVE,
+        AUCTION_WON,
+        AUCTION_LOST,
+        NFT_TRANSFERRED
+    }
 
     // ============ Internal Constants ============
 
@@ -52,7 +65,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     // ============ Public Mutable Storage ============
 
     // state of the contract
-    AuctionStatus public auctionStatus;
+    PartyStatus public partyStatus;
     // total ETH deposited by all contributors
     uint256 public totalContributedToParty;
     // the highest bid submitted by PartyBid
@@ -93,7 +106,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     event Bid(uint256 amount);
 
-    event Finalized(AuctionStatus result);
+    event Finalized(PartyStatus result, uint256 totalSpent);
 
     event Claimed(
         address indexed contributor,
@@ -169,7 +182,10 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         payable
         nonReentrant
     {
-        require(auctionStatus == AuctionStatus.ACTIVE, "contributions closed");
+        require(
+            partyStatus == PartyStatus.AUCTION_ACTIVE,
+            "contributions closed"
+        );
         require(_amount == msg.value, "amount != value");
         // get the current contract balance
         uint256 _currentBalance = address(this).balance.sub(msg.value);
@@ -181,7 +197,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         totalContributed[_contributor] = totalContributed[_contributor].add(
             _amount
         );
-        // add to party's total contribution
+        // add to party's total contribution & emit event
         totalContributedToParty = totalContributedToParty.add(_amount);
         emit Contributed(
             _contributor,
@@ -201,7 +217,10 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * Callable by any contributor
      */
     function bid() external nonReentrant {
-        require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
+        require(
+            partyStatus == PartyStatus.AUCTION_ACTIVE,
+            "auction not active"
+        );
         require(totalContributed[msg.sender] > 0, "only contributors can bid");
         // get the minimum next bid for the auction
         uint256 _auctionMinimumBid = marketWrapper.getMinimumBid(auctionId);
@@ -232,19 +251,22 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @dev Emits a Finalized event upon success; callable by anyone
      */
     function finalize() external nonReentrant {
-        require(auctionStatus == AuctionStatus.ACTIVE, "auction not active");
+        require(
+            partyStatus == PartyStatus.AUCTION_ACTIVE,
+            "auction not active"
+        );
         // finalize auction if it hasn't already been done
         if (!marketWrapper.isFinalized(auctionId)) {
             marketWrapper.finalize(auctionId);
         }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
-        AuctionStatus _result =
+        PartyStatus _result =
             nftContract.ownerOf(tokenId) == address(this)
-                ? AuctionStatus.WON
-                : AuctionStatus.LOST;
+                ? PartyStatus.AUCTION_WON
+                : PartyStatus.AUCTION_LOST;
         // if the auction was won,
-        if (_result == AuctionStatus.WON) {
+        if (_result == PartyStatus.AUCTION_WON) {
             // transfer 5% fee to PartyDAO
             uint256 _fee = _getFee(highestBid);
             _transferETHOrWETH(partyDAOMultisig, _fee);
@@ -257,8 +279,8 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // set excess contributions. note: totalSpent is zero if auction was lost
         excessContributions = totalContributedToParty.sub(totalSpent);
         // set the contract status & emit result
-        auctionStatus = _result;
-        emit Finalized(_result);
+        partyStatus = _result;
+        emit Finalized(_result, totalSpent);
     }
 
     // ======== External: Claim =========
@@ -271,11 +293,11 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
      * @param _contributor the address of the contributor
      */
     function claim(address _contributor) external nonReentrant {
-        // load auction status once from storage
-        AuctionStatus _auctionStatus = auctionStatus;
+        // load party status once from storage
+        PartyStatus _partyStatus = partyStatus;
         // ensure auction has finalized
         require(
-            _auctionStatus != AuctionStatus.ACTIVE,
+            _partyStatus != PartyStatus.AUCTION_ACTIVE,
             "auction not finalized"
         );
         // load amount contributed once from storage
@@ -284,7 +306,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         require(_totalContributed != 0, "! a contributor");
         uint256 _tokenAmount;
         uint256 _excessContribution;
-        if (_auctionStatus == AuctionStatus.WON) {
+        if (_partyStatus == PartyStatus.AUCTION_WON) {
             // calculate the amount of this contributor's ETH
             // that was used for the winning bid
             uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
@@ -298,7 +320,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
             }
             // return the rest of the contributor's ETH
             _excessContribution = _totalContributed.sub(_totalUsedForBid);
-        } else if (_auctionStatus == AuctionStatus.LOST) {
+        } else if (_partyStatus == PartyStatus.AUCTION_LOST) {
             // return all of the contributor's ETH
             _excessContribution = _totalContributed;
         }
@@ -359,19 +381,24 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
 
     /**
      * @notice Burn a portion of ERC-20 tokens in exchange for
-     * a proportional amount of the redeemable ETH balance of the contract
+     * a proportional amount of the redeemable ETH balance of the contract.
+     * Users are at discretion to determine when resale proceeds have been deposited,
+     * but there are guard rails to prevent mistaken redeems
      * Note: Excess auction contributions must be retrieved via claim()
      * @dev Emits a Redeem event upon success
      * @param _tokenAmount the amount of tokens to burn for ETH
      */
     function redeem(uint256 _tokenAmount) external nonReentrant {
+        // token holders shouldn't redeem before the NFT has been sent to the reseller
+        require(partyStatus == PartyStatus.NFT_TRANSFERRED, "nft not resold");
+        // token holders shouldn't redeem zero tokens
         require(_tokenAmount != 0, "can't redeem zero tokens");
         require(
             balanceOf[msg.sender] >= _tokenAmount,
             "redeem amount exceeds balance"
         );
         uint256 _redeemAmount = redeemAmount(_tokenAmount);
-        // prevent users from burning tokens for zero ETH
+        // token holders shouldn't burn tokens in exchange for zero ETH
         require(_redeemAmount > 0, "can't redeem for 0 ETH");
         // burn redeemed tokens
         _burn(msg.sender, _tokenAmount);

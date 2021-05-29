@@ -6,7 +6,7 @@ const { expect } = require('chai');
 // ============ Internal Imports ============
 const { eth } = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
-const { AUCTION_STATUS } = require('./helpers/constants');
+const { PARTY_STATUS } = require('./helpers/constants');
 
 describe('Deploy', async () => {
   let partyBid, signer, artist;
@@ -20,9 +20,9 @@ describe('Deploy', async () => {
     partyBid = contracts.partyBid;
   });
 
-  it('Auction Status is Active', async () => {
-    const auctionStatus = await partyBid.auctionStatus();
-    expect(auctionStatus).to.equal(AUCTION_STATUS.ACTIVE);
+  it('Party Status is Active', async () => {
+    const partyStatus = await partyBid.partyStatus();
+    expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
   });
 
   it('Total contributed to party is zero', async () => {

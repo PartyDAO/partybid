@@ -13,7 +13,7 @@ const {
 } = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
 const {
-  AUCTION_STATUS,
+  PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
@@ -76,8 +76,8 @@ testCases.map((testCase) => {
     });
 
     it('Is ACTIVE before Finalize', async () => {
-      const auctionStatus = await partyBid.auctionStatus();
-      expect(auctionStatus).to.equal(AUCTION_STATUS.ACTIVE);
+      const partyStatus = await partyBid.partyStatus();
+      expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
     });
 
     it('Has zero tokenSupply', async () => {
@@ -96,8 +96,8 @@ testCases.map((testCase) => {
 
     if (partyBidWins) {
       it(`Is WON after Finalize`, async () => {
-        const auctionStatus = await partyBid.auctionStatus();
-        expect(auctionStatus).to.equal(AUCTION_STATUS.WON);
+        const partyStatus = await partyBid.partyStatus();
+        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_WON);
       });
 
       it(`Owns the NFT`, async () => {
@@ -140,8 +140,8 @@ testCases.map((testCase) => {
       });
     } else {
       it(`Is LOST after Finalize`, async () => {
-        const auctionStatus = await partyBid.auctionStatus();
-        expect(auctionStatus).to.equal(AUCTION_STATUS.LOST);
+        const partyStatus = await partyBid.partyStatus();
+        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
       });
 
       it(`Does not own the NFT`, async () => {
