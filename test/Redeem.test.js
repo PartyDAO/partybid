@@ -11,6 +11,7 @@ const {
   placeBid,
   redeem,
   transfer,
+  supportReseller,
   expectRedeemable,
 } = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
@@ -22,7 +23,7 @@ testCases.map((testCase) => {
     // get test case information
     const { auctionReservePrice, contributions, bids, claims } = testCase;
     // instantiate test vars
-    let partyBid, market, auctionId;
+    let partyBid, market, partyDAOMultisig, auctionId;
     const signers = provider.getWallets();
     const firstSigner = signers[0];
     const tokenId = 100;
@@ -38,6 +39,7 @@ testCases.map((testCase) => {
       );
       partyBid = contracts.partyBid;
       market = contracts.market;
+      partyDAOMultisig = contracts.partyDAOMultisig;
 
       auctionId = await partyBid.auctionId();
 
@@ -64,12 +66,6 @@ testCases.map((testCase) => {
       await partyBid.finalize();
     });
 
-    it(`Reverts if token holder has no tokens`, async () => {
-      await expect(partyBid.redeem(eth(10))).to.be.revertedWith(
-        'redeem amount exceeds balance',
-      );
-    });
-
     it(`Has expected state variables before ETH has been transferred in, even during partially claimed state`, async () => {
       await expectRedeemable(
         provider,
@@ -89,7 +85,27 @@ testCases.map((testCase) => {
           ethAmountAdded,
           ethAmountRedeemed,
         );
+
+        await supportReseller(
+          partyBid,
+          contributor,
+          partyDAOMultisig.address,
+          '0x',
+        );
+
+        await expectRedeemable(
+          provider,
+          partyBid,
+          ethAmountAdded,
+          ethAmountRedeemed,
+        );
       }
+    });
+
+    it(`Reverts if token holder doesn't have enough tokens`, async () => {
+      await expect(partyBid.redeem(eth(10000000))).to.be.revertedWith(
+        'redeem amount exceeds balance',
+      );
     });
 
     it(`Has expected state variables after ETH is transferred in`, async () => {
