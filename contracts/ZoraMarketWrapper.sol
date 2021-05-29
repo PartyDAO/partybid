@@ -2,24 +2,30 @@
 pragma solidity 0.8.4;
 
 import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
-import {IFoundationMarket} from "./interfaces/IFoundationMarket.sol";
+import {IZoraAuctionHouse} from "./interfaces/IZoraAuctionHouse.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
- * @title FoundationMarketWrapper
+ * @title ZoraMarketWrapper
  * @author Anna Carroll
  * @notice MarketWrapper contract implementing IMarketWrapper interface
- * according to the logic of Foundation's NFT Market
- * Original Foundation NFT Market code: https://etherscan.io/address/0xa7d94560dbd814af316dd96fde78b9136a977d1c#code
+ * according to the logic of Zora's Auction Houses
+ * Original Zora Auction House code: https://github.com/ourzora/auction-house/blob/main/contracts/AuctionHouse.sol
  */
-contract FoundationMarketWrapper is IMarketWrapper {
+contract ZoraMarketWrapper is IMarketWrapper {
+    using SafeMath for uint256;
+
     // ============ Internal Immutables ============
 
-    IFoundationMarket internal immutable market;
+    IZoraAuctionHouse internal immutable market;
+    uint8 internal immutable minBidIncrementPercentage;
 
     // ======== Constructor =========
 
-    constructor(address _foundationMarket) {
-        market = IFoundationMarket(_foundationMarket);
+    constructor(address _zoraAuctionHouse) {
+        market = IZoraAuctionHouse(_zoraAuctionHouse);
+        minBidIncrementPercentage = IZoraAuctionHouse(_zoraAuctionHouse)
+            .minBidIncrementPercentage();
     }
 
     // ======== External Functions =========
@@ -35,10 +41,9 @@ contract FoundationMarketWrapper is IMarketWrapper {
         override
         returns (bool)
     {
-        // line 219 of NFTMarketReserveAuction, logic within placeBid() function (not exposed publicly)
-        IFoundationMarket.ReserveAuction memory _auction =
-            market.getReserveAuction(auctionId);
-        return _auction.amount != 0;
+        // line 375 of Zora Auction House, _exists() function (not exposed publicly)
+        IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
+        return _auction.tokenOwner != address(0);
     }
 
     /**
@@ -51,18 +56,26 @@ contract FoundationMarketWrapper is IMarketWrapper {
         override
         returns (uint256)
     {
-        // line 279 of NFTMarketReserveAuction, getMinBidAmount() function
-        return market.getMinBidAmount(auctionId);
+        // line 173 of Zora Auction House, calculation within createBid() function (calculation not exposed publicly)
+        IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
+        return
+            _auction.amount.add(
+                _auction.amount.mul(minBidIncrementPercentage).div(100)
+            );
     }
 
     /**
      * @notice Submit bid to Market contract
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
-        // line 217 of NFTMarketReserveAuction, placeBid() function
+        // line 153 of Zora Auction House, createBid() function
         (bool success, ) =
             address(market).call{value: bidAmount}(
-                abi.encodeWithSignature("placeBid(uint256)", auctionId)
+                abi.encodeWithSignature(
+                    "createBid(uint256,uint256)",
+                    auctionId,
+                    bidAmount
+                )
             );
         require(success, "place bid failed");
     }
@@ -77,8 +90,8 @@ contract FoundationMarketWrapper is IMarketWrapper {
         override
         returns (bool)
     {
-        // line 266 of NFTMarketReserveAuction,
-        // the auction is deleted at the end of the finalizeReserveAuction() function
+        // line 302 of Zora Auction House,
+        // the auction is deleted at the end of the endAuction() function
         // since we checked that the auction DID exist when we deployed the partyBid,
         // if it no longer exists that means the auction has been finalized.
         return !auctionExists(auctionId);
@@ -88,8 +101,7 @@ contract FoundationMarketWrapper is IMarketWrapper {
      * @notice Finalize the results of the auction
      */
     function finalize(uint256 auctionId) external override {
-        // line 260 of finalizeReserveAuction, finalizeReserveAuction() function
-        // will revert if auction has not started or still in progress
-        market.finalizeReserveAuction(auctionId);
+        // line 249 of Zora Auction House, endAuction() function
+        market.endAuction(auctionId);
     }
 }

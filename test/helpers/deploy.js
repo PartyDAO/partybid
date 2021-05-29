@@ -12,6 +12,7 @@ async function deployPartyBid(
   market,
   nftContract,
   tokenId = 100,
+  auctionId = 1,
   quorumPercent = 50,
   tokenName = 'Party',
   tokenSymbol = 'PARTY',
@@ -22,6 +23,7 @@ async function deployPartyBid(
     market,
     nftContract,
     tokenId,
+    auctionId,
     quorumPercent,
     tokenName,
     tokenSymbol,
@@ -62,6 +64,7 @@ async function deployTestContractSetup(
     tokenId,
     eth(reservePrice),
   );
+  const auctionId = 1;
 
   // Deploy PartyDAO multisig
   const partyDAOMultisig = await deploy('PayableContract');
@@ -77,6 +80,7 @@ async function deployTestContractSetup(
     marketWrapper.address,
     nftContract.address,
     tokenId,
+    auctionId,
   );
 
   return {

@@ -18,19 +18,7 @@ interface IMarketWrapper {
      * for this token on the underlying market
      * @return TRUE if the auction exists
      */
-    function auctionExists(address nftContract, uint256 tokenId)
-        external
-        view
-        returns (bool);
-
-    /**
-     * @notice Get the auctionId for this token on the underlying market
-     * @return auctionId
-     */
-    function getAuctionId(address nftContract, uint256 tokenId)
-        external
-        view
-        returns (uint256);
+    function auctionExists(uint256 auctionId) external view returns (bool);
 
     /**
      * @notice Calculate the minimum next bid for this auction

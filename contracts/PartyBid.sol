@@ -142,22 +142,18 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         address _marketWrapper,
         address _nftContract,
         uint256 _tokenId,
+        uint256 _auctionId,
         uint256 _quorumPercent,
         string memory _name,
         string memory _symbol
     ) ERC20(_name, _symbol) {
         // validate token exists - this call should revert if not
         IERC721Metadata(_nftContract).tokenURI(_tokenId);
-        // validate reserve auction exists
+        // validate auction exists
         require(
-            IMarketWrapper(_marketWrapper).auctionExists(
-                _nftContract,
-                _tokenId
-            ),
+            IMarketWrapper(_marketWrapper).auctionExists(_auctionId),
             "auction doesn't exist"
         );
-        uint256 _auctionId =
-            IMarketWrapper(_marketWrapper).getAuctionId(_nftContract, _tokenId);
         // validate quorum percent
         require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
         // set storage variables
