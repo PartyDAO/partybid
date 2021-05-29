@@ -25,7 +25,7 @@ testCases.map((testCase) => {
       claims,
     } = testCase;
     // instantiate test vars
-    let partyBid, market, partyDAOMultisig, whitelist, auctionId, quorum;
+    let partyBid, market, partyDAOMultisig, auctionId, quorum;
     const signers = provider.getWallets();
     const firstSigner = signers[claims[0]['signerIndex']];
     const tokenId = 100;
@@ -41,7 +41,6 @@ testCases.map((testCase) => {
       partyBid = contracts.partyBid;
       market = contracts.market;
       partyDAOMultisig = contracts.partyDAOMultisig;
-      whitelist = contracts.whitelist;
 
       const quorumPercent = await partyBid.quorumPercent();
       quorum = finalBid * 1.05 * (quorumPercent / 100);

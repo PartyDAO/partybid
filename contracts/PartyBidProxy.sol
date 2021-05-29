@@ -76,5 +76,5 @@ contract PartyBidProxy is PartyBidStorage {
 
     // ======== Receive =========
 
-    receive() external payable {}
+    receive() external payable {} // solhint-disable-line no-empty-blocks
 }

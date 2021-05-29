@@ -42,16 +42,20 @@ async function getResellerWhitelist(factory, artistSigner) {
   const whitelistAddress = await factory.resellerWhitelist();
   const Whitelist = await ethers.getContractFactory('ResellerWhitelist');
   const whitelist = new ethers.Contract(
-      whitelistAddress,
-      Whitelist.interface,
-      artistSigner,
+    whitelistAddress,
+    Whitelist.interface,
+    artistSigner,
   );
   return whitelist;
 }
 
-async function getPartyBidContractFromEventLogs(provider, factory, artistSigner) {
+async function getPartyBidContractFromEventLogs(
+  provider,
+  factory,
+  artistSigner,
+) {
   // get logs emitted from PartyBid Factory
-  const logs = await provider.getLogs({address: factory.address});
+  const logs = await provider.getLogs({ address: factory.address });
 
   // parse events from logs
   const PartyBidFactory = await ethers.getContractFactory('PartyBidFactory');
@@ -63,9 +67,9 @@ async function getPartyBidContractFromEventLogs(provider, factory, artistSigner)
   // instantiate ethers contract with PartyBid Logic interface + proxy address
   const PartyBidLogic = await ethers.getContractFactory('PartyBidLogic');
   const partyBid = new ethers.Contract(
-      partyBidProxyAddress,
-      PartyBidLogic.interface,
-      artistSigner,
+    partyBidProxyAddress,
+    PartyBidLogic.interface,
+    artistSigner,
   );
   return partyBid;
 }
@@ -118,7 +122,11 @@ async function deployTestContractSetup(
   );
 
   // Get PartyBid ethers contract
-  const partyBid = await getPartyBidContractFromEventLogs(provider, factory, artistSigner);
+  const partyBid = await getPartyBidContractFromEventLogs(
+    provider,
+    factory,
+    artistSigner,
+  );
 
   return {
     nftContract,
