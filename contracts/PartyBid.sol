@@ -85,7 +85,10 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
     mapping(address => uint256) public totalContributed;
     // contributor => voting power (used to support resellers)
     mapping(address => uint256) public votingPower;
-    // reseller => total support for reseller
+    // contributor => reseller => reseller calldata => bool hasSupported
+    mapping(address => mapping(address => mapping(bytes => bool)))
+        public hasSupportedReseller;
+    // reseller => reseller calldata => total support for reseller
     mapping(address => mapping(bytes => uint256)) public resellerSupport;
 
     // ============ Structs ============
@@ -362,6 +365,11 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // voting only possible after the auction has been won
         // and before the reseller has been finalized
         require(partyStatus == PartyStatus.AUCTION_WON, "voting not open");
+        // require that the caller has not already supported the reseller
+        require(
+            !hasSupportedReseller[msg.sender][_reseller][_resellerCalldata],
+            "already supported this reseller"
+        );
         // ensure the caller has some voting power
         uint256 _votingPower = votingPower[msg.sender];
         require(_votingPower > 0, "no voting power");
@@ -377,6 +385,7 @@ contract PartyBid is ERC20, NonReentrant, ETHOrWETHTransferrer {
         // update support for reseller
         uint256 _updatedSupport = _currentSupport.add(_votingPower);
         resellerSupport[_reseller][_resellerCalldata] = _updatedSupport;
+        hasSupportedReseller[msg.sender][_reseller][_resellerCalldata] = true;
         // emit event
         emit ResellerSupported(
             _reseller,
