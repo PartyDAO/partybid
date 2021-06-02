@@ -96,7 +96,10 @@ contract PartyBidLogic is PartyBidStorage {
         uint256 _previousTotalContributedToParty = totalContributedToParty;
         // add contribution to contributor's array of contributions
         Contribution memory _contribution =
-            Contribution({amount: _amount, previousTotalContributedToParty: _previousTotalContributedToParty});
+            Contribution({
+                amount: _amount,
+                previousTotalContributedToParty: _previousTotalContributedToParty
+            });
         contributions[_contributor].push(_contribution);
         // add to contributor's total contribution
         totalContributed[_contributor] = totalContributed[_contributor].add(
@@ -130,18 +133,11 @@ contract PartyBidLogic is PartyBidStorage {
         // get the minimum next bid for the auction
         uint256 _bid = marketWrapper.getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
-        require(
-            _bid <= _getMaximumBid(),
-            "insufficient funds to bid"
-        );
+        require(_bid <= _getMaximumBid(), "insufficient funds to bid");
         // submit bid to Auction contract using delegatecall
         (bool success, ) =
             address(marketWrapper).delegatecall(
-                abi.encodeWithSignature(
-                    "bid(uint256,uint256)",
-                    auctionId,
-                    _bid
-                )
+                abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
         require(success, "place bid failed");
         // update highest bid submitted & emit success event
@@ -440,14 +436,19 @@ contract PartyBidLogic is PartyBidStorage {
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
         if (
-            _contribution.previousTotalContributedToParty.add(_contribution.amount) <=
-            _totalSpent
+            _contribution.previousTotalContributedToParty.add(
+                _contribution.amount
+            ) <= _totalSpent
         ) {
             // contribution was fully used
             _amount = _contribution.amount;
-        } else if (_contribution.previousTotalContributedToParty < _totalSpent) {
+        } else if (
+            _contribution.previousTotalContributedToParty < _totalSpent
+        ) {
             // contribution was partially used
-            _amount = _totalSpent.sub(_contribution.previousTotalContributedToParty);
+            _amount = _totalSpent.sub(
+                _contribution.previousTotalContributedToParty
+            );
         } else {
             // contribution was not used
             _amount = 0;
