@@ -38,6 +38,15 @@ interface IMarketWrapper {
     function getMinimumBid(uint256 auctionId) external view returns (uint256);
 
     /**
+     * @notice Query the current highest bidder for this auction
+     * @return highest bidder
+     */
+    function getCurrentHighestBidder(uint256 auctionId)
+        external
+        view
+        returns (address);
+
+    /**
      * @notice Submit bid to Market contract
      */
     function bid(uint256 auctionId, uint256 bidAmount) external;

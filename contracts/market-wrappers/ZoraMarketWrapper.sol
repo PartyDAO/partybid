@@ -84,6 +84,21 @@ contract ZoraMarketWrapper is IMarketWrapper {
     }
 
     /**
+     * @notice Query the current highest bidder for this auction
+     * @return highest bidder
+     */
+    function getCurrentHighestBidder(uint256 auctionId)
+        external
+        view
+        override
+        returns (address)
+    {
+        // line 279 of NFTMarketReserveAuction, getMinBidAmount() function
+        IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
+        return _auction.bidder;
+    }
+
+    /**
      * @notice Submit bid to Market contract
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {

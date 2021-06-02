@@ -58,6 +58,22 @@ contract FoundationMarketWrapper is IMarketWrapper {
     }
 
     /**
+     * @notice Query the current highest bidder for this auction
+     * @return highest bidder
+     */
+    function getCurrentHighestBidder(uint256 auctionId)
+        external
+        view
+        override
+        returns (address)
+    {
+        // line 279 of NFTMarketReserveAuction, getMinBidAmount() function
+        IFoundationMarket.ReserveAuction memory _auction =
+            market.getReserveAuction(auctionId);
+        return _auction.bidder;
+    }
+
+    /**
      * @notice Calculate the minimum next bid for this auction
      * @return minimum bid amount
      */

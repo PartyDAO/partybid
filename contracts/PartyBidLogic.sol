@@ -130,6 +130,10 @@ contract PartyBidLogic is PartyBidStorage {
             "auction not active"
         );
         require(totalContributed[msg.sender] > 0, "only contributors can bid");
+        require(
+            address(this) != marketWrapper.getCurrentHighestBidder(auctionId),
+            "PartyBid already highest bidder"
+        );
         // get the minimum next bid for the auction
         uint256 _bid = marketWrapper.getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
