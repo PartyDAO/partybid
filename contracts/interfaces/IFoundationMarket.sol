@@ -22,5 +22,10 @@ interface IFoundationMarket {
         view
         returns (ReserveAuction memory);
 
+    function getReserveAuctionIdFor(address nftContract, uint256 tokenId)
+        external
+        view
+        returns (uint256);
+
     function finalizeReserveAuction(uint256 auctionId) external;
 }

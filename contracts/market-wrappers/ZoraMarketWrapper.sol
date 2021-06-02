@@ -47,6 +47,22 @@ contract ZoraMarketWrapper is IMarketWrapper {
     }
 
     /**
+     * @notice Determine whether the given auctionId is
+     * an auction for the tokenId + nftContract
+     * @return TRUE if the auctionId matches the tokenId + nftContract
+     */
+    function auctionIdMatchesToken(
+        uint256 auctionId,
+        address nftContract,
+        uint256 tokenId
+    ) public view override returns (bool) {
+        IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
+        return
+            _auction.tokenId == tokenId &&
+            _auction.tokenContract == nftContract;
+    }
+
+    /**
      * @notice Calculate the minimum next bid for this auction
      * @return minimum bid amount
      */

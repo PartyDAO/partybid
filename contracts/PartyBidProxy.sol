@@ -36,8 +36,12 @@ contract PartyBidProxy is PartyBidStorage {
         IERC721Metadata(_nftContract).tokenURI(_tokenId);
         // validate auction exists
         require(
-            IMarketWrapper(_marketWrapper).auctionExists(_auctionId),
-            "auction doesn't exist"
+            IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
+                _auctionId,
+                _nftContract,
+                _tokenId
+            ),
+            "auctionId doesn't match token"
         );
         // validate quorum percent
         require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
