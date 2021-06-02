@@ -128,10 +128,10 @@ contract PartyBidLogic is PartyBidStorage {
         );
         require(totalContributed[msg.sender] > 0, "only contributors can bid");
         // get the minimum next bid for the auction
-        uint256 _auctionMinimumBid = marketWrapper.getMinimumBid(auctionId);
+        uint256 _bid = marketWrapper.getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
         require(
-            _auctionMinimumBid <= _getMaximumBid(),
+            _bid <= _getMaximumBid(),
             "insufficient funds to bid"
         );
         // submit bid to Auction contract using delegatecall
@@ -140,13 +140,13 @@ contract PartyBidLogic is PartyBidStorage {
                 abi.encodeWithSignature(
                     "bid(uint256,uint256)",
                     auctionId,
-                    _auctionMinimumBid
+                    _bid
                 )
             );
         require(success, "place bid failed");
         // update highest bid submitted & emit success event
-        highestBid = _auctionMinimumBid;
-        emit Bid(_auctionMinimumBid);
+        highestBid = _bid;
+        emit Bid(_bid);
     }
 
     // ======== External: Finalize =========
