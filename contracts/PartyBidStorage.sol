@@ -33,7 +33,7 @@ contract PartyBidStorage {
 
     struct Contribution {
         uint256 amount;
-        uint256 contractBalance;
+        uint256 previousTotalContributedToParty;
     }
 
     // ============ ERC-20 Public Constants ============

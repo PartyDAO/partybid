@@ -20,8 +20,8 @@ contract PartyBidLogic is PartyBidStorage {
     event Contributed(
         address indexed contributor,
         uint256 amount,
-        uint256 totalContribution,
-        uint256 contractBalance
+        uint256 previousTotalContributedToParty,
+        uint256 totalFromContributor
     );
 
     event Bid(uint256 amount);
@@ -93,10 +93,10 @@ contract PartyBidLogic is PartyBidStorage {
         );
         require(_amount == msg.value, "amount != value");
         // get the current contract balance
-        uint256 _currentBalance = address(this).balance.sub(msg.value);
+        uint256 _previousTotalContributedToParty = totalContributedToParty;
         // add contribution to contributor's array of contributions
         Contribution memory _contribution =
-            Contribution({amount: _amount, contractBalance: _currentBalance});
+            Contribution({amount: _amount, previousTotalContributedToParty: _previousTotalContributedToParty});
         contributions[_contributor].push(_contribution);
         // add to contributor's total contribution
         totalContributed[_contributor] = totalContributed[_contributor].add(
@@ -107,8 +107,8 @@ contract PartyBidLogic is PartyBidStorage {
         emit Contributed(
             _contributor,
             _amount,
-            totalContributed[_contributor],
-            _currentBalance
+            _previousTotalContributedToParty,
+            totalContributed[_contributor]
         );
     }
 
@@ -387,8 +387,7 @@ contract PartyBidLogic is PartyBidStorage {
      * @return _maxBid the maximum bid
      */
     function _getMaximumBid() internal view returns (uint256 _maxBid) {
-        uint256 _balance = address(this).balance;
-        _maxBid = _balance.sub(_getFee(_balance));
+        _maxBid = totalContributedToParty.sub(_getFee(totalContributedToParty));
     }
 
     /**
@@ -441,14 +440,14 @@ contract PartyBidLogic is PartyBidStorage {
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
         if (
-            _contribution.contractBalance.add(_contribution.amount) <=
+            _contribution.previousTotalContributedToParty.add(_contribution.amount) <=
             _totalSpent
         ) {
             // contribution was fully used
             _amount = _contribution.amount;
-        } else if (_contribution.contractBalance < _totalSpent) {
+        } else if (_contribution.previousTotalContributedToParty < _totalSpent) {
             // contribution was partially used
-            _amount = _totalSpent.sub(_contribution.contractBalance);
+            _amount = _totalSpent.sub(_contribution.previousTotalContributedToParty);
         } else {
             // contribution was not used
             _amount = 0;
