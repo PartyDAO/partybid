@@ -32,19 +32,6 @@ contract PartyBidProxy is PartyBidStorage {
         string memory _symbol
     ) {
         logic = _logic;
-        // validate token exists - this call should revert if not
-        IERC721Metadata(_nftContract).tokenURI(_tokenId);
-        // validate auction exists
-        require(
-            IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
-                _auctionId,
-                _nftContract,
-                _tokenId
-            ),
-            "auctionId doesn't match token"
-        );
-        // validate quorum percent
-        require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
         // set storage variables
         partyDAOMultisig = _partyDAOMultisig;
         resellerWhitelist = ResellerWhitelist(_resellerWhitelist);
@@ -55,6 +42,19 @@ contract PartyBidProxy is PartyBidStorage {
         quorumPercent = _quorumPercent;
         name = _name;
         symbol = _symbol;
+        // validate token exists - this call should revert if not
+        nftContract.tokenURI(_tokenId);
+        // validate auction exists
+        require(
+            marketWrapper.auctionIdMatchesToken(
+                _auctionId,
+                _nftContract,
+                _tokenId
+            ),
+            "auctionId doesn't match token"
+        );
+        // validate quorum percent
+        require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
     }
 
     // ======== Fallback =========
