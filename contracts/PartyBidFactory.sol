@@ -15,6 +15,7 @@ contract PartyBidFactory {
 
     event PartyBidDeployed(
         address partyBidProxy,
+        address creator,
         address nftContract,
         uint256 tokenId,
         address marketWrapper,
@@ -70,6 +71,7 @@ contract PartyBidFactory {
 
         emit PartyBidDeployed(
             partyBidProxy,
+            msg.sender,
             _nftContract,
             _tokenId,
             _marketWrapper,
