@@ -12,9 +12,9 @@ import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
 import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
 /**
- * @title PartyBidProxy
+ * @title PartyBid Proxy
  * @author Anna Carroll
- * forked from MirrorXYZ CrowdfundProxy
+ * forked from MirrorXYZ CrowdfundProxy https://github.com/mirror-xyz/crowdfund/blob/main/contracts/CrowdfundProxy.sol
  */
 contract PartyBidProxy is PartyBidStorage {
     // ======== Constructor =========

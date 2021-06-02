@@ -6,8 +6,9 @@ import {PartyBidLogic} from "./PartyBidLogic.sol";
 import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
 /**
- * @title CrowdfundFactory
- * @author MirrorXYZ
+ * @title PartyBid Factory
+ * @author Anna Carroll
+ * forked from MirrorXYZ CrowdfundFactory https://github.com/mirror-xyz/crowdfund/blob/main/contracts/CrowdfundFactory.sol
  */
 contract PartyBidFactory {
     //======== Events ========

@@ -5,10 +5,10 @@ pragma solidity 0.8.4;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title PartyBid
+ * @title Reseller Whitelist
  * @author Anna Carroll
  * @notice Whitelist of approved Resellers for PartyBid instances
- * Owned and updated by PartyDAO multisig
+ * Owner / maintainer will be by PartyDAO multisig
  */
 contract ResellerWhitelist is Ownable {
     // ============ Public Mutable Storage ============
