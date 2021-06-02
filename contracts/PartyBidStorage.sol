@@ -5,9 +5,9 @@ pragma solidity 0.8.4;
 import {
     IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import {IWETH} from "./external/interfaces/IWETH.sol";
 
 // ============ Internal Imports ============
-import {IWETH} from "./interfaces/IWETH.sol";
 import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
 import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
