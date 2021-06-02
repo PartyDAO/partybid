@@ -26,13 +26,15 @@ contract PartyBidFactory {
 
     //======== Immutable storage =========
 
+    address public immutable WETH;
     address public immutable partyDAOMultisig;
     address public immutable logic;
     address public immutable resellerWhitelist;
 
     //======== Constructor =========
 
-    constructor(address _partyDAOMultisig) {
+    constructor(address _partyDAOMultisig, address _WETH) {
+        WETH = _WETH;
         partyDAOMultisig = _partyDAOMultisig;
         // deploy logic contract
         logic = address(new PartyBidLogic());
@@ -56,6 +58,7 @@ contract PartyBidFactory {
     ) external returns (address partyBidProxy) {
         partyBidProxy = address(
             new PartyBidProxy(
+                WETH,
                 logic,
                 partyDAOMultisig,
                 resellerWhitelist,

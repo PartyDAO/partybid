@@ -5,6 +5,7 @@ pragma solidity 0.8.4;
 import {
     IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import {IWETH} from "./external/interfaces/IWETH.sol";
 
 // ============ Internal Imports ============
 import {PartyBidStorage} from "./PartyBidStorage.sol";
@@ -20,6 +21,7 @@ contract PartyBidProxy is PartyBidStorage {
     // ======== Constructor =========
 
     constructor(
+        address _WETH,
         address _logic,
         address _partyDAOMultisig,
         address _resellerWhitelist,
@@ -31,6 +33,7 @@ contract PartyBidProxy is PartyBidStorage {
         string memory _name,
         string memory _symbol
     ) {
+        WETH = IWETH(_WETH);
         logic = _logic;
         // set storage variables
         partyDAOMultisig = _partyDAOMultisig;

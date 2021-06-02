@@ -80,6 +80,9 @@ async function deployTestContractSetup(
   tokenId = 100,
   reservePrice = 1,
 ) {
+  // Deploy WETH
+  const weth = await deploy('EtherToken');
+
   // Deploy NFT Contract & Mint Token
   const nftContract = await deploy('TestERC721');
   await nftContract.mint(artistSigner.address, tokenId);
@@ -107,7 +110,10 @@ async function deployTestContractSetup(
   const partyDAOMultisig = await deploy('PayableContract');
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
-  const factory = await deploy('PartyBidFactory', [partyDAOMultisig.address]);
+  const factory = await deploy('PartyBidFactory', [
+    partyDAOMultisig.address,
+    weth.address,
+  ]);
   const whitelist = await getResellerWhitelist(factory, artistSigner);
 
   // Deploy PartyBid proxy

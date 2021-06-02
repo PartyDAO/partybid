@@ -47,10 +47,12 @@ contract PartyBidStorage {
     uint16 internal constant TOKEN_SCALE = 1000;
     // PartyBid pays a 5% fee to PartyDAO
     uint8 internal constant FEE_PERCENT = 5;
-    IWETH internal constant WETH =
-        IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     uint256 internal constant REENTRANCY_NOT_ENTERED = 1;
     uint256 internal constant REENTRANCY_ENTERED = 2;
+
+    // ============ Internal Not-Mutated Storage ============
+
+    IWETH internal WETH;
 
     // ============ Public Not-Mutated Storage ============
 
