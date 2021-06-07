@@ -82,16 +82,13 @@ contract PartyBidLogic is PartyBidStorage {
      * while the auction is still open
      * @dev Emits a Contributed event upon success; callable by anyone
      */
-    function contribute(address _contributor, uint256 _amount)
-        external
-        payable
-        nonReentrant
-    {
+    function contribute() external payable nonReentrant {
         require(
             partyStatus == PartyStatus.AUCTION_ACTIVE,
             "contributions closed"
         );
-        require(_amount == msg.value, "amount != value");
+        address _contributor = msg.sender;
+        uint256 _amount = msg.value;
         // get the current contract balance
         uint256 _previousTotalContributedToParty = totalContributedToParty;
         // add contribution to contributor's array of contributions

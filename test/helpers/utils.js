@@ -55,10 +55,7 @@ async function placeBid(signer, marketContract, auctionId, value) {
 }
 
 async function contribute(partyBidContract, contributorSigner, value) {
-  const data = encodeData(partyBidContract, 'contribute', [
-    contributorSigner.address,
-    value,
-  ]);
+  const data = encodeData(partyBidContract, 'contribute');
 
   return contributorSigner.sendTransaction({
     to: partyBidContract.address,
