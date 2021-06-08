@@ -277,11 +277,13 @@ contract PartyBidLogic is PartyBidStorage {
             "already supported this reseller"
         );
         // ensure the reseller is whitelisted
-        require(resellerWhitelist.isWhitelisted(address(this), _reseller),
+        require(
+            resellerWhitelist.isWhitelisted(address(this), _reseller),
             "reseller !whitelisted"
         );
         // update support for reseller
-        uint256 _updatedSupport = resellerSupport[_reseller][_resellerCalldata].add(_votingPower);
+        uint256 _updatedSupport =
+            resellerSupport[_reseller][_resellerCalldata].add(_votingPower);
         resellerSupport[_reseller][_resellerCalldata] = _updatedSupport;
         hasSupportedReseller[msg.sender][_reseller][_resellerCalldata] = true;
         // emit event
