@@ -26,23 +26,25 @@ contract PartyBidFactory {
 
     //======== Immutable storage =========
 
-    address public immutable WETH;
-    address public immutable partyDAOMultisig;
     address public immutable logic;
+    address public immutable partyDAOMultisig;
     address public immutable resellerWhitelist;
+    address public immutable weth;
 
     //======== Constructor =========
 
-    constructor(address _partyDAOMultisig, address _WETH) {
-        WETH = _WETH;
+    constructor(address _partyDAOMultisig, address _weth) {
         partyDAOMultisig = _partyDAOMultisig;
-        // deploy logic contract
-        logic = address(new PartyBidLogic());
+        weth = _weth;
         // deploy and configure whitelist
         ResellerWhitelist _whiteList = new ResellerWhitelist();
         _whiteList.updateWhitelistForAll(_partyDAOMultisig, true);
         _whiteList.transferOwnership(_partyDAOMultisig);
         resellerWhitelist = address(_whiteList);
+        // deploy logic contract
+        logic = address(
+            new PartyBidLogic(_partyDAOMultisig, address(_whiteList), _weth)
+        );
     }
 
     //======== Deploy function =========
@@ -58,10 +60,7 @@ contract PartyBidFactory {
     ) external returns (address partyBidProxy) {
         partyBidProxy = address(
             new PartyBidProxy(
-                WETH,
                 logic,
-                partyDAOMultisig,
-                resellerWhitelist,
                 _marketWrapper,
                 _nftContract,
                 _tokenId,
