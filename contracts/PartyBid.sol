@@ -1,19 +1,113 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-// ============ External Imports ============
+// ============ External Imports: Inherited Contracts ============
+// NOTE: we inherit ReentrancyGuardUpgradeable and ERC20Upgradeable
+// because of the proxy structure used for cheaper deploys
+// (the proxies are NOT actually upgradeable)
+import {
+    ReentrancyGuardUpgradeable
+} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {
+    ERC20Upgradeable
+} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+// ============ External Imports: Interfaces ============
+import {
+    IERC721Metadata
+} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import {IWETH} from "./external/interfaces/IWETH.sol";
 
 // ============ Internal Imports ============
-import {PartyBidStorage} from "./PartyBidStorage.sol";
+import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
+import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
 /**
  * @title PartyBid
  * @author Anna Carroll
  */
-contract PartyBidLogic is PartyBidStorage {
+contract PartyBid is ERC20Upgradeable, ReentrancyGuardUpgradeable {
     // Use OpenZeppelin's SafeMath library to prevent overflows.
     using SafeMath for uint256;
+
+    // ============ Enums ============
+
+    // State Transitions:
+    // Win Auction
+    //   (1) AUCTION_ACTIVE on deploy
+    //   (2) AUCTION_WON on finalize()
+    //   (3) NFT_TRANSFERRED after supportReseller() passes quorum
+    // Lose Auction
+    //   (1) AUCTION_ACTIVE on deploy
+    //   (2) AUCTION_LOST on finalize()
+    enum PartyStatus {
+        AUCTION_ACTIVE,
+        AUCTION_WON,
+        AUCTION_LOST,
+        NFT_TRANSFERRED
+    }
+
+    // ============ Structs ============
+
+    struct Contribution {
+        uint256 amount;
+        uint256 previousTotalContributedToParty;
+    }
+
+    // ============ Internal Constants ============
+
+    // tokens are minted at a rate of 1 ETH : 1000 tokens
+    uint16 internal constant TOKEN_SCALE = 1000;
+    // PartyBid pays a 5% fee to PartyDAO
+    uint8 internal constant FEE_PERCENT = 5;
+
+    // ============ Immutables ============
+
+    address public immutable partyDAOMultisig;
+    address public immutable resellerWhitelist;
+    address public immutable weth;
+
+    // ============ Public Not-Mutated Storage ============
+
+    // market wrapper contract exposing interface for
+    // market auctioning the NFT
+    IMarketWrapper public marketWrapper;
+    // NFT contract
+    IERC721Metadata public nftContract;
+    uint256 public auctionId;
+    uint256 public tokenId;
+    // percent (from 1 - 100) of the total token supply
+    // required to vote to successfully execute a sale proposal
+    uint256 public quorumPercent;
+
+    // ============ Public Mutable Storage ============
+
+    // state of the contract
+    PartyStatus public partyStatus;
+    // total ETH deposited by all contributors
+    uint256 public totalContributedToParty;
+    // the highest bid submitted by PartyBid
+    uint256 public highestBid;
+    // the total spent by PartyBid on the auction;
+    // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
+    uint256 public totalSpent;
+    // amount of votes for a reseller to pass quorum threshold
+    uint256 public supportNeededForQuorum;
+    // the ETH balance of the contract from unclaimed contributions
+    // decremented each time excess contributions are claimed
+    // used to determine the ETH balance of the contract from resale proceeds
+    uint256 public excessContributions;
+    // contributor => array of Contributions
+    mapping(address => Contribution[]) public contributions;
+    // contributor => total amount contributed
+    mapping(address => uint256) public totalContributed;
+    // contributor => voting power (used to support resellers)
+    mapping(address => uint256) public votingPower;
+    // contributor => reseller => reseller calldata => bool hasSupported
+    mapping(address => mapping(address => mapping(bytes => bool)))
+        public hasSupportedReseller;
+    // reseller => reseller calldata => total support for reseller
+    mapping(address => mapping(bytes => uint256)) public resellerSupport;
 
     // ============ Events ============
 
@@ -50,29 +144,51 @@ contract PartyBidLogic is PartyBidStorage {
 
     event ResellerApproved(address indexed reseller);
 
-    // ============ ERC-20 Events ============
+    // ======== Constructor =========
 
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    constructor(
+        address _partyDAOMultisig,
+        address _resellerWhitelist,
+        address _WETH
+    ) {
+        partyDAOMultisig = _partyDAOMultisig;
+        resellerWhitelist = _resellerWhitelist;
+        weth = _WETH;
+    }
 
-    // ============ Modifiers ============
+    // ======== Initializer =========
 
-    /**
-     * @notice Prevent re-entrancy attacks
-     */
-    modifier nonReentrant() {
-        // On the first call to nonReentrant, _notEntered will be true
-        require(reentrancyStatus != REENTRANCY_ENTERED, "no reentrance");
-        // Any calls to nonReentrant after this point will fail
-        reentrancyStatus = REENTRANCY_ENTERED;
-        _;
-        // By storing the original value once again, a refund is triggered (see
-        // https://eips.ethereum.org/EIPS/eip-2200)
-        reentrancyStatus = REENTRANCY_NOT_ENTERED;
+    function initialize(
+        address _marketWrapper,
+        address _nftContract,
+        uint256 _tokenId,
+        uint256 _auctionId,
+        uint256 _quorumPercent,
+        string memory _name,
+        string memory _symbol
+    ) external initializer {
+        // initialize ReentrancyGuard and ERC20
+        __ReentrancyGuard_init();
+        __ERC20_init(_name, _symbol);
+        // set storage variables
+        marketWrapper = IMarketWrapper(_marketWrapper);
+        nftContract = IERC721Metadata(_nftContract);
+        tokenId = _tokenId;
+        auctionId = _auctionId;
+        quorumPercent = _quorumPercent;
+        // validate token exists - this call should revert if not
+        nftContract.tokenURI(_tokenId);
+        // validate auction exists
+        require(
+            marketWrapper.auctionIdMatchesToken(
+                _auctionId,
+                _nftContract,
+                _tokenId
+            ),
+            "auctionId doesn't match token"
+        );
+        // validate quorum percent
+        require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
     }
 
     // ======== External: Contribute =========
@@ -278,7 +394,10 @@ contract PartyBidLogic is PartyBidStorage {
         );
         // ensure the reseller is whitelisted
         require(
-            resellerWhitelist.isWhitelisted(address(this), _reseller),
+            ResellerWhitelist(resellerWhitelist).isWhitelisted(
+                address(this),
+                _reseller
+            ),
             "reseller !whitelisted"
         );
         // update support for reseller
@@ -316,7 +435,7 @@ contract PartyBidLogic is PartyBidStorage {
         // token holders shouldn't redeem zero tokens
         require(_tokenAmount != 0, "can't redeem zero tokens");
         require(
-            balanceOf[msg.sender] >= _tokenAmount,
+            balanceOf(msg.sender) >= _tokenAmount,
             "redeem amount exceeds balance"
         );
         uint256 _redeemAmount = redeemAmount(_tokenAmount);
@@ -369,7 +488,7 @@ contract PartyBidLogic is PartyBidStorage {
         uint256 _totalRedeemableBalance = redeemableEthBalance();
         // calculate the proportion of redeemable ETH to be exchanged for this token amount
         _redeemAmount = _totalRedeemableBalance.mul(_tokenAmount).div(
-            totalSupply
+            totalSupply()
         );
     }
 
@@ -490,8 +609,8 @@ contract PartyBidLogic is PartyBidStorage {
         // Try to transfer ETH to the given recipient.
         if (!_attemptETHTransfer(_to, _value)) {
             // If the transfer fails, wrap and send as WETH
-            WETH.deposit{value: _value}();
-            WETH.transfer(_to, _value);
+            IWETH(weth).deposit{value: _value}();
+            IWETH(weth).transfer(_to, _value);
             // At this point, the recipient can unwrap WETH.
         }
     }
@@ -513,61 +632,5 @@ contract PartyBidLogic is PartyBidStorage {
         // NOTE: This might allow the recipient to attempt a limited reentrancy attack.
         (bool success, ) = _to.call{value: _value, gas: 30000}("");
         return success;
-    }
-
-    // ============ ERC-20 Spec ============
-    // ============ ERC-20 External ============
-
-    function approve(address spender, uint256 value) external returns (bool) {
-        _approve(msg.sender, spender, value);
-        return true;
-    }
-
-    function transfer(address to, uint256 value) external returns (bool) {
-        _transfer(msg.sender, to, value);
-        return true;
-    }
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 value
-    ) external returns (bool) {
-        allowance[from][msg.sender] = allowance[from][msg.sender] - value;
-        _transfer(from, to, value);
-        return true;
-    }
-
-    // ============ ERC-20 Internal ============
-
-    function _mint(address to, uint256 value) internal {
-        totalSupply = totalSupply + value;
-        balanceOf[to] = balanceOf[to] + value;
-        emit Transfer(address(0), to, value);
-    }
-
-    function _burn(address from, uint256 value) internal {
-        balanceOf[from] = balanceOf[from] - value;
-        totalSupply = totalSupply - value;
-        emit Transfer(from, address(0), value);
-    }
-
-    function _approve(
-        address owner,
-        address spender,
-        uint256 value
-    ) internal {
-        allowance[owner][spender] = value;
-        emit Approval(owner, spender, value);
-    }
-
-    function _transfer(
-        address from,
-        address to,
-        uint256 value
-    ) internal {
-        balanceOf[from] = balanceOf[from] - value;
-        balanceOf[to] = balanceOf[to] + value;
-        emit Transfer(from, to, value);
     }
 }

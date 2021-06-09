@@ -3,7 +3,7 @@
 
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/token/ERC721/IERC721Upgradeable.sol";
 
 /**
  * @notice A place for common modifiers and functions used by various NFTMarket mixins, if any.

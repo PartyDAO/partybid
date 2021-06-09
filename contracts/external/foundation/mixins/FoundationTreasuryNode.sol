@@ -3,8 +3,8 @@
 
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable2/utils/AddressUpgradeable.sol";
 
 /**
  * @notice A mixin that stores a reference to the Foundation treasury contract.

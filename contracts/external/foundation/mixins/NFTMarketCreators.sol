@@ -5,7 +5,7 @@ pragma solidity ^0.7.0;
 
 import "../interfaces/IFNDNFT721.sol";
 
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
  * @notice A mixin for associating creators to NFTs.

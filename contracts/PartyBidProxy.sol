@@ -1,30 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-// ============ External Imports ============
-import {
-    IERC721Metadata
-} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {IWETH} from "./external/interfaces/IWETH.sol";
-
-// ============ Internal Imports ============
-import {PartyBidStorage} from "./PartyBidStorage.sol";
-import {IMarketWrapper} from "./interfaces/IMarketWrapper.sol";
-import {ResellerWhitelist} from "./ResellerWhitelist.sol";
-
 /**
  * @title PartyBid Proxy
  * @author Anna Carroll
- * forked from MirrorXYZ CrowdfundProxy https://github.com/mirror-xyz/crowdfund/blob/main/contracts/CrowdfundProxy.sol
  */
-contract PartyBidProxy is PartyBidStorage {
+contract PartyBidProxy {
+    // address of PartyBid logic contract
+    address public immutable logic;
+
     // ======== Constructor =========
 
     constructor(
-        address _WETH,
         address _logic,
-        address _partyDAOMultisig,
-        address _resellerWhitelist,
         address _marketWrapper,
         address _nftContract,
         uint256 _tokenId,
@@ -33,31 +21,27 @@ contract PartyBidProxy is PartyBidStorage {
         string memory _name,
         string memory _symbol
     ) {
-        WETH = IWETH(_WETH);
         logic = _logic;
-        // set storage variables
-        partyDAOMultisig = _partyDAOMultisig;
-        resellerWhitelist = ResellerWhitelist(_resellerWhitelist);
-        marketWrapper = IMarketWrapper(_marketWrapper);
-        nftContract = IERC721Metadata(_nftContract);
-        auctionId = _auctionId;
-        tokenId = _tokenId;
-        quorumPercent = _quorumPercent;
-        name = _name;
-        symbol = _symbol;
-        // validate token exists - this call should revert if not
-        nftContract.tokenURI(_tokenId);
-        // validate auction exists
-        require(
-            marketWrapper.auctionIdMatchesToken(
-                _auctionId,
+        bytes memory _initializationCalldata =
+            abi.encodeWithSignature(
+                "initialize(address,address,uint256,uint256,uint256,string,string)",
+                _marketWrapper,
                 _nftContract,
-                _tokenId
-            ),
-            "auctionId doesn't match token"
-        );
-        // validate quorum percent
-        require(0 < _quorumPercent && _quorumPercent <= 100, "!valid quorum");
+                _tokenId,
+                _auctionId,
+                _quorumPercent,
+                _name,
+                _symbol
+            );
+        // Delegatecall into the logic contract, supplying initialization calldata.
+        (bool _ok, ) = _logic.delegatecall(_initializationCalldata);
+        // Revert and include revert data if delegatecall to implementation reverts.
+        if (!_ok) {
+            assembly {
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
+            }
+        }
     }
 
     // ======== Fallback =========

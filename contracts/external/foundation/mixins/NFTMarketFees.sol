@@ -3,9 +3,9 @@
 
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable2/token/ERC721/IERC721Upgradeable.sol";
 
 import "./FoundationTreasuryNode.sol";
 import "./Constants.sol";

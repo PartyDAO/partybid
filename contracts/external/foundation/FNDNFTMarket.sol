@@ -51,7 +51,7 @@ import "./mixins/NFTMarketCreators.sol";
 import "./mixins/NFTMarketFees.sol";
 import "./mixins/NFTMarketAuction.sol";
 import "./mixins/NFTMarketReserveAuction.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
  * @title A market for NFTs on Foundation.
