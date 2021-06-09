@@ -3,9 +3,9 @@
 
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
  * @notice Attempt to send ETH and if the transfer fails or runs out of gas, store the balance

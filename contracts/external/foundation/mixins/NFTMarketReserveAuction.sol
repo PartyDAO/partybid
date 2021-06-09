@@ -4,9 +4,9 @@
 pragma solidity ^0.7.0;
 pragma abicoder v2; // solhint-disable-line
 
-import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable2/utils/ReentrancyGuardUpgradeable.sol";
 
 import "./Constants.sol";
 import "./NFTMarketCore.sol";
