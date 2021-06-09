@@ -26,7 +26,7 @@ import {ResellerWhitelist} from "./ResellerWhitelist.sol";
  * @title PartyBid
  * @author Anna Carroll
  */
-contract PartyBidLogic is ERC20Upgradeable, ReentrancyGuardUpgradeable {
+contract PartyBid is ERC20Upgradeable, ReentrancyGuardUpgradeable {
     // Use OpenZeppelin's SafeMath library to prevent overflows.
     using SafeMath for uint256;
 

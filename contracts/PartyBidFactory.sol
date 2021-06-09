@@ -2,7 +2,7 @@
 pragma solidity 0.8.4;
 
 import {PartyBidProxy} from "./PartyBidProxy.sol";
-import {PartyBidLogic} from "./PartyBidLogic.sol";
+import {PartyBid} from "./PartyBid.sol";
 import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
 /**
@@ -43,7 +43,7 @@ contract PartyBidFactory {
         resellerWhitelist = address(_whiteList);
         // deploy logic contract
         logic = address(
-            new PartyBidLogic(_partyDAOMultisig, address(_whiteList), _weth)
+            new PartyBid(_partyDAOMultisig, address(_whiteList), _weth)
         );
     }
 
