@@ -65,10 +65,10 @@ async function getPartyBidContractFromEventLogs(
   const partyBidProxyAddress = events[0]['args'][0];
 
   // instantiate ethers contract with PartyBid Logic interface + proxy address
-  const PartyBidLogic = await ethers.getContractFactory('PartyBidLogic');
+  const PartyBid = await ethers.getContractFactory('PartyBid');
   const partyBid = new ethers.Contract(
     partyBidProxyAddress,
-    PartyBidLogic.interface,
+    PartyBid.interface,
     artistSigner,
   );
   return partyBid;
