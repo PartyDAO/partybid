@@ -38,15 +38,10 @@ async function deployFoundationMarket() {
   return foundationMarket;
 }
 
-async function getResellerWhitelist(factory, artistSigner) {
-  const whitelistAddress = await factory.resellerWhitelist();
-  const Whitelist = await ethers.getContractFactory('ResellerWhitelist');
-  const whitelist = new ethers.Contract(
-    whitelistAddress,
-    Whitelist.interface,
-    artistSigner,
-  );
-  return whitelist;
+async function getTokenVault(partyBid, signer) {
+  const vaultAddress = await partyBid.tokenVault();
+  const TokenVault = await ethers.getContractFactory('TokenVault');
+  return new ethers.Contract(vaultAddress, TokenVault.interface, signer);
 }
 
 async function getPartyBidContractFromEventLogs(
@@ -109,12 +104,17 @@ async function deployTestContractSetup(
   // Deploy PartyDAO multisig
   const partyDAOMultisig = await deploy('PayableContract');
 
+  const tokenVaultSettings = await deploy('Settings');
+  const tokenVaultFactory = await deploy('ERC721VaultFactory', [
+    tokenVaultSettings.address,
+  ]);
+
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
   const factory = await deploy('PartyBidFactory', [
     partyDAOMultisig.address,
+    tokenVaultFactory.address,
     weth.address,
   ]);
-  const whitelist = await getResellerWhitelist(factory, artistSigner);
 
   // Deploy PartyBid proxy
   await factory.startParty(
@@ -122,7 +122,6 @@ async function deployTestContractSetup(
     nftContract.address,
     tokenId,
     auctionId,
-    90,
     'Parrrrti',
     'PRTI',
   );
@@ -139,12 +138,12 @@ async function deployTestContractSetup(
     market: foundationMarket,
     partyBid,
     partyDAOMultisig,
-    whitelist,
   };
 }
 
 module.exports = {
   deployPartyBid,
+  getTokenVault,
   deployTestContractSetup,
   deployFoundationMarket,
   deploy,
