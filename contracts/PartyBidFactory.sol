@@ -3,7 +3,6 @@ pragma solidity 0.8.4;
 
 import {PartyBidProxy} from "./PartyBidProxy.sol";
 import {PartyBid} from "./PartyBid.sol";
-import {ResellerWhitelist} from "./ResellerWhitelist.sol";
 
 /**
  * @title PartyBid Factory
@@ -28,22 +27,22 @@ contract PartyBidFactory {
 
     address public immutable logic;
     address public immutable partyDAOMultisig;
-    address public immutable resellerWhitelist;
+    address public immutable tokenVaultFactory;
     address public immutable weth;
 
     //======== Constructor =========
 
-    constructor(address _partyDAOMultisig, address _weth) {
+    constructor(
+        address _partyDAOMultisig,
+        address _tokenVaultFactory,
+        address _weth
+    ) {
         partyDAOMultisig = _partyDAOMultisig;
+        tokenVaultFactory = _tokenVaultFactory;
         weth = _weth;
-        // deploy and configure whitelist
-        ResellerWhitelist _whiteList = new ResellerWhitelist();
-        _whiteList.updateWhitelistForAll(_partyDAOMultisig, true);
-        _whiteList.transferOwnership(_partyDAOMultisig);
-        resellerWhitelist = address(_whiteList);
         // deploy logic contract
         logic = address(
-            new PartyBid(_partyDAOMultisig, address(_whiteList), _weth)
+            new PartyBid(_partyDAOMultisig, _tokenVaultFactory, _weth)
         );
     }
 
@@ -54,7 +53,6 @@ contract PartyBidFactory {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
-        uint256 _quorumPercent,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBidProxy) {
@@ -65,7 +63,6 @@ contract PartyBidFactory {
                 _nftContract,
                 _tokenId,
                 _auctionId,
-                _quorumPercent,
                 _name,
                 _symbol
             )

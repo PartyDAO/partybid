@@ -17,19 +17,17 @@ contract PartyBidProxy {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
-        uint256 _quorumPercent,
         string memory _name,
         string memory _symbol
     ) {
         logic = _logic;
         bytes memory _initializationCalldata =
             abi.encodeWithSignature(
-                "initialize(address,address,uint256,uint256,uint256,string,string)",
+                "initialize(address,address,uint256,uint256,string,string)",
                 _marketWrapper,
                 _nftContract,
                 _tokenId,
                 _auctionId,
-                _quorumPercent,
                 _name,
                 _symbol
             );

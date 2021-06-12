@@ -5,7 +5,7 @@ const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
 const { eth, getBalances, contribute, placeBid } = require('./helpers/utils');
-const { deployTestContractSetup } = require('./helpers/deploy');
+const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
@@ -14,7 +14,7 @@ testCases.map((testCase) => {
     // get test case information
     const { auctionReservePrice, contributions, bids, claims } = testCase;
     // instantiate test vars
-    let partyBid, market, auctionId;
+    let partyBid, market, auctionId, token;
     const signers = provider.getWallets();
     const firstSigner = signers[0];
     const tokenId = 100;
@@ -63,6 +63,7 @@ testCases.map((testCase) => {
 
       // finalize auction
       await expect(partyBid.finalize()).to.emit(partyBid, 'Finalized');
+      token = await getTokenVault(partyBid, firstSigner);
     });
 
     for (let claim of claims) {
@@ -80,7 +81,7 @@ testCases.map((testCase) => {
           },
         ];
 
-        const before = await getBalances(provider, partyBid, accounts);
+        const before = await getBalances(provider, token, accounts);
 
         // signer has no PartyBid tokens before claim
         expect(before.contributor.tokens).to.equal(0);
@@ -95,7 +96,7 @@ testCases.map((testCase) => {
             eth(tokens),
           );
 
-        const after = await getBalances(provider, partyBid, accounts);
+        const after = await getBalances(provider, token, accounts);
 
         // ETH was transferred from PartyBid to contributor
         await expect(after.partyBid.eth).to.equal(

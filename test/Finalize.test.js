@@ -11,7 +11,7 @@ const {
   contribute,
   placeBid,
 } = require('./helpers/utils');
-const { deployTestContractSetup } = require('./helpers/deploy');
+const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
@@ -28,7 +28,8 @@ testCases.map((testCase) => {
       nftContract,
       partyDAOMultisig,
       auctionId,
-      multisigBalanceBefore;
+      multisigBalanceBefore,
+      token;
     const totalContributed = getTotalContributed(contributions);
     const lastBid = bids[bids.length - 1];
     const partyBidWins = lastBid.placedByPartyBid && lastBid.success;
@@ -81,11 +82,6 @@ testCases.map((testCase) => {
       expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
     });
 
-    it('Has zero tokenSupply', async () => {
-      const totalSupply = await partyBid.totalSupply();
-      expect(totalSupply).to.equal(0);
-    });
-
     it('Does allow Finalize after the auction is over', async () => {
       // increase time on-chain so that auction can be finalized
       await provider.send('evm_increaseTime', [FOURTY_EIGHT_HOURS_IN_SECONDS]);
@@ -93,6 +89,8 @@ testCases.map((testCase) => {
 
       // finalize auction
       await expect(partyBid.finalize()).to.emit(partyBid, 'Finalized');
+
+      token = await getTokenVault(partyBid, signers[0]);
     });
 
     if (partyBidWins) {
@@ -101,9 +99,10 @@ testCases.map((testCase) => {
         expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_WON);
       });
 
-      it(`Owns the NFT`, async () => {
+      it(`Token Vault Owns the NFT`, async () => {
+        const vaultAddress = await partyBid.tokenVault();
         const owner = await nftContract.ownerOf(tokenId);
-        expect(owner).to.equal(partyBid.address);
+        expect(owner).to.equal(vaultAddress);
       });
 
       it('Has correct totalSpent, totalSupply of tokens, balanceOf PartyBid tokens, and ETH balance', async () => {
@@ -113,10 +112,10 @@ testCases.map((testCase) => {
         const totalSpent = await partyBid.totalSpent();
         expect(totalSpent).to.equal(eth(expectedTotalSpent));
 
-        const totalSupply = await partyBid.totalSupply();
+        const totalSupply = await token.totalSupply();
         expect(totalSupply).to.equal(eth(expectedTotalSupply));
 
-        const partyBidTokenBalance = await partyBid.balanceOf(partyBid.address);
+        const partyBidTokenBalance = await token.balanceOf(partyBid.address);
         expect(partyBidTokenBalance).to.equal(eth(expectedTotalSupply));
 
         const expectedEthBalance = totalContributed - expectedTotalSpent;
@@ -150,15 +149,9 @@ testCases.map((testCase) => {
         expect(owner).to.not.equal(partyBid.address);
       });
 
-      it('Has zero totalSpent, totalSupply of tokens, and balanceOf PartyBid', async () => {
-        const totalSupply = await partyBid.totalSupply();
-        expect(totalSupply).to.equal(0);
-
+      it('Has zero totalSpent', async () => {
         const totalSpent = await partyBid.totalSpent();
         expect(totalSpent).to.equal(0);
-
-        const partyBidTokenBalance = await partyBid.balanceOf(partyBid.address);
-        expect(partyBidTokenBalance).to.equal(0);
       });
 
       it(`Did not transfer fee to multisig`, async () => {
