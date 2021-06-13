@@ -115,6 +115,10 @@ testCases.map((testCase) => {
           before.contributor.tokens + tokens,
         );
       });
+
+      it(`Does not allow a contributor to double-claim`, async () => {
+        await expect(partyBid.claim(contributor.address)).to.be.reverted;
+      });
     }
 
     it(`Reverts on Claim for non-contributor`, async () => {

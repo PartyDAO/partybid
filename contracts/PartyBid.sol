@@ -87,6 +87,8 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     mapping(address => Contribution[]) public contributions;
     // contributor => total amount contributed
     mapping(address => uint256) public totalContributed;
+    // contributor => true if contribution has been claimed
+    mapping(address => bool) public claimed;
 
     // ============ Events ============
 
@@ -299,6 +301,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         uint256 _totalContributed = totalContributed[_contributor];
         // ensure contributor submitted some ETH
         require(_totalContributed != 0, "! a contributor");
+        // ensure the contributor hasn't already claimed
+        require(!claimed[_contributor], "already claimed");
+        claimed[_contributor] = true;
         uint256 _tokenAmount;
         uint256 _excessContribution;
         if (_partyStatus == PartyStatus.AUCTION_WON) {
