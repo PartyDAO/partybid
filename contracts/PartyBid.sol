@@ -252,7 +252,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             // transfer 5% fee to PartyDAO
             uint256 _fee = _getFee(highestBid);
             _transferETHOrWETH(partyDAOMultisig, _fee);
-            // record total spent by auction & quorum threshold
+            // record total spent by auction + PartyDAO fees
             _totalSpent = highestBid.add(_fee);
             // approve fractionalized NFT Factory to withdraw NFT
             IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
