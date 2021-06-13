@@ -34,19 +34,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     // ============ Enums ============
 
     // State Transitions:
-    // Win Auction
     //   (1) AUCTION_ACTIVE on deploy
-    //   (2) AUCTION_WON on finalize()
-    //   (3) NFT_TRANSFERRED after supportReseller() passes quorum
-    // Lose Auction
-    //   (1) AUCTION_ACTIVE on deploy
-    //   (2) AUCTION_LOST on finalize()
-    enum PartyStatus {
-        AUCTION_ACTIVE,
-        AUCTION_WON,
-        AUCTION_LOST,
-        NFT_TRANSFERRED
-    }
+    //   (2) AUCTION_WON or AUCTION_LOST on finalize()
+    enum PartyStatus {AUCTION_ACTIVE, AUCTION_WON, AUCTION_LOST}
 
     // ============ Structs ============
 
