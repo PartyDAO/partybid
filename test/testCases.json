@@ -1,7 +1,7 @@
 {
   "testCases": [
     {
-      "auctionReservePrice": 1,
+      "auctionReservePrice": 10,
       "contributions": [
         {
           "signerIndex": 0,
@@ -9,10 +9,6 @@
         },
         {
           "signerIndex": 0,
-          "amount": 0.5
-        },
-        {
-          "signerIndex": 1,
           "amount": 1
         },
         {
@@ -20,94 +16,407 @@
           "amount": 1
         },
         {
-          "signerIndex": 1,
-          "amount": 0.5
+          "signerIndex": 0,
+          "amount": 1
         },
         {
-          "signerIndex": 1,
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
           "amount": 1
         }
       ],
       "bids": [
         {
-          "placedByPartyBid": false,
-          "amount": 1,
-          "success": true
-        },
-        {
-          "placedByPartyBid": true,
-          "success": true
-        },
-        {
-          "placedByPartyBid": false,
-          "amount": 1.5,
-          "success": true
-        },
-        {
           "placedByPartyBid": true,
           "success": true
         }
       ],
-      "finalBid": 1.65,
-      "claims": [
-        {
-          "signerIndex": 1,
-          "tokens": 232.5,
-          "excessEth": 2.2675,
-          "totalContributed": 2.5
-        },
-        {
-          "signerIndex": 0,
-          "tokens": 1500,
-          "excessEth": 1,
-          "totalContributed": 2.5
-        }
-      ]
-    },
-    {
-      "auctionReservePrice": 1,
-      "contributions": [
-        {
-          "signerIndex": 0,
-          "amount": 5.5
-        },
-        {
-          "signerIndex": 1,
-          "amount": 5.5
-        },
-        {
-          "signerIndex": 1,
-          "amount": 89
-        }
-      ],
-      "bids": [
-        {
-          "placedByPartyBid": true,
-          "success": true
-        },
-        {
-          "placedByPartyBid": false,
-          "amount": 10,
-          "success": true
-        },
-        {
-          "placedByPartyBid": true,
-          "success": true
-        }
-      ],
-      "finalBid": 11,
+      "finalBid": 10,
       "claims": [
         {
           "signerIndex": 0,
-          "tokens": 5500,
-          "excessEth": 0,
-          "totalContributed": 5.5
-        },
-        {
-          "signerIndex": 1,
-          "tokens": 6050,
-          "excessEth": 88.45,
-          "totalContributed": 94.5
+          "tokens": 10500,
+          "excessEth": 89.5,
+          "totalContributed": 100
         }
       ]
     }
