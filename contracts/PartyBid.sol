@@ -246,6 +246,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             nftContract.ownerOf(tokenId) == address(this)
                 ? PartyStatus.AUCTION_WON
                 : PartyStatus.AUCTION_LOST;
+        partyStatus = _result;
         // if the auction was won,
         uint256 _totalSpent;
         if (_result == PartyStatus.AUCTION_WON) {
@@ -254,6 +255,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             _transferETHOrWETH(partyDAOMultisig, _fee);
             // record total spent by auction + PartyDAO fees
             _totalSpent = highestBid.add(_fee);
+            totalSpent = _totalSpent;
             // approve fractionalized NFT Factory to withdraw NFT
             IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
             // deploy fractionalized NFT vault
@@ -275,8 +277,6 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             TokenVault(tokenVault).updateCurator(address(0));
         }
         // set the contract status & emit result
-        totalSpent = _totalSpent;
-        partyStatus = _result;
         emit Finalized(_result, _totalSpent);
     }
 
