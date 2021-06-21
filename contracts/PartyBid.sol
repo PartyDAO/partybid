@@ -209,11 +209,11 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // ensure there is enough ETH to place the bid including PartyDAO fee
         require(_bid <= _getMaximumBid(), "PartyBid::bid: insufficient funds to bid");
         // submit bid to Auction contract using delegatecall
-        (bool success, ) =
+        (bool success, bytes memory returnData) =
             address(marketWrapper).delegatecall(
                 abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
-        require(success, "PartyBid::bid: place bid failed");
+        require(success, string(abi.encodePacked("PartyBid::bid: place bid failed: ", returnData)));
         // update highest bid submitted & emit success event
         highestBid = _bid;
         emit Bid(_bid);
