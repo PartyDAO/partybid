@@ -115,11 +115,11 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     constructor(
         address _partyDAOMultisig,
         address _tokenVaultFactory,
-        address _WETH
+        address _weth
     ) {
         partyDAOMultisig = _partyDAOMultisig;
         tokenVaultFactory = _tokenVaultFactory;
-        weth = _WETH;
+        weth = _weth;
     }
 
     // ======== Initializer =========
