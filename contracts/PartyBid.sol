@@ -9,8 +9,8 @@ import {
     ReentrancyGuardUpgradeable
 } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
-import {ERC721VaultFactory} from "./external/fractional/ERC721VaultFactory.sol";
-import {TokenVault} from "./external/fractional/ERC721TokenVault.sol";
+import {IERC721VaultFactory} from "./external/interfaces/IERC721VaultFactory.sol";
+import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
 import {
     IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
@@ -251,7 +251,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
             // deploy fractionalized NFT vault
             uint256 vaultNumber =
-                ERC721VaultFactory(tokenVaultFactory).mint(
+                IERC721VaultFactory(tokenVaultFactory).mint(
                     name,
                     symbol,
                     address(nftContract),
@@ -262,10 +262,10 @@ contract PartyBid is ReentrancyGuardUpgradeable {
                 );
             // store vault address
             tokenVault = address(
-                ERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber)
+                IERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber)
             );
             // transfer curator to null address
-            TokenVault(tokenVault).updateCurator(address(0));
+            ITokenVault(tokenVault).updateCurator(address(0));
         }
         // set the contract status & emit result
         emit Finalized(_result, _totalSpent);
@@ -304,7 +304,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             if (_totalUsedForBid > 0) {
                 _tokenAmount = valueToTokens(_totalUsedForBid);
                 // transfer tokens to contributor for their portion of ETH used
-                TokenVault(tokenVault).transfer(_contributor, _tokenAmount);
+                ITokenVault(tokenVault).transfer(_contributor, _tokenAmount);
             }
             // return the rest of the contributor's ETH
             _excessContribution = _totalContributed - _totalUsedForBid;
