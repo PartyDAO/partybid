@@ -390,13 +390,13 @@ contract PartyBid is ReentrancyGuardUpgradeable {
      * @notice Calculate the amount that was used towards
      * the winning auction bid from a single Contribution
      * @param _contribution the Contribution struct
-     * @return _amount the amount of funds from this contribution
+     * @return the amount of funds from this contribution
      * that were used towards the winning auction bid
      */
     function _ethUsedForBid(Contribution memory _contribution)
         internal
         view
-        returns (uint256 _amount)
+        returns (uint256)
     {
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
@@ -404,16 +404,15 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             _contribution.previousTotalContributedToParty + _contribution.amount <= _totalSpent
         ) {
             // contribution was fully used
-            _amount = _contribution.amount;
+            return _contribution.amount;
         } else if (
             _contribution.previousTotalContributedToParty < _totalSpent
         ) {
             // contribution was partially used
-            _amount = _totalSpent - _contribution.previousTotalContributedToParty;
-        } else {
-            // contribution was not used
-            _amount = 0;
+            return _totalSpent - _contribution.previousTotalContributedToParty;
         }
+        // contribution was not used
+        return 0;
     }
 
     // ============ Internal: TransferEthOrWeth ============
