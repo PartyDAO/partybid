@@ -11,7 +11,6 @@ import {
 import {
     ERC20Upgradeable
 } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
 import {ERC721VaultFactory} from "./external/fractional/ERC721VaultFactory.sol";
 import {TokenVault} from "./external/fractional/ERC721TokenVault.sol";
@@ -28,9 +27,6 @@ import {IMarketWrapper} from "./market-wrapper/IMarketWrapper.sol";
  * @author Anna Carroll
  */
 contract PartyBid is ReentrancyGuardUpgradeable {
-    // Use OpenZeppelin's SafeMath library to prevent overflows.
-    using SafeMath for uint256;
-
     // ============ Enums ============
 
     // State Transitions:
@@ -178,11 +174,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             });
         contributions[_contributor].push(_contribution);
         // add to contributor's total contribution
-        totalContributed[_contributor] = totalContributed[_contributor].add(
-            _amount
-        );
+        totalContributed[_contributor] = totalContributed[_contributor] + _amount;
         // add to party's total contribution & emit event
-        totalContributedToParty = totalContributedToParty.add(_amount);
+        totalContributedToParty = totalContributedToParty + _amount;
         emit Contributed(
             _contributor,
             _amount,
@@ -254,7 +248,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             uint256 _fee = _getFee(highestBid);
             _transferETHOrWETH(partyDAOMultisig, _fee);
             // record total spent by auction + PartyDAO fees
-            _totalSpent = highestBid.add(_fee);
+            _totalSpent = highestBid + _fee;
             totalSpent = _totalSpent;
             // approve fractionalized NFT Factory to withdraw NFT
             IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
@@ -316,7 +310,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
                 TokenVault(tokenVault).transfer(_contributor, _tokenAmount);
             }
             // return the rest of the contributor's ETH
-            _excessContribution = _totalContributed.sub(_totalUsedForBid);
+            _excessContribution = _totalContributed - _totalUsedForBid;
         } else if (_partyStatus == PartyStatus.AUCTION_LOST) {
             // return all of the contributor's ETH
             _excessContribution = _totalContributed;
@@ -354,7 +348,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
      * @return _maxBid the maximum bid
      */
     function _getMaximumBid() internal view returns (uint256 _maxBid) {
-        _maxBid = totalContributedToParty.sub(_getFee(totalContributedToParty));
+        _maxBid = totalContributedToParty - _getFee(totalContributedToParty);
     }
 
     /**
@@ -362,7 +356,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
      * @return _fee 5% of the given amount
      */
     function _getFee(uint256 _amount) internal pure returns (uint256 _fee) {
-        _fee = _amount.mul(FEE_PERCENT).div(100);
+        _fee = (_amount * FEE_PERCENT) / 100;
     }
 
     // ============ Internal: Claim ============
@@ -388,7 +382,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             // no subsequent contributions will have been used either,
             // so we can stop calculating to save some gas
             if (_amount == 0) break;
-            _total = _total.add(_amount);
+            _total = _total + _amount;
         }
     }
 
@@ -407,9 +401,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
         if (
-            _contribution.previousTotalContributedToParty.add(
-                _contribution.amount
-            ) <= _totalSpent
+            _contribution.previousTotalContributedToParty + _contribution.amount <= _totalSpent
         ) {
             // contribution was fully used
             _amount = _contribution.amount;
@@ -417,9 +409,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             _contribution.previousTotalContributedToParty < _totalSpent
         ) {
             // contribution was partially used
-            _amount = _totalSpent.sub(
-                _contribution.previousTotalContributedToParty
-            );
+            _amount = _totalSpent - _contribution.previousTotalContributedToParty;
         } else {
             // contribution was not used
             _amount = 0;
