@@ -337,7 +337,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         pure
         returns (uint256 _tokens)
     {
-        _tokens = _value * (TOKEN_SCALE);
+        _tokens = _value * TOKEN_SCALE;
     }
 
     // ============ Internal: Bid ============
