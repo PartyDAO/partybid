@@ -146,7 +146,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
                 _nftContract,
                 _tokenId
             ),
-            "auctionId doesn't match token"
+            "PartyBid::initialize: auctionId doesn't match token"
         );
     }
 
@@ -160,7 +160,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     function contribute() external payable nonReentrant {
         require(
             partyStatus == PartyStatus.AUCTION_ACTIVE,
-            "contributions closed"
+            "PartyBid::contribute: auction not active"
         );
         address _contributor = msg.sender;
         uint256 _amount = msg.value;
@@ -197,23 +197,23 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     function bid() external nonReentrant {
         require(
             partyStatus == PartyStatus.AUCTION_ACTIVE,
-            "auction not active"
+            "PartyBid::bid: auction not active"
         );
-        require(totalContributed[msg.sender] > 0, "only contributors can bid");
+        require(totalContributed[msg.sender] > 0, "PartyBid::bid: only contributors can bid");
         require(
             address(this) != marketWrapper.getCurrentHighestBidder(auctionId),
-            "PartyBid already highest bidder"
+            "PartyBid::bid: already highest bidder"
         );
         // get the minimum next bid for the auction
         uint256 _bid = marketWrapper.getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
-        require(_bid <= _getMaximumBid(), "insufficient funds to bid");
+        require(_bid <= _getMaximumBid(), "PartyBid::bid: insufficient funds to bid");
         // submit bid to Auction contract using delegatecall
         (bool success, ) =
             address(marketWrapper).delegatecall(
                 abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
-        require(success, "place bid failed");
+        require(success, "PartyBid::bid: place bid failed");
         // update highest bid submitted & emit success event
         highestBid = _bid;
         emit Bid(_bid);
@@ -228,7 +228,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     function finalize() external nonReentrant {
         require(
             partyStatus == PartyStatus.AUCTION_ACTIVE,
-            "auction not active"
+            "PartyBid::finalize: auction not active"
         );
         // finalize auction if it hasn't already been done
         if (!marketWrapper.isFinalized(auctionId)) {
@@ -289,14 +289,14 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // ensure auction has finalized
         require(
             _partyStatus != PartyStatus.AUCTION_ACTIVE,
-            "auction not finalized"
+            "PartyBid::claim: auction not finalized"
         );
         // load amount contributed once from storage
         uint256 _totalContributed = totalContributed[_contributor];
         // ensure contributor submitted some ETH
-        require(_totalContributed != 0, "! a contributor");
+        require(_totalContributed != 0, "PartyBid::claim: not a contributor");
         // ensure the contributor hasn't already claimed
-        require(!claimed[_contributor], "already claimed");
+        require(!claimed[_contributor], "PartyBid::claim: contribution already claimed");
         claimed[_contributor] = true;
         uint256 _tokenAmount;
         uint256 _excessContribution;
