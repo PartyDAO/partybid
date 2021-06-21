@@ -32,14 +32,9 @@ contract PartyBidProxy {
                 _symbol
             );
         // Delegatecall into the logic contract, supplying initialization calldata.
-        (bool _ok, ) = _logic.delegatecall(_initializationCalldata);
-        // Revert and include revert data if delegatecall to implementation reverts.
-        if (!_ok) {
-            assembly {
-                returndatacopy(0, 0, returndatasize())
-                revert(0, returndatasize())
-            }
-        }
+        (bool _ok, bytes memory returnData) = _logic.delegatecall(_initializationCalldata);
+        // Revert if delegatecall to implementation reverts.
+        require(_ok, string(returnData));
     }
 
     // ======== Fallback =========
