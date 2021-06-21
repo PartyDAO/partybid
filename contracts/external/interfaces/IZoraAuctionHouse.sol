@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 // Reproduced from https://github.com/ourzora/auction-house/blob/main/contracts/interfaces/IAuctionHouse.sol under terms of GPL-3.0
 // Modified slightly
-pragma solidity 0.8.4;
+pragma solidity 0.8.5;
 
 /**
  * @title Interface for Zora Auction Houses
