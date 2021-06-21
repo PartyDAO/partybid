@@ -2,15 +2,12 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports: Inherited Contracts ============
-// NOTE: we inherit ReentrancyGuardUpgradeable and ERC20Upgradeable
+// NOTE: we inherit ReentrancyGuardUpgradeable
 // because of the proxy structure used for cheaper deploys
 // (the proxies are NOT actually upgradeable)
 import {
     ReentrancyGuardUpgradeable
 } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {
-    ERC20Upgradeable
-} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
 import {ERC721VaultFactory} from "./external/fractional/ERC721VaultFactory.sol";
 import {TokenVault} from "./external/fractional/ERC721TokenVault.sol";
