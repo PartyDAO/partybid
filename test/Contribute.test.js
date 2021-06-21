@@ -33,7 +33,7 @@ testCases.map((testCase) => {
       const { signerIndex, amount } = contribution;
       const signer = signers[signerIndex];
 
-      it('Starts with correct the contribution amount', async () => {
+      it('Starts with the correct contribution amount', async () => {
         const totalContributed = await partyBid.totalContributed(
           signer.address,
         );
