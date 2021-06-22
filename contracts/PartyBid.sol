@@ -201,6 +201,10 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             address(this) != IMarketWrapper(marketWrapper).getCurrentHighestBidder(auctionId),
             "PartyBid::bid: already highest bidder"
         );
+        require(
+            !IMarketWrapper(marketWrapper).isFinalized(auctionId),
+            "PartyBid::bid: auction already finalized"
+        );
         // get the minimum next bid for the auction
         uint256 _bid = IMarketWrapper(marketWrapper).getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
