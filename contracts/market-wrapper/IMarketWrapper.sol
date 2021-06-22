@@ -12,7 +12,7 @@ pragma solidity 0.8.5;
  * using IMarketWrapper by deploying a MarketWrapper contract
  * that implements this interface using the logic of their Market.
  *
- * WARNING: MarketWrapper contracts should NOT have write to contract storage!
+ * WARNING: MarketWrapper contracts should NEVER write to storage!
  * When implementing a MarketWrapper, exercise caution; a poorly implemented
  * MarketWrapper contract could permanently lose access to the NFT or user funds.
  */
