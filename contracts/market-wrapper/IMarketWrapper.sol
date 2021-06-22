@@ -11,6 +11,10 @@ pragma solidity 0.8.5;
  * NFT markets can become compatible with any contract
  * using IMarketWrapper by deploying a MarketWrapper contract
  * that implements this interface using the logic of their Market.
+ *
+ * WARNING: MarketWrapper contracts should NOT have write to contract storage!
+ * When implementing a MarketWrapper, exercise caution; a poorly implemented
+ * MarketWrapper contract could permanently lose access to the NFT or user funds.
  */
 interface IMarketWrapper {
     /**
