@@ -335,6 +335,26 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         );
     }
 
+    // ======== External: Recover =========
+
+    /**
+     * @notice If the NFT gets stuck in the PartyBid
+     * (e.g. because of a faulty MarketWrapper that marks the auction Lost)
+     * the PartyDAO Multisig can transfer the NFT to the multisig
+     */
+    function recover() external {
+        require(msg.sender == partyDAOMultisig, "PartyBid::recover: only PartyDAO multisig can recover NFT");
+        require(
+            partyStatus == PartyStatus.AUCTION_LOST,
+            "PartyBid::recover: auction must be lost to recover NFT"
+        );
+        IERC721Metadata(nftContract).transferFrom(
+            address(this),
+            partyDAOMultisig,
+            tokenId
+        );
+    }
+
     // ======== Public: Utility Calculations =========
 
     /**
