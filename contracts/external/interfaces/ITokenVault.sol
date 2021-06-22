@@ -1,6 +1,10 @@
 pragma solidity 0.8.5;
 
 interface ITokenVault {
+    /// @notice allow curator to update the curator address
+    /// @param _curator the new curator
+    function updateCurator(address _curator) external;
+
     /**
      * @dev See {IERC20-transfer}.
      *
@@ -11,7 +15,8 @@ interface ITokenVault {
      */
     function transfer(address recipient, uint256 amount) external returns (bool);
 
-    /// @notice allow curator to update the curator address
-    /// @param _curator the new curator
-    function updateCurator(address _curator) external;
+    /**
+     * @dev See {IERC20-balanceOf}.
+     */
+    function balanceOf(address account) external view returns (uint256);
 }

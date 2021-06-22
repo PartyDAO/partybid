@@ -303,6 +303,13 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
             if (_totalUsedForBid > 0) {
                 _tokenAmount = valueToTokens(_totalUsedForBid);
+                // guard against rounding errors;
+                // if _tokenAmount to send is greater than contract balance,
+                // send full contract balance
+                uint256 _totalBalance = ITokenVault(tokenVault).balanceOf(address(this));
+                if (_tokenAmount > _totalBalance) {
+                    _tokenAmount = _totalBalance;
+                }
                 // transfer tokens to contributor for their portion of ETH used
                 ITokenVault(tokenVault).transfer(_contributor, _tokenAmount);
             }
@@ -421,6 +428,12 @@ contract PartyBid is ReentrancyGuardUpgradeable {
      * @param _value amount of ETH or WETH
      */
     function _transferETHOrWETH(address _to, uint256 _value) internal {
+        // guard against rounding errors;
+        // if ETH amount to send is greater than contract balance,
+        // send full contract balance
+        if(_value > address(this).balance) {
+            _value = address(this).balance;
+        }
         // Try to transfer ETH to the given recipient.
         if (!_attemptETHTransfer(_to, _value)) {
             // If the transfer fails, wrap and send as WETH
