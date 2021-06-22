@@ -431,7 +431,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // guard against rounding errors;
         // if ETH amount to send is greater than contract balance,
         // send full contract balance
-        if(_value > address(this).balance) {
+        if (_value > address(this).balance) {
             _value = address(this).balance;
         }
         // Try to transfer ETH to the given recipient.
