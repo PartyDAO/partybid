@@ -134,8 +134,8 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         auctionId = _auctionId;
         name = _name;
         symbol = _symbol;
-        // validate token exists - this call should revert if not
-        IERC721Metadata(_nftContract).tokenURI(_tokenId);
+        // validate token exists (ownerOf should revert if token doesn't exist)
+        IERC721Metadata(_nftContract).ownerOf(_tokenId);
         // validate auction exists
         require(
             IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
