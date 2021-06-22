@@ -55,9 +55,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
 
     // market wrapper contract exposing interface for
     // market auctioning the NFT
-    IMarketWrapper public marketWrapper;
+    address public marketWrapper;
     // NFT contract
-    IERC721Metadata public nftContract;
+    address public nftContract;
     // Fractionalized NFT vault responsible for post-auction value capture
     address public tokenVault;
     uint256 public auctionId;
@@ -128,17 +128,17 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // initialize ReentrancyGuard and ERC20
         __ReentrancyGuard_init();
         // set storage variables
-        marketWrapper = IMarketWrapper(_marketWrapper);
-        nftContract = IERC721Metadata(_nftContract);
+        marketWrapper = _marketWrapper;
+        nftContract = _nftContract;
         tokenId = _tokenId;
         auctionId = _auctionId;
         name = _name;
         symbol = _symbol;
         // validate token exists - this call should revert if not
-        nftContract.tokenURI(_tokenId);
+        IERC721Metadata(_nftContract).tokenURI(_tokenId);
         // validate auction exists
         require(
-            marketWrapper.auctionIdMatchesToken(
+            IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
                 _auctionId,
                 _nftContract,
                 _tokenId
@@ -198,16 +198,16 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         );
         require(totalContributed[msg.sender] > 0, "PartyBid::bid: only contributors can bid");
         require(
-            address(this) != marketWrapper.getCurrentHighestBidder(auctionId),
+            address(this) != IMarketWrapper(marketWrapper).getCurrentHighestBidder(auctionId),
             "PartyBid::bid: already highest bidder"
         );
         // get the minimum next bid for the auction
-        uint256 _bid = marketWrapper.getMinimumBid(auctionId);
+        uint256 _bid = IMarketWrapper(marketWrapper).getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
         require(_bid <= _getMaximumBid(), "PartyBid::bid: insufficient funds to bid");
         // submit bid to Auction contract using delegatecall
         (bool success, bytes memory returnData) =
-            address(marketWrapper).delegatecall(
+            marketWrapper.delegatecall(
                 abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
         require(success, string(abi.encodePacked("PartyBid::bid: place bid failed: ", returnData)));
@@ -228,13 +228,13 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             "PartyBid::finalize: auction not active"
         );
         // finalize auction if it hasn't already been done
-        if (!marketWrapper.isFinalized(auctionId)) {
-            marketWrapper.finalize(auctionId);
+        if (!IMarketWrapper(marketWrapper).isFinalized(auctionId)) {
+            IMarketWrapper(marketWrapper).finalize(auctionId);
         }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
         PartyStatus _result =
-            nftContract.ownerOf(tokenId) == address(this)
+        IERC721Metadata(nftContract).ownerOf(tokenId) == address(this)
                 ? PartyStatus.AUCTION_WON
                 : PartyStatus.AUCTION_LOST;
         partyStatus = _result;
@@ -254,7 +254,7 @@ contract PartyBid is ReentrancyGuardUpgradeable {
                 IERC721VaultFactory(tokenVaultFactory).mint(
                     name,
                     symbol,
-                    address(nftContract),
+                    nftContract,
                     tokenId,
                     valueToTokens(_totalSpent),
                     _totalSpent,
