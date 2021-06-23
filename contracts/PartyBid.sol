@@ -60,8 +60,11 @@ contract PartyBid is ReentrancyGuardUpgradeable {
     address public nftContract;
     // Fractionalized NFT vault responsible for post-auction value capture
     address public tokenVault;
+    // ID of auction within market contract
     uint256 public auctionId;
+    // ID of token within NFT contract
     uint256 public tokenId;
+    // ERC-20 name and symbol for fractional tokens
     string public name;
     string public symbol;
 
