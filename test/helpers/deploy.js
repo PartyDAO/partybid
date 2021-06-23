@@ -1,4 +1,10 @@
-const { eth, approve, createReserveAuction } = require('./utils');
+const {
+  eth,
+  approve,
+  createReserveAuction,
+  createZoraAuction,
+} = require('./utils');
+const { MARKET_NAMES } = require('./constants');
 
 async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
@@ -30,13 +36,7 @@ async function deployPartyBid(
   ]);
 }
 
-async function deployFoundationMarket() {
-  const foundationTreasury = await deploy('MockFoundationTreasury');
-  const foundationMarket = await deploy('FNDNFTMarket');
-  await foundationMarket.initialize(foundationTreasury.address);
-  await foundationMarket.adminUpdateConfig(1000, 86400, 0, 0, 0);
-  return foundationMarket;
-}
+async function deployFoundationMarket() {}
 
 async function getTokenVault(partyBid, signer) {
   const vaultAddress = await partyBid.tokenVault();
@@ -69,21 +69,21 @@ async function getPartyBidContractFromEventLogs(
   return partyBid;
 }
 
-async function deployTestContractSetup(
-  provider,
+async function deployFoundationAndStartAuction(
   artistSigner,
-  tokenId = 100,
-  reservePrice = 1,
+  nftContract,
+  tokenId,
+  reservePrice,
 ) {
-  // Deploy WETH
-  const weth = await deploy('EtherToken');
+  // Deploy Foundation treasury & NFT market
+  const foundationTreasury = await deploy('MockFoundationTreasury');
+  const foundationMarket = await deploy('FNDNFTMarket');
 
-  // Deploy NFT Contract & Mint Token
-  const nftContract = await deploy('TestERC721');
-  await nftContract.mint(artistSigner.address, tokenId);
+  // initialize / configure Foundation market
+  await foundationMarket.initialize(foundationTreasury.address);
+  await foundationMarket.adminUpdateConfig(1000, 86400, 0, 0, 0);
 
-  // Deploy Foundation Market and Market Wrapper Contract
-  const foundationMarket = await deployFoundationMarket();
+  // Deploy Market Wrapper
   const marketWrapper = await deploy('FoundationMarketWrapper', [
     foundationMarket.address,
   ]);
@@ -100,6 +100,93 @@ async function deployTestContractSetup(
     eth(reservePrice),
   );
   const auctionId = 1;
+
+  return {
+    market: foundationMarket,
+    marketWrapper,
+    auctionId,
+  };
+}
+
+async function deployZoraAndStartAuction(
+  artistSigner,
+  nftContract,
+  tokenId,
+  weth,
+  reservePrice,
+) {
+  // Deploy Zora Media / Market
+  const zoraMarket = await deploy('Market');
+  const zoraMedia = await deploy('Media', [zoraMarket.address]);
+
+  // Deploy Zora Auction House
+  const zoraAuctionHouse = await deploy('AuctionHouse', [
+    zoraMedia.address,
+    weth.address,
+  ]);
+
+  // Deploy Market Wrapper
+  const marketWrapper = await deploy('ZoraMarketWrapper', [
+    zoraAuctionHouse.address,
+  ]);
+
+  // Approve NFT Transfer to Market
+  await approve(artistSigner, nftContract, zoraAuctionHouse.address, tokenId);
+
+  // Create Zora Auction
+  await createZoraAuction(
+    artistSigner,
+    zoraAuctionHouse,
+    tokenId,
+    nftContract.address,
+    reservePrice,
+  );
+
+  const auctionId = 0;
+
+  return {
+    market: zoraAuctionHouse,
+    marketWrapper,
+    auctionId,
+  };
+}
+
+async function deployTestContractSetup(
+  marketName,
+  provider,
+  artistSigner,
+  tokenId = 100,
+  reservePrice = 1,
+) {
+  // Deploy WETH
+  const weth = await deploy('EtherToken');
+
+  // Deploy NFT Contract & Mint Token
+  const nftContract = await deploy('TestERC721');
+  await nftContract.mint(artistSigner.address, tokenId);
+
+  // Deploy Market and Market Wrapper Contract + Start Auction
+  let marketContracts;
+  if (marketName == MARKET_NAMES.FOUNDATION) {
+    marketContracts = await deployFoundationAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      reservePrice,
+    );
+  } else if (marketName == MARKET_NAMES.ZORA) {
+    marketContracts = await deployZoraAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      weth,
+      reservePrice,
+    );
+  } else {
+    throw new Error('Unsupported market type');
+  }
+
+  const { market, marketWrapper, auctionId } = marketContracts;
 
   // Deploy PartyDAO multisig
   const partyDAOMultisig = await deploy('PayableContract');
@@ -135,7 +222,7 @@ async function deployTestContractSetup(
 
   return {
     nftContract,
-    market: foundationMarket,
+    market,
     partyBid,
     partyDAOMultisig,
   };
