@@ -21,9 +21,13 @@ async function getBalances(provider, token, accounts) {
     balances[name]['eth'] = parseFloat(
       weiToEth(await provider.getBalance(address)),
     );
-    balances[name]['tokens'] = parseFloat(
-      weiToEth(await token.balanceOf(address)),
-    );
+    let tokenBalance = 0;
+    if(token.address != ethers.constants.AddressZero) {
+      tokenBalance = parseFloat(
+          weiToEth(await token.balanceOf(address)),
+      );
+    }
+    balances[name]['tokens'] = tokenBalance;
   }
   return balances;
 }
