@@ -9,7 +9,9 @@ import {
     ReentrancyGuardUpgradeable
 } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
-import {IERC721VaultFactory} from "./external/interfaces/IERC721VaultFactory.sol";
+import {
+    IERC721VaultFactory
+} from "./external/interfaces/IERC721VaultFactory.sol";
 import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
 import {
     IERC721Metadata
@@ -174,7 +176,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             });
         contributions[_contributor].push(_contribution);
         // add to contributor's total contribution
-        totalContributed[_contributor] = totalContributed[_contributor] + _amount;
+        totalContributed[_contributor] =
+            totalContributed[_contributor] +
+            _amount;
         // add to party's total contribution & emit event
         totalContributedToParty = totalContributedToParty + _amount;
         emit Contributed(
@@ -199,9 +203,15 @@ contract PartyBid is ReentrancyGuardUpgradeable {
             partyStatus == PartyStatus.AUCTION_ACTIVE,
             "PartyBid::bid: auction not active"
         );
-        require(totalContributed[msg.sender] > 0, "PartyBid::bid: only contributors can bid");
         require(
-            address(this) != IMarketWrapper(marketWrapper).getCurrentHighestBidder(auctionId),
+            totalContributed[msg.sender] > 0,
+            "PartyBid::bid: only contributors can bid"
+        );
+        require(
+            address(this) !=
+                IMarketWrapper(marketWrapper).getCurrentHighestBidder(
+                    auctionId
+                ),
             "PartyBid::bid: already highest bidder"
         );
         require(
@@ -211,13 +221,24 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // get the minimum next bid for the auction
         uint256 _bid = IMarketWrapper(marketWrapper).getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
-        require(_bid <= _getMaximumBid(), "PartyBid::bid: insufficient funds to bid");
+        require(
+            _bid <= _getMaximumBid(),
+            "PartyBid::bid: insufficient funds to bid"
+        );
         // submit bid to Auction contract using delegatecall
         (bool success, bytes memory returnData) =
             marketWrapper.delegatecall(
                 abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
-        require(success, string(abi.encodePacked("PartyBid::bid: place bid failed: ", returnData)));
+        require(
+            success,
+            string(
+                abi.encodePacked(
+                    "PartyBid::bid: place bid failed: ",
+                    returnData
+                )
+            )
+        );
         // update highest bid submitted & emit success event
         highestBid = _bid;
         emit Bid(_bid);
@@ -240,42 +261,23 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
-        PartyStatus _result =
-        IERC721Metadata(nftContract).ownerOf(tokenId) == address(this)
-                ? PartyStatus.AUCTION_WON
-                : PartyStatus.AUCTION_LOST;
-        partyStatus = _result;
+        partyStatus = IERC721Metadata(nftContract).ownerOf(tokenId) ==
+            address(this)
+            ? PartyStatus.AUCTION_WON
+            : PartyStatus.AUCTION_LOST;
         // if the auction was won,
-        uint256 _totalSpent;
-        if (_result == PartyStatus.AUCTION_WON) {
+        if (partyStatus == PartyStatus.AUCTION_WON) {
             // transfer 5% fee to PartyDAO
             uint256 _fee = _getFee(highestBid);
             _transferETHOrWETH(partyDAOMultisig, _fee);
             // record total spent by auction + PartyDAO fees
-            _totalSpent = highestBid + _fee;
-            totalSpent = _totalSpent;
-            // approve fractionalized NFT Factory to withdraw NFT
-            IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
+            totalSpent = highestBid + _fee;
             // deploy fractionalized NFT vault
-            uint256 vaultNumber =
-                IERC721VaultFactory(tokenVaultFactory).mint(
-                    name,
-                    symbol,
-                    nftContract,
-                    tokenId,
-                    valueToTokens(_totalSpent),
-                    _totalSpent,
-                    0
-                );
-            // store vault address
-            tokenVault = address(
-                IERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber)
-            );
-            // transfer curator to null address
-            ITokenVault(tokenVault).updateCurator(address(0));
+            // and mint fractional ERC-20 tokens
+            _fractionalizeNFT(totalSpent);
         }
         // set the contract status & emit result
-        emit Finalized(_result, _totalSpent);
+        emit Finalized(partyStatus, totalSpent);
     }
 
     // ======== External: Claim =========
@@ -288,52 +290,40 @@ contract PartyBid is ReentrancyGuardUpgradeable {
      * @param _contributor the address of the contributor
      */
     function claim(address _contributor) external nonReentrant {
-        // load party status once from storage
-        PartyStatus _partyStatus = partyStatus;
         // ensure auction has finalized
         require(
-            _partyStatus != PartyStatus.AUCTION_ACTIVE,
+            partyStatus != PartyStatus.AUCTION_ACTIVE,
             "PartyBid::claim: auction not finalized"
         );
-        // load amount contributed once from storage
-        uint256 _totalContributed = totalContributed[_contributor];
         // ensure contributor submitted some ETH
-        require(_totalContributed != 0, "PartyBid::claim: not a contributor");
+        require(
+            totalContributed[_contributor] != 0,
+            "PartyBid::claim: not a contributor"
+        );
         // ensure the contributor hasn't already claimed
-        require(!claimed[_contributor], "PartyBid::claim: contribution already claimed");
+        require(
+            !claimed[_contributor],
+            "PartyBid::claim: contribution already claimed"
+        );
+        // mark the contribution as claimed
         claimed[_contributor] = true;
-        uint256 _tokenAmount;
-        uint256 _excessContribution;
-        if (_partyStatus == PartyStatus.AUCTION_WON) {
-            // calculate the amount of this contributor's ETH
-            // that was used for the winning bid
-            uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
-            if (_totalUsedForBid > 0) {
-                _tokenAmount = valueToTokens(_totalUsedForBid);
-                // guard against rounding errors;
-                // if _tokenAmount to send is greater than contract balance,
-                // send full contract balance
-                uint256 _totalBalance = ITokenVault(tokenVault).balanceOf(address(this));
-                if (_tokenAmount > _totalBalance) {
-                    _tokenAmount = _totalBalance;
-                }
-                // transfer tokens to contributor for their portion of ETH used
-                ITokenVault(tokenVault).transfer(_contributor, _tokenAmount);
-            }
-            // return the rest of the contributor's ETH
-            _excessContribution = _totalContributed - _totalUsedForBid;
-        } else if (_partyStatus == PartyStatus.AUCTION_LOST) {
-            // return all of the contributor's ETH
-            _excessContribution = _totalContributed;
+        // calculate the amount of fractional NFT tokens owed to the user
+        // based on how much ETH they contributed towards the auction,
+        // and the amount of excess ETH owed to the user
+        (uint256 _tokenAmount, uint256 _ethAmount) =
+            _calculateTokensAndETHOwed(_contributor);
+        // transfer tokens to contributor for their portion of ETH used
+        if (_tokenAmount > 0) {
+            ITokenVault(tokenVault).transfer(_contributor, _tokenAmount);
         }
         // if there is excess ETH, send it back to the contributor
-        if (_excessContribution > 0) {
-            _transferETHOrWETH(_contributor, _excessContribution);
+        if (_ethAmount > 0) {
+            _transferETHOrWETH(_contributor, _ethAmount);
         }
         emit Claimed(
             _contributor,
-            _totalContributed,
-            _excessContribution,
+            totalContributed[_contributor],
+            _ethAmount,
             _tokenAmount
         );
     }
@@ -346,7 +336,10 @@ contract PartyBid is ReentrancyGuardUpgradeable {
      * the PartyDAO Multisig can transfer the NFT to the multisig
      */
     function recover() external {
-        require(msg.sender == partyDAOMultisig, "PartyBid::recover: only PartyDAO multisig can recover NFT");
+        require(
+            msg.sender == partyDAOMultisig,
+            "PartyBid::recover: only PartyDAO multisig can recover NFT"
+        );
         require(
             partyStatus == PartyStatus.AUCTION_LOST,
             "PartyBid::recover: auction must be lost to recover NFT"
@@ -390,7 +383,74 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         _fee = (_amount * FEE_PERCENT) / 100;
     }
 
+    // ============ Internal: Finalize ============
+
+    /**
+     * @notice Upon winning the auction, transfer the NFT
+     * to fractional.art vault & mint fractional ERC-20 tokens
+     */
+    function _fractionalizeNFT(uint256 _totalSpent) internal {
+        // approve fractionalized NFT Factory to withdraw NFT
+        IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
+        // deploy fractionalized NFT vault
+        uint256 vaultNumber =
+            IERC721VaultFactory(tokenVaultFactory).mint(
+                name,
+                symbol,
+                nftContract,
+                tokenId,
+                valueToTokens(_totalSpent),
+                _totalSpent,
+                0
+            );
+        // store token vault address to storage
+        tokenVault = address(
+            IERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber)
+        );
+        // transfer curator to null address
+        ITokenVault(tokenVault).updateCurator(address(0));
+    }
+
     // ============ Internal: Claim ============
+
+    /**
+     * @notice Calculate the amount of fractional NFT tokens owed to the contributor
+     * based on how much ETH they contributed towards the auction,
+     * and the amount of excess ETH owed to the contributor
+     * based on how much ETH they contributed *not* used towards the auction
+     * @param _contributor the address of the contributor
+     * @return _tokenAmount the amount of fractional NFT tokens owed to the contributor
+     * @return _ethAmount the amount of excess ETH owed to the contributor
+     */
+    function _calculateTokensAndETHOwed(address _contributor)
+        internal
+        view
+        returns (uint256 _tokenAmount, uint256 _ethAmount)
+    {
+        uint256 _totalContributed = totalContributed[_contributor];
+        if (partyStatus == PartyStatus.AUCTION_WON) {
+            // calculate the amount of this contributor's ETH
+            // that was used for the winning bid
+            uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
+            if (_totalUsedForBid > 0) {
+                _tokenAmount = valueToTokens(_totalUsedForBid);
+                // guard against rounding errors;
+                // if _tokenAmount to send is greater than contract balance,
+                // send full contract balance
+                uint256 _totalBalance =
+                    ITokenVault(tokenVault).balanceOf(address(this));
+                if (_tokenAmount > _totalBalance) {
+                    _tokenAmount = _totalBalance;
+                }
+            }
+            // the rest of the contributor's ETH should be returned
+            _ethAmount = _totalContributed - _totalUsedForBid;
+        } else {
+            // if the auction was lost, no ETH was spent;
+            // all of the contributor's ETH should be returned
+            _ethAmount = _totalContributed;
+        }
+    }
 
     /**
      * @notice Calculate the total amount of a contributor's funds that were
@@ -432,7 +492,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
         if (
-            _contribution.previousTotalContributedToParty + _contribution.amount <= _totalSpent
+            _contribution.previousTotalContributedToParty +
+                _contribution.amount <=
+            _totalSpent
         ) {
             // contribution was fully used
             return _contribution.amount;
