@@ -39,6 +39,10 @@
           "success": true
         },
         {
+          "placedByPartyBid": true,
+          "success": false
+        },
+        {
           "placedByPartyBid": false,
           "amount": 1.5,
           "success": true
@@ -103,6 +107,10 @@
         {
           "placedByPartyBid": true,
           "success": true
+        },
+        {
+          "placedByPartyBid": true,
+          "success": false
         },
         {
           "placedByPartyBid": false,
