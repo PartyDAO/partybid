@@ -50,7 +50,7 @@ async function deployChain() {
         chain: CHAIN_NAME,
         partyBidFactory: factory.address,
         marketWrappers: {
-            foundation: null,
+            foundation: foundationMarketWrapper.address,
             zora: zoraMarketWrapper.address
         }
     };
