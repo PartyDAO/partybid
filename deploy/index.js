@@ -54,14 +54,14 @@ async function deployChain() {
             zora: zoraMarketWrapper.address
         }
     };
-    const directory = "./deploy/addresses";
+    const directory = "./deploy/deployed-contracts";
     const filename = `${directory}/${CHAIN_NAME}.json`;
     fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(
         filename,
         JSON.stringify(addresses, null, 2),
     );
-    console.log(`Addresses written to deploy/${filename}`);
+    console.log(`Addresses written to ${filename}`);
 }
 
 async function deploy(wallet, name, args = []) {
