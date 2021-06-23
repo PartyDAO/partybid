@@ -206,6 +206,68 @@
           }
         ]
       }
+    },
+    {
+      "auctionReservePrice": 1,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 11.55
+        },
+        {
+          "signerIndex": 1,
+          "amount": 10
+        }
+      ],
+      "bids": [
+        {
+          "placedByPartyBid": true,
+          "success": true
+        },
+        {
+          "placedByPartyBid": false,
+          "amount": 10,
+          "success": true
+        },
+        {
+          "placedByPartyBid": true,
+          "success": true
+        }
+      ],
+      "finalBid": {
+        "ZORA": 10.5,
+        "FOUNDATION": 11
+      },
+      "claims": {
+        "ZORA": [
+          {
+            "signerIndex": 0,
+            "tokens": 11025,
+            "excessEth": 0.525,
+            "totalContributed": 11.55
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 0,
+            "excessEth": 10,
+            "totalContributed": 10
+          }
+        ],
+        "FOUNDATION": [
+          {
+            "signerIndex": 0,
+            "tokens": 11550,
+            "excessEth": 0,
+            "totalContributed": 11.55
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 0,
+            "excessEth": 10,
+            "totalContributed": 10
+          }
+        ]
+      }
     }
   ]
 }
