@@ -1,7 +1,7 @@
 {
   "chainName":  "rinkeby",
   "partyDAOMultisig":"0x506E7A2eD8087d499547e5890d088839501875A0",
-  "factionalArtERC721VaultFactory":"0xA36D1D42F2F29CdC2d451E9c909B3584d36fbE54",
+  "factionalArtERC721VaultFactory":"0x09EB641BA93CfA6340E944a22bDd2F1C8c745A9f",
   "foundationMarket":"0x21b700d637551f15078E11871a3c0dcCf283D1e7",
   "weth":"0xc778417E063141139Fce010982780140Aa0cD5Ab",
   "zoraAuctionHouse":"0xE7dd1252f50B3d845590Da0c5eADd985049a03ce"

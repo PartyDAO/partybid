@@ -1,4 +1,4 @@
-deploy/.env
+.env
 node_modules/
 cache/
 artifacts/
