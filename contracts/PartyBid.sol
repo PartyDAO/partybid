@@ -2,12 +2,15 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports: Inherited Contracts ============
-// NOTE: we inherit ReentrancyGuardUpgradeable
+// NOTE: we inherit from OpenZeppelin upgradeable contracts
 // because of the proxy structure used for cheaper deploys
 // (the proxies are NOT actually upgradeable)
 import {
     ReentrancyGuardUpgradeable
 } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {
+    ERC721HolderUpgradeable
+} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
 import {
     IERC721VaultFactory
@@ -25,7 +28,7 @@ import {IMarketWrapper} from "./market-wrapper/IMarketWrapper.sol";
  * @title PartyBid
  * @author Anna Carroll
  */
-contract PartyBid is ReentrancyGuardUpgradeable {
+contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Enums ============
 
     // State Transitions:
@@ -130,8 +133,9 @@ contract PartyBid is ReentrancyGuardUpgradeable {
         string memory _name,
         string memory _symbol
     ) external initializer {
-        // initialize ReentrancyGuard and ERC20
+        // initialize ReentrancyGuard and ERC721Holder
         __ReentrancyGuard_init();
+        __ERC721Holder_init();
         // set storage variables
         marketWrapper = _marketWrapper;
         nftContract = _nftContract;
