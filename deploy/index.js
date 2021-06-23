@@ -17,7 +17,7 @@ async function deployChain() {
     dotenv.config();
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = process.env;
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
     const {partyDAOMultisig, factionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse} = config;
 
     console.log(`Deploying ${CHAIN_NAME}`);
@@ -54,7 +54,7 @@ async function deployChain() {
             zora: zoraMarketWrapper.address
         }
     };
-    const directory = "./addresses";
+    const directory = "./deploy/addresses";
     const filename = `${directory}/${CHAIN_NAME}.json`;
     fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(
