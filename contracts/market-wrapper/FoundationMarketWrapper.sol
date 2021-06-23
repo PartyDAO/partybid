@@ -92,11 +92,11 @@ contract FoundationMarketWrapper is IMarketWrapper {
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
         // line 217 of NFTMarketReserveAuction, placeBid() function
-        (bool success, ) =
+        (bool success, bytes memory returnData) =
             address(market).call{value: bidAmount}(
                 abi.encodeWithSignature("placeBid(uint256)", auctionId)
             );
-        require(success, "place bid failed");
+        require(success, string(returnData));
     }
 
     /**

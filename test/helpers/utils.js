@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { FOURTY_EIGHT_HOURS_IN_SECONDS, MARKET_NAMES } = require('./constants');
 
 function eth(num) {
   return ethers.utils.parseEther(num.toString());
@@ -44,8 +45,13 @@ async function approve(signer, tokenContract, to, tokenId) {
   });
 }
 
-async function placeBid(signer, marketContract, auctionId, value) {
-  const data = encodeData(marketContract, 'placeBid', [auctionId]);
+async function placeBid(signer, marketContract, auctionId, value, marketName) {
+  let data;
+  if (marketName == MARKET_NAMES.ZORA) {
+    data = encodeData(marketContract, 'createBid', [auctionId, value]);
+  } else {
+    data = encodeData(marketContract, 'placeBid', [auctionId]);
+  }
 
   return signer.sendTransaction({
     to: marketContract.address,
@@ -100,6 +106,31 @@ async function transfer(
 
   return contributorSigner.sendTransaction({
     to: partyBidContract.address,
+    data,
+  });
+}
+
+async function createZoraAuction(
+  artist,
+  marketContract,
+  tokenId,
+  tokenContractAddress,
+  reservePrice,
+  duration = FOURTY_EIGHT_HOURS_IN_SECONDS,
+  curatorFeePercentage = 0,
+) {
+  const data = encodeData(marketContract, 'createAuction', [
+    tokenId,
+    tokenContractAddress,
+    duration,
+    reservePrice,
+    artist.address,
+    curatorFeePercentage,
+    ethers.constants.AddressZero,
+  ]);
+
+  return artist.sendTransaction({
+    to: marketContract.address,
     data,
   });
 }
@@ -174,5 +205,6 @@ module.exports = {
   supportReseller,
   transfer,
   createReserveAuction,
+  createZoraAuction,
   expectRedeemable,
 };

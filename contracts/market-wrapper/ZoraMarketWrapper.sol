@@ -77,10 +77,14 @@ contract ZoraMarketWrapper is IMarketWrapper {
     {
         // line 173 of Zora Auction House, calculation within createBid() function (calculation not exposed publicly)
         IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
-        return
-            _auction.amount.add(
-                _auction.amount.mul(minBidIncrementPercentage).div(100)
-            );
+        if (_auction.amount > _auction.reservePrice) {
+            return
+                _auction.amount.add(
+                    _auction.amount.mul(minBidIncrementPercentage).div(100)
+                );
+        } else {
+            return _auction.reservePrice;
+        }
     }
 
     /**
@@ -103,7 +107,7 @@ contract ZoraMarketWrapper is IMarketWrapper {
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
         // line 153 of Zora Auction House, createBid() function
-        (bool success, ) =
+        (bool success, bytes memory returnData) =
             address(market).call{value: bidAmount}(
                 abi.encodeWithSignature(
                     "createBid(uint256,uint256)",
@@ -111,7 +115,7 @@ contract ZoraMarketWrapper is IMarketWrapper {
                     bidAmount
                 )
             );
-        require(success, "place bid failed");
+        require(success, string(returnData));
     }
 
     /**

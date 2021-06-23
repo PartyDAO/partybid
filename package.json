@@ -27,6 +27,7 @@
   "homepage": "https://github.com/PartyDAO/partybid#readme",
   "dependencies": {
     "@openzeppelin/contracts": "4.1.0",
+    "@openzeppelin/contracts2": "npm:@openzeppelin/contracts@^3.2.0",
     "@openzeppelin/contracts-upgradeable": "4.1.0",
     "@openzeppelin/contracts-upgradeable2": "npm:@openzeppelin/contracts-upgradeable@^3.4.0",
     "dotenv": "^10.0.0"
