@@ -1,3 +1,4 @@
+deploy/.env
 node_modules/
 cache/
 artifacts/
