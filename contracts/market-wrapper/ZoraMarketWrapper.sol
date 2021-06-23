@@ -77,10 +77,14 @@ contract ZoraMarketWrapper is IMarketWrapper {
     {
         // line 173 of Zora Auction House, calculation within createBid() function (calculation not exposed publicly)
         IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
-        return
-            _auction.amount.add(
-                _auction.amount.mul(minBidIncrementPercentage).div(100)
-            );
+        if (_auction.amount > _auction.reservePrice) {
+            return
+                _auction.amount.add(
+                    _auction.amount.mul(minBidIncrementPercentage).div(100)
+                );
+        } else {
+            return _auction.reservePrice;
+        }
     }
 
     /**
