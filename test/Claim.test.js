@@ -81,7 +81,7 @@ describe('Claim', async () => {
             token = await getTokenVault(partyBid, firstSigner);
           });
 
-          for (let claim of claims) {
+          for (let claim of claims[marketName]) {
             const { signerIndex, tokens, excessEth, totalContributed } = claim;
             const contributor = signers[signerIndex];
             it(`Allows Claim, transfers ETH and tokens to contributors after Finalize`, async () => {

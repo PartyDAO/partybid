@@ -124,8 +124,8 @@ describe('Finalize', async () => {
             });
 
             it('Has correct totalSpent, totalSupply of tokens, balanceOf PartyBid tokens, and ETH balance', async () => {
-              const expectedTotalSpent = finalBid * 1.05;
-              const expectedTotalSupply = finalBid * 1.05 * 1000;
+              const expectedTotalSpent = finalBid[marketName] * 1.05;
+              const expectedTotalSupply = finalBid[marketName] * 1.05 * 1000;
 
               const totalSpent = await partyBid.totalSpent();
               expect(totalSpent).to.equal(eth(expectedTotalSpent));
@@ -149,7 +149,7 @@ describe('Finalize', async () => {
               );
 
               const multisigBalanceWithFee = eth(
-                balanceBeforeAsFloat + finalBid * 0.05,
+                balanceBeforeAsFloat + finalBid[marketName] * 0.05,
               );
               const multisigBalanceAfter = await provider.getBalance(
                 partyDAOMultisig.address,
