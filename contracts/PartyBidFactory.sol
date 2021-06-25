@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.5;
 
-import {PartyBidProxy} from "./PartyBidProxy.sol";
+import {InitializedProxy} from "./InitializedProxy.sol";
 import {PartyBid} from "./PartyBid.sol";
 
 /**
@@ -61,15 +61,21 @@ contract PartyBidFactory {
         string memory _name,
         string memory _symbol
     ) external returns (address partyBidProxy) {
-        partyBidProxy = address(
-            new PartyBidProxy(
-                logic,
+        bytes memory _initializationCalldata =
+            abi.encodeWithSignature(
+                "initialize(address,address,uint256,uint256,string,string)",
                 _marketWrapper,
                 _nftContract,
                 _tokenId,
                 _auctionId,
                 _name,
                 _symbol
+            );
+
+        partyBidProxy = address(
+            new InitializedProxy(
+                logic,
+                _initializationCalldata
             )
         );
 

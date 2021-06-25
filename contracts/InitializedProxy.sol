@@ -2,39 +2,24 @@
 pragma solidity 0.8.5;
 
 /**
- * @title PartyBid Proxy
+ * @title InitializedProxy
  * @author Anna Carroll
  */
-contract PartyBidProxy {
-    // address of PartyBid logic contract
+contract InitializedProxy {
+    // address of logic contract
     address public immutable logic;
 
     // ======== Constructor =========
 
     constructor(
         address _logic,
-        address _marketWrapper,
-        address _nftContract,
-        uint256 _tokenId,
-        uint256 _auctionId,
-        string memory _name,
-        string memory _symbol
+        bytes memory _initializationCalldata
     ) {
         logic = _logic;
-        bytes memory _initializationCalldata =
-            abi.encodeWithSignature(
-                "initialize(address,address,uint256,uint256,string,string)",
-                _marketWrapper,
-                _nftContract,
-                _tokenId,
-                _auctionId,
-                _name,
-                _symbol
-            );
-        // Delegatecall into the logic contract, supplying initialization calldata.
+        // Delegatecall into the logic contract, supplying initialization calldata
         (bool _ok, bytes memory returnData) =
             _logic.delegatecall(_initializationCalldata);
-        // Revert if delegatecall to implementation reverts.
+        // Revert if delegatecall to implementation reverts
         require(_ok, string(returnData));
     }
 
