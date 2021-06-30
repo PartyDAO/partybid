@@ -7,6 +7,7 @@ import "./OpenZeppelin/utils/Pausable.sol";
 import "./OpenZeppelin/token/ERC721/ERC721.sol";
 import "./OpenZeppelin/token/ERC721/ERC721Holder.sol";
 
+import {InitializedProxy} from "../../InitializedProxy.sol";
 import "./Settings.sol";
 import "./ERC721TokenVault.sol";
 
@@ -15,15 +16,20 @@ contract ERC721VaultFactory is Ownable, Pausable {
   uint256 public vaultCount;
 
   /// @notice the mapping of vault number to vault contract
-  mapping(uint256 => TokenVault) public vaults;
+  mapping(uint256 => address) public vaults;
 
   /// @notice a settings contract controlled by governance
-  address public settings;
+  address public immutable settings;
+  /// @notice the TokenVault logic contract
+  address public immutable logic;
 
   event Mint(address indexed token, uint256 id, uint256 price, address vault, uint256 vaultId);
 
   constructor(address _settings) {
     settings = _settings;
+    logic = address(
+      new TokenVault(_settings)
+    );
   }
 
   /// @notice the function to mint a new vault
@@ -34,11 +40,29 @@ contract ERC721VaultFactory is Ownable, Pausable {
   /// @param _listPrice the initial price of the NFT
   /// @return the ID of the vault
   function mint(string memory _name, string memory _symbol, address _token, uint256 _id, uint256 _supply, uint256 _listPrice, uint256 _fee) external whenNotPaused returns(uint256) {
-    TokenVault vault = new TokenVault(settings, msg.sender, _token, _id, _supply, _listPrice, _fee, _name, _symbol);
+    bytes memory _initializationCalldata =
+      abi.encodeWithSignature(
+        "initialize(address,address,uint256,uint256,uint256,uint256,string,string)",
+          msg.sender,
+          _token,
+          _id,
+          _supply,
+          _listPrice,
+          _fee,
+          _name,
+          _symbol
+    );
 
-    emit Mint(_token, _id, _listPrice, address(vault), vaultCount);
+    address vault = address(
+      new InitializedProxy(
+        logic,
+        _initializationCalldata
+      )
+    );
 
-    IERC721(_token).safeTransferFrom(msg.sender, address(vault), _id);
+    emit Mint(_token, _id, _listPrice, vault, vaultCount);
+
+    IERC721(_token).safeTransferFrom(msg.sender, vault, _id);
     
     vaults[vaultCount] = vault;
     vaultCount++;
