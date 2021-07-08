@@ -62,7 +62,8 @@ contract ZoraMarketWrapper is IMarketWrapper {
         IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
         return
             _auction.tokenId == tokenId &&
-            _auction.tokenContract == nftContract;
+            _auction.tokenContract == nftContract &&
+            _auction.auctionCurrency == address(0);
     }
 
     /**
