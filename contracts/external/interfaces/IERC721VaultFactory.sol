@@ -1,11 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.5;
 
-import {ITokenVault} from "./ITokenVault.sol";
-
 interface IERC721VaultFactory {
-    /// @notice the mapping of vault number to vault contract
-    function vaults(uint256) external returns (ITokenVault);
+    /// @notice the mapping of vault number to vault address
+    function vaults(uint256) external returns (address);
 
     /// @notice the function to mint a new vault
     /// @param _name the desired name of the vault

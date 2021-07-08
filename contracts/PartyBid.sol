@@ -408,9 +408,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
                 0
             );
         // store token vault address to storage
-        tokenVault = address(
-            IERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber)
-        );
+        tokenVault = IERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber);
         // transfer curator to null address
         ITokenVault(tokenVault).updateCurator(address(0));
     }

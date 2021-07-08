@@ -6,10 +6,15 @@ import "./OpenZeppelin/math/Math.sol";
 import "./OpenZeppelin/token/ERC20/ERC20.sol";
 import "./OpenZeppelin/token/ERC721/ERC721.sol";
 import "./OpenZeppelin/token/ERC721/ERC721Holder.sol";
-
 import "./Settings.sol";
+import {
+ERC721HolderUpgradeable
+} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import {
+ERC20Upgradeable
+} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
-contract TokenVault is ERC20, ERC721Holder {
+contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     using Address for address;
 
     /// -----------------------------------
@@ -57,7 +62,7 @@ contract TokenVault is ERC20, ERC721Holder {
     /// -----------------------------------
 
     /// @notice the governance contract which gets paid in ETH
-    address public settings;
+    address public immutable settings;
 
     /// @notice the address who initially deposited the NFT
     address public curator;
@@ -99,8 +104,15 @@ contract TokenVault is ERC20, ERC721Holder {
     /// @notice An event emitted when someone cashes in ERC20 tokens for ETH from an ERC721 token sale
     event Cash(address indexed owner, uint256 shares);
 
-    constructor(address _settings, address _curator, address _token, uint256 _id, uint256 _supply, uint256 _listPrice, uint256 _fee, string memory _name, string memory _symbol) ERC20(_name, _symbol) {
+    constructor(address _settings) {
         settings = _settings;
+    }
+
+    function initialize(address _curator, address _token, uint256 _id, uint256 _supply, uint256 _listPrice, uint256 _fee, string memory _name, string memory _symbol) external initializer {
+        // initialize inherited contracts
+        __ERC20_init(_name, _symbol);
+        __ERC721Holder_init();
+        // set storage variables
         token = _token;
         id = _id;
         reserveTotal = _listPrice * _supply;
@@ -108,7 +120,7 @@ contract TokenVault is ERC20, ERC721Holder {
         curator = _curator;
         fee = _fee;
         lastClaimed = block.timestamp;
-        votingTokens = _supply;
+        votingTokens = _listPrice == 0 ? 0 : _supply;
 
         auctionState = State.inactive;
 
@@ -134,6 +146,23 @@ contract TokenVault is ERC20, ERC721Holder {
         require(msg.sender == Ownable(settings).owner(), "kick:not gov");
 
         curator = _curator;
+    }
+
+    /// @notice allow governance to remove bad reserve prices
+    function removeReserve(address _user) external {
+        require(msg.sender == Ownable(settings).owner(), "remove:not gov");
+        require(auctionState == State.inactive, "update:auction live cannot update price");
+
+        uint256 old = userPrices[_user];
+        require(0 != old, "update:not an update");
+        uint256 weight = balanceOf(_user);
+
+        votingTokens -= weight;
+        reserveTotal -= weight * old;
+
+        userPrices[_user] = 0;
+
+        emit PriceUpdate(_user, 0);
     }
 
     /// -----------------------------------
@@ -178,7 +207,7 @@ contract TokenVault is ERC20, ERC721Holder {
         require(auctionState != State.ended, "claim:cannot claim after auction ends");
 
         // get how much in fees the curator would make in a year
-        uint256 currentAnnualFee = fee * totalSupply() / 1000; 
+        uint256 currentAnnualFee = fee * totalSupply() / 1000;
         // get how much that is per second;
         uint256 feePerSecond = currentAnnualFee / 31536000;
         // get how many seconds they are eligible to claim
@@ -189,7 +218,7 @@ contract TokenVault is ERC20, ERC721Holder {
         // now lets do the same for governance
         address govAddress = ISettings(settings).feeReceiver();
         uint256 govFee = ISettings(settings).governanceFee();
-        currentAnnualFee = govFee * totalSupply() / 1000; 
+        currentAnnualFee = govFee * totalSupply() / 1000;
         feePerSecond = currentAnnualFee / 31536000;
         uint256 govMint = sinceLastClaim * feePerSecond;
 
@@ -230,12 +259,12 @@ contract TokenVault is ERC20, ERC721Holder {
 
             votingTokens += weight;
             reserveTotal += weight * _new;
-        } 
+        }
         // they no longer want to vote
         else if (_new == 0) {
             votingTokens -= weight;
             reserveTotal -= weight * old;
-        } 
+        }
         // they are updating their vote
         else {
             uint256 averageReserve = (reserveTotal - (old * weight)) / (votingTokens - weight);
@@ -288,7 +317,7 @@ contract TokenVault is ERC20, ERC721Holder {
         require(auctionState == State.inactive, "start:no auction starts");
         require(msg.value >= reservePrice(), "start:too low bid");
         require(votingTokens * 1000 >= ISettings(settings).minVotePercentage() * totalSupply(), "start:not enough voters");
-        
+
         auctionEnd = block.timestamp + auctionLength;
         auctionState = State.live;
 
@@ -337,10 +366,10 @@ contract TokenVault is ERC20, ERC721Holder {
     function redeem() external {
         require(auctionState == State.inactive, "redeem:no redeeming");
         _burn(msg.sender, totalSupply());
-        
+
         // transfer erc721 to redeemer
         IERC721(token).transferFrom(address(this), msg.sender, id);
-        
+
         auctionState = State.redeemed;
 
         emit Redeem(msg.sender);
