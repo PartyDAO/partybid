@@ -61,6 +61,6 @@ contract IndexERC721 is ERC721, ERC721Holder {
 
         emit WithdrawERC20(_token, msg.sender);
     }
-    
+
     receive() external payable {}
 }

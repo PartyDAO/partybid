@@ -27,9 +27,7 @@ contract ERC721VaultFactory is Ownable, Pausable {
 
   constructor(address _settings) {
     settings = _settings;
-    logic = address(
-      new TokenVault(_settings)
-    );
+    logic = address(new TokenVault(_settings));
   }
 
   /// @notice the function to mint a new vault
@@ -41,16 +39,16 @@ contract ERC721VaultFactory is Ownable, Pausable {
   /// @return the ID of the vault
   function mint(string memory _name, string memory _symbol, address _token, uint256 _id, uint256 _supply, uint256 _listPrice, uint256 _fee) external whenNotPaused returns(uint256) {
     bytes memory _initializationCalldata =
-      abi.encodeWithSignature(
-        "initialize(address,address,uint256,uint256,uint256,uint256,string,string)",
-          msg.sender,
-          _token,
-          _id,
-          _supply,
-          _listPrice,
-          _fee,
-          _name,
-          _symbol
+    abi.encodeWithSignature(
+      "initialize(address,address,uint256,uint256,uint256,uint256,string,string)",
+      msg.sender,
+      _token,
+      _id,
+      _supply,
+      _listPrice,
+      _fee,
+      _name,
+      _symbol
     );
 
     address vault = address(
@@ -63,7 +61,7 @@ contract ERC721VaultFactory is Ownable, Pausable {
     emit Mint(_token, _id, _listPrice, vault, vaultCount);
 
     IERC721(_token).safeTransferFrom(msg.sender, vault, _id);
-    
+
     vaults[vaultCount] = vault;
     vaultCount++;
 
