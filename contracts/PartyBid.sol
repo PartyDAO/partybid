@@ -102,7 +102,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     event Bid(uint256 amount);
 
-    event Finalized(PartyStatus result, uint256 totalSpent);
+    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed);
 
     event Claimed(
         address indexed contributor,
@@ -269,10 +269,11 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             address(this)
             ? PartyStatus.AUCTION_WON
             : PartyStatus.AUCTION_LOST;
+        uint256 _fee;
         // if the auction was won,
         if (partyStatus == PartyStatus.AUCTION_WON) {
             // transfer 5% fee to PartyDAO
-            uint256 _fee = _getFee(highestBid);
+            _fee = _getFee(highestBid);
             _transferETHOrWETH(partyDAOMultisig, _fee);
             // record total spent by auction + PartyDAO fees
             totalSpent = highestBid + _fee;
@@ -281,7 +282,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             _fractionalizeNFT(totalSpent);
         }
         // set the contract status & emit result
-        emit Finalized(partyStatus, totalSpent);
+        emit Finalized(partyStatus, totalSpent, _fee, totalContributedToParty);
     }
 
     // ======== External: Claim =========
