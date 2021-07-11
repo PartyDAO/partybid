@@ -5,8 +5,6 @@ PartyBid is a protocol that allows a group of internet homies to pool their fund
 PartyBid is the first product developed by PartyDAO, a decentralized autonomous organization that builds and ships products. PartyDAO was [created initially](https://d.mirror.xyz/FLqkPA3iN4x-p97UhfhWwaCx8rBmVo-1yttY20oaob4) for the purpose of shipping PartyBid.
 To keep up with PartyDAO, follow [@prtyDAO](https://twitter.com/prtyDAO) on Twitter and [Mirror](https://party.mirror.xyz/). Acquire 10 [$PARTY tokens](https://etherscan.io/token/0x402eb84d9cb2d6cf66bde9b46d7277d3f4a16b54?a=0x2f4bea4cb44d0956ce4980e76a20a8928e00399a) to join the DAO and party with us.
 
----
-
 ## Features
 - A PartyBid contract is deployed targeting a single NFT auction
 - Anyone can contribute ETH to the PartyBid while the auction is still live
@@ -15,19 +13,14 @@ To keep up with PartyDAO, follow [@prtyDAO](https://twitter.com/prtyDAO) on Twit
 - If a PartyBid wins the NFT, a 5% fee is paid to the PartyDAO multisig 
 
 ## Functions
-### PartyBidFactory
+#### PartyBidFactory
 - `startParty` - deploy a PartyBid contract, specifying the NFT auction to target
-### PartyBid 
+#### PartyBid 
 - `contribute` - contribute ETH to the PartyBid
 - `bid` - trigger a bid on the NFT auction. Always submits the minimum possible bid to beat the current high bidder. Reverts if the PartyBid is already the high bidder. 
   `finalize` - call once after the auction closes to record and finalize the results of the auction. Deploys the fractionalized NFT vault if the PartyBid won.
 - `claim` - call once per contributor after the auction closes to claim fractionalized ERC-20 tokens (for any funds that were used to win the auction) and/or excess ETH (if the auction was lost, or if the funds were not used to win the auction)
 - `recover` - callable by the PartyDAO multisig to withdraw the NFT if (and only if) the auction was incorrectly marked as Lost
-
-## Deployed Addresses
-You can find the address of deployed PartyBid Factories on each chain at `deploy/deployed-contracts`
-
----
 
 ## Repo Layout
 - `contracts/PartyBid.sol` - core logic contract for PartyBid
@@ -57,6 +50,8 @@ npm run test
 ```
 
 ## Deployment
+You can find the address of deployed PartyBid Factories on each chain at `deploy/deployed-contracts`
+
 To deploy a new PartyBid Factory, first ensure you've populated your `.env` file. The RPC endpoint should point chain you want to deploy the contracts, and the private key of the Deployer account should be funded with ETH on that chain .
 
 Next, add a config file to `deploy/configs/[CHAIN_NAME].json` specifying the addresses of the necessary external protocols on that chain. You can use other files in that folder to see which contract addresses must be populated.
@@ -65,8 +60,6 @@ Finally, run
 ```bash
 npm run deploy
 ```
-
----
 
 ## Security Review
 The findings from the security review for PartyBid contracts can be found [here](https://hackmd.io/@alextowle/ryGQ4L-pd#PartyBid-Report). The security review was completed by [Alex Towle](https://twitter.com/jalex_towle). 
