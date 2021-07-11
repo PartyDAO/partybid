@@ -74,6 +74,7 @@ The findings from the security review for PartyBid contracts can be found [here]
 - [Alex Towle](https://twitter.com/jalex_towle) completed the security review of the contracts
 - [Anish Agnihotri](https://twitter.com/_anishagnihotri) authored the original [PartyBid proof-of-concept](https://github.com/Anish-Agnihotri/partybid), and built the PartyBid frontend
 - [Denis Nazarov](https://twitter.com/Iiterature) had the [original idea](https://twitter.com/Iiterature/status/1383238473767813125?s=20) for PartyBid and organized the [crowdfund](https://d.mirror.xyz/FLqkPA3iN4x-p97UhfhWwaCx8rBmVo-1yttY20oaob4) that created PartyDAO
+- [John Palmer](https://twitter.com/john_c_palmer) coordinated and product managed the project
 - [fractional.art](https://fractional.art/) team created the fractionalized NFT code for the post-auction experience
 
 ## License
