@@ -24,16 +24,19 @@ To keep up with PartyDAO, follow [@prtyDAO](https://twitter.com/prtyDAO) on Twit
 - `claim` - call once per contributor after the auction closes to claim fractionalized ERC-20 tokens (for any funds that were used to win the auction) and/or excess ETH (if the auction was lost, or if the funds were not used to win the auction)
 - `recover` - callable by the PartyDAO multisig to withdraw the NFT if (and only if) the auction was incorrectly marked as Lost
 
-----
+## Deployed Addresses
+You can find the address of deployed PartyBid Factories on each chain at `deploy/deployed-contracts`
+
+---
 
 ## Repo Layout
-- `./contracts/PartyBid.sol` - core logic contract for PartyBid
-- `./contracts/PartyBidFactory.sol` - factory contract used to deploy new PartyBid instances in a gas-efficient manner
-- `./contracts/market-wrapper` - MarketWrapper contracts enable PartyBid to integrate with different NFT auction implementations using a common interface
-- `./deploy` - Deployment script for contracts
-- `./test` - Hardhat tests for the core protocol
-- `./contracts/external` - External protocols' contracts ([Fractional Art](https://github.com/fractional-company/contracts), [Zora Auction House](https://github.com/ourzora/auction-house), [Foundation Market](https://etherscan.io/address/0xa7d94560dbd814af316dd96fde78b9136a977d1c#code)), copied to this repo for use in integration testing. 
-- `./contracts/test` - Contracts written for use in testing
+- `contracts/PartyBid.sol` - core logic contract for PartyBid
+- `contracts/PartyBidFactory.sol` - factory contract used to deploy new PartyBid instances in a gas-efficient manner
+- `contracts/market-wrapper` - MarketWrapper contracts enable PartyBid to integrate with different NFT auction implementations using a common interface
+- `deploy` - Deployment script for contracts
+- `test` - Hardhat tests for the core protocol
+- `contracts/external` - External protocols' contracts ([Fractional Art](https://github.com/fractional-company/contracts), [Zora Auction House](https://github.com/ourzora/auction-house), [Foundation Market](https://etherscan.io/address/0xa7d94560dbd814af316dd96fde78b9136a977d1c#code)), copied to this repo for use in integration testing.
+- `contracts/test` - Contracts written for use in testing
 
 ## Installation
 1. Install dependencies
@@ -56,14 +59,14 @@ npm run test
 ## Deployment
 To deploy a new PartyBid Factory, first ensure you've populated your `.env` file. The RPC endpoint should point chain you want to deploy the contracts, and the private key of the Deployer account should be funded with ETH on that chain .
 
-Next, add a config file to `./deploy/configs/[CHAIN_NAME].json` specifying the addresses of the necessary external protocols on that chain. You can use other files in that folder to see which contract addresses must be populated. 
+Next, add a config file to `deploy/configs/[CHAIN_NAME].json` specifying the addresses of the necessary external protocols on that chain. You can use other files in that folder to see which contract addresses must be populated.
 
 Finally, run
 ```bash
 npm run deploy
 ```
 
-------
+---
 
 ## Security Review
 The findings from the security review for PartyBid contracts can be found [here](https://hackmd.io/@alextowle/ryGQ4L-pd#PartyBid-Report). The security review was completed by [Alex Towle](https://twitter.com/jalex_towle). 
