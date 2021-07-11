@@ -1,3 +1,21 @@
+/*
+
+      ___           ___           ___           ___           ___           ___                       ___
+     /\  \         /\  \         /\  \         /\  \         |\__\         /\  \          ___        /\  \
+    /::\  \       /::\  \       /::\  \        \:\  \        |:|  |       /::\  \        /\  \      /::\  \
+   /:/\:\  \     /:/\:\  \     /:/\:\  \        \:\  \       |:|  |      /:/\:\  \       \:\  \    /:/\:\  \
+  /::\~\:\  \   /::\~\:\  \   /::\~\:\  \       /::\  \      |:|__|__   /::\~\:\__\      /::\__\  /:/  \:\__\
+ /:/\:\ \:\__\ /:/\:\ \:\__\ /:/\:\ \:\__\     /:/\:\__\     /::::\__\ /:/\:\ \:|__|  __/:/\/__/ /:/__/ \:|__|
+ \/__\:\/:/  / \/__\:\/:/  / \/_|::\/:/  /    /:/  \/__/    /:/~~/~    \:\~\:\/:/  / /\/:/  /    \:\  \ /:/  /
+      \::/  /       \::/  /     |:|::/  /    /:/  /        /:/  /       \:\ \::/  /  \::/__/      \:\  /:/  /
+       \/__/        /:/  /      |:|\/__/     \/__/         \/__/         \:\/:/  /    \:\__\       \:\/:/  /
+                   /:/  /       |:|  |                                    \::/__/      \/__/        \::/__/
+                   \/__/         \|__|                                     ~~                        ~~
+
+PartyBid v1
+Anna Carroll for PartyDAO
+*/
+
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.5;
 
@@ -24,10 +42,6 @@ import {IWETH} from "./external/interfaces/IWETH.sol";
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./market-wrapper/IMarketWrapper.sol";
 
-/**
- * @title PartyBid
- * @author Anna Carroll
- */
 contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Enums ============
 
