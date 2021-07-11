@@ -4,10 +4,10 @@
   "description": "PartyBid contracts",
   "main": "",
   "scripts": {
-    "prettier": "prettier --write './contracts' ./test",
-    "compile": "hardhat compile && npm run prettier",
     "test": "npm run compile && hardhat test",
-    "deploy": "node ./deploy/index.js",
+    "deploy": "npm run compile && node ./deploy/index.js",
+    "compile": "hardhat compile",
+    "prettier": "prettier --write './contracts' ./test",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
   },
   "repository": {
