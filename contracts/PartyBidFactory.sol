@@ -7,7 +7,6 @@ import {PartyBid} from "./PartyBid.sol";
 /**
  * @title PartyBid Factory
  * @author Anna Carroll
- * forked from MirrorXYZ CrowdfundFactory https://github.com/mirror-xyz/crowdfund/blob/main/contracts/CrowdfundFactory.sol
  *
  * WARNING: A malicious MarketWrapper contract could be used to steal user funds;
  * A poorly implemented MarketWrapper contract could permanently lose access to the NFT.

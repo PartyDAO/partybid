@@ -396,6 +396,9 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     /**
      * @notice Calculate 5% fee for PartyDAO
+     * NOTE: Remove this fee causes a critical vulnerability
+     * allowing anyone to exploit a PartyBid via price manipulation.
+     * See Security Review in README for more info.
      * @return _fee 5% of the given amount
      */
     function _getFee(uint256 _amount) internal pure returns (uint256 _fee) {
