@@ -4,33 +4,37 @@ dotenv.config();
 
 async function verify() {
     // load .env
-    const {CHAIN_NAME} = process.env;
-    if (!CHAIN_NAME) {
+    const {CHAIN_NAME, RPC_ENDPOINT} = process.env;
+    if (!(CHAIN_NAME && RPC_ENDPOINT) ) {
         throw new Error("Must add chain name to .env");
     }
 
     // load config
     const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
-    const {partyDAOMultisig, factionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse} = config;
+    const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse} = config;
 
     // load deployed contracts
     const contracts = JSON.parse(fs.readFileSync(`./deploy/deployed-contracts/${CHAIN_NAME}.json`));
-    const {partyBidFactory, marketWrappers} = contracts;
+    const {partyBidFactory, partyBidLogic, marketWrappers} = contracts;
     const {foundation, zora} = marketWrappers;
 
     console.log(`Verifying ${CHAIN_NAME}`);
 
-    // Deploy Foundation Market Wrapper
+    // Verify PartyBid Factory
+    console.log(`Verify PartyBid Factory`);
+    await verifyContract(partyBidFactory, [partyDAOMultisig, fractionalArtERC721VaultFactory, weth]);
+
+    // Verify PartyBid Logic
+    console.log(`Verify PartyBid Logic`);
+    await verifyContract(partyBidLogic, [partyDAOMultisig, fractionalArtERC721VaultFactory, weth]);
+
+    // Verify Foundation Market Wrapper
     console.log(`Verify Foundation Market Wrapper`);
     await verifyContract(foundation, [foundationMarket]);
 
-    // Deploy Zora Market Wrapper
+    // Verify Zora Market Wrapper
     console.log(`Verify Zora Market Wrapper`);
     await verifyContract(zora, [zoraAuctionHouse]);
-
-    // Deploy PartyBid Factory
-    console.log(`Verify PartyBid Factory`);
-    await verifyContract(partyBidFactory, [partyDAOMultisig, factionalArtERC721VaultFactory, weth]);
 }
 
 /*

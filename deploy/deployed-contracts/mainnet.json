@@ -1,6 +1,7 @@
 {
   "chain": "mainnet",
   "partyBidFactory": "0xD96Ff9e48f095f5a22Db5bDFFCA080bCC3B98c7f",
+  "partyBidLogic": "0x18B9F4aD986A0E0777a2E1A652a4499C8EE3E077",
   "marketWrappers": {
     "foundation": "0x0047D1712D60168FfE559f9569Da504c359637a9",
     "zora": "0x2a17b5371D59216b53D9e37Ecd5Cf08ec65B27Fb"
