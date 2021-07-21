@@ -4,8 +4,8 @@ dotenv.config();
 
 async function verify() {
     // load .env
-    const {CHAIN_NAME, RPC_ENDPOINT} = process.env;
-    if (!(CHAIN_NAME && RPC_ENDPOINT) ) {
+    const {CHAIN_NAME} = process.env;
+    if (!(CHAIN_NAME) ) {
         throw new Error("Must add chain name to .env");
     }
 
