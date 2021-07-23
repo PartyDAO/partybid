@@ -4,5 +4,10 @@
   "fractionalArtERC721VaultFactory":"0x85Aa7f78BdB2DE8F3e0c0010d99AD5853fFcfC63",
   "foundationMarket":"0xA7d94560DbD814aF316dd96fdE78b9136a977D1C",
   "weth":"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-  "zoraAuctionHouse":"0xE468cE99444174Bd3bBBEd09209577d25D1ad673"
+  "zoraAuctionHouse":"0xE468cE99444174Bd3bBBEd09209577d25D1ad673",
+  "initializeParameters": {
+    "nftContract": "0xabEFBc9fD2F806065b4f3C237d4b59D9A97Bcac7",
+    "tokenId": "535",
+    "zoraAuctionId": "581"
+  }
 }

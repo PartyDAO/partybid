@@ -22,7 +22,7 @@ async function deployChain() {
 
     // load config.json
     const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
-    const {partyDAOMultisig, factionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse} = config;
+    const {partyDAOMultisig, factionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse, initializeParameters} = config;
 
     console.log(`Deploying ${CHAIN_NAME}`);
 
@@ -52,6 +52,9 @@ async function deployChain() {
     // Get PartyBidLogic address
     const logic = await factory.logic();
 
+    // Initialize PartyBid logic contract
+    await initializeLogicContract(logic, zoraMarketWrapper, initializeParameters, deployer);
+
     // write contract addresses to file
     const addresses = {
         chain: CHAIN_NAME,
@@ -70,6 +73,22 @@ async function deployChain() {
         JSON.stringify(addresses, null, 2),
     );
     console.log(`Addresses written to ${filename}`);
+}
+
+async function initializeLogicContract(logicAddress, zoraMarketWrapper, initializeParameters, wallet) {
+    const {nftContract, tokenId, zoraAuctionId} = initializeParameters;
+
+    const PartyBid = await ethers.getContractFactory("PartyBid", wallet);
+    const logic = new ethers.Contract(logicAddress, PartyBid.interface , wallet);
+
+    return logic.initialize(
+        zoraMarketWrapper.address,
+        nftContract,
+        tokenId,
+        zoraAuctionId,
+        "PartyBid",
+        "BID"
+    );
 }
 
 async function deploy(wallet, name, args = []) {
