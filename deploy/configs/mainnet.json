@@ -1,7 +1,7 @@
 {
   "chainName":  "mainnet",
   "partyDAOMultisig":"0xF7f52Dd34bc21eDA08c0b804C7c1dbc48375820f",
-  "factionalArtERC721VaultFactory":"0x85Aa7f78BdB2DE8F3e0c0010d99AD5853fFcfC63",
+  "fractionalArtERC721VaultFactory":"0x85Aa7f78BdB2DE8F3e0c0010d99AD5853fFcfC63",
   "foundationMarket":"0xA7d94560DbD814aF316dd96fdE78b9136a977D1C",
   "weth":"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   "zoraAuctionHouse":"0xE468cE99444174Bd3bBBEd09209577d25D1ad673"

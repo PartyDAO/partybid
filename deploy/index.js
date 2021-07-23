@@ -49,10 +49,14 @@ async function deployChain() {
     ]);
     console.log(`Deployed PartyBid Factory: `, factory.address);
 
+    // Get PartyBidLogic address
+    const logic = await factory.logic();
+
     // write contract addresses to file
     const addresses = {
         chain: CHAIN_NAME,
         partyBidFactory: factory.address,
+        partyBidLogic: logic,
         marketWrappers: {
             foundation: foundationMarketWrapper.address,
             zora: zoraMarketWrapper.address

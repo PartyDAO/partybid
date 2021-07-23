@@ -5,7 +5,8 @@
   "main": "",
   "scripts": {
     "test": "npm run compile && hardhat test",
-    "deploy": "npm run compile && node ./deploy/index.js",
+    "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
+    "verify": "hardhat --network mainnet verify-contracts",
     "compile": "hardhat compile",
     "prettier": "prettier --write './contracts' ./test",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
@@ -33,6 +34,7 @@
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-etherscan": "^2.1.2",
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "hardhat": "^2.0.8",

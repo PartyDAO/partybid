@@ -1,5 +1,11 @@
 require('hardhat-gas-reporter');
 require('@nomiclabs/hardhat-waffle');
+require('@nomiclabs/hardhat-etherscan');
+const dotenv = require('dotenv');
+dotenv.config();
+const {verify} = require("./deploy/verify");
+
+task("verify-contracts", "Verifies the core contracts").setAction(verify);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -63,6 +69,10 @@ module.exports = {
     currency: 'USD',
   },
 
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
+  },
+
   networks: {
     hardhat: {
       gasPrice: 0,
@@ -70,5 +80,11 @@ module.exports = {
     localhost: {
       url: 'http://localhost:8545',
     },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+    },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+    }
   },
 };
