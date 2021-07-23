@@ -52,9 +52,12 @@ async function deployChain() {
     // Get PartyBidLogic address
     const logic = await factory.logic();
 
+    console.log(`Initialize Logic Contract`);
     // Initialize PartyBid logic contract
     await initializeLogicContract(logic, zoraMarketWrapper, initializeParameters, deployer);
+    console.log(`Initialized Logic Contract`);
 
+    console.log(`Write addresses to ${filename}`);
     // write contract addresses to file
     const addresses = {
         chain: CHAIN_NAME,
@@ -94,6 +97,8 @@ async function initializeLogicContract(logicAddress, zoraMarketWrapper, initiali
 async function deploy(wallet, name, args = []) {
     const Implementation = await ethers.getContractFactory(name, wallet);
     const contract = await Implementation.deploy(...args);
-    return contract.deployed();
+    const deployedContract = await contract.deployed();
+    await contract.deployTransaction.wait(5);
+    return deployedContract;
 }
 
