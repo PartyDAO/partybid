@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-// Reproduced from https://etherscan.io/address/0xa7d94560dbd814af316dd96fde78b9136a977d1c#code under the terms of Apache-2.0
+// Reproduced from https://etherscan.io/address/0x1bed4009d57fcdc068a489a153601d63ce4b04b2#code under the terms of Apache-2.0
 
 pragma solidity ^0.7.0;
 
@@ -17,12 +17,12 @@ import "./SendValueWithFallbackWithdraw.sol";
  * @notice A mixin to distribute funds when an NFT is sold.
  */
 abstract contract NFTMarketFees is
-    Constants,
-    Initializable,
-    FoundationTreasuryNode,
-    NFTMarketCore,
-    NFTMarketCreators,
-    SendValueWithFallbackWithdraw
+Constants,
+Initializable,
+FoundationTreasuryNode,
+NFTMarketCore,
+NFTMarketCreators,
+SendValueWithFallbackWithdraw
 {
     using SafeMathUpgradeable for uint256;
 
@@ -36,23 +36,13 @@ abstract contract NFTMarketFees is
     uint256 private _secondaryFoundationFeeBasisPoints;
     uint256 private _secondaryCreatorFeeBasisPoints;
 
-    mapping(address => mapping(uint256 => bool))
-        private nftContractToTokenIdToFirstSaleCompleted;
+    mapping(address => mapping(uint256 => bool)) private nftContractToTokenIdToFirstSaleCompleted;
 
     /**
      * @notice Returns true if the given NFT has not been sold in this market previously and is being sold by the creator.
      */
-    function getIsPrimary(address nftContract, uint256 tokenId)
-        public
-        view
-        returns (bool)
-    {
-        return
-            _getIsPrimary(
-                nftContract,
-                tokenId,
-                _getSellerFor(nftContract, tokenId)
-            );
+    function getIsPrimary(address nftContract, uint256 tokenId) public view returns (bool) {
+        return _getIsPrimary(nftContract, tokenId, _getCreator(nftContract, tokenId), _getSellerFor(nftContract, tokenId));
     }
 
     /**
@@ -62,31 +52,25 @@ abstract contract NFTMarketFees is
     function _getIsPrimary(
         address nftContract,
         uint256 tokenId,
+        address creator,
         address seller
     ) private view returns (bool) {
-        // By checking if the first sale has been completed first we can short circuit getCreator which is an external call.
-        return
-            !nftContractToTokenIdToFirstSaleCompleted[nftContract][tokenId] &&
-            getCreator(nftContract, tokenId) == seller;
+        return !nftContractToTokenIdToFirstSaleCompleted[nftContract][tokenId] && creator == seller;
     }
 
     /**
      * @notice Returns the current fee configuration in basis points.
      */
     function getFeeConfig()
-        public
-        view
-        returns (
-            uint256 primaryFoundationFeeBasisPoints,
-            uint256 secondaryFoundationFeeBasisPoints,
-            uint256 secondaryCreatorFeeBasisPoints
-        )
+    public
+    view
+    returns (
+        uint256 primaryFoundationFeeBasisPoints,
+        uint256 secondaryFoundationFeeBasisPoints,
+        uint256 secondaryCreatorFeeBasisPoints
+    )
     {
-        return (
-            _primaryFoundationFeeBasisPoints,
-            _secondaryFoundationFeeBasisPoints,
-            _secondaryCreatorFeeBasisPoints
-        );
+        return (_primaryFoundationFeeBasisPoints, _secondaryFoundationFeeBasisPoints, _secondaryCreatorFeeBasisPoints);
     }
 
     /**
@@ -98,21 +82,20 @@ abstract contract NFTMarketFees is
         uint256 tokenId,
         uint256 price
     )
-        public
-        view
-        returns (
-            uint256 foundationFee,
-            uint256 creatorSecondaryFee,
-            uint256 ownerRev
-        )
+    public
+    view
+    returns (
+        uint256 foundationFee,
+        uint256 creatorSecondaryFee,
+        uint256 ownerRev
+    )
     {
-        return
-            _getFees(
-                nftContract,
-                tokenId,
-                _getSellerFor(nftContract, tokenId),
-                price
-            );
+        (foundationFee, , creatorSecondaryFee, , ownerRev) = _getFees(
+            nftContract,
+            tokenId,
+            _getSellerFor(nftContract, tokenId),
+            price
+        );
     }
 
     /**
@@ -122,27 +105,42 @@ abstract contract NFTMarketFees is
     function _getFees(
         address nftContract,
         uint256 tokenId,
-        address seller,
+        address payable seller,
         uint256 price
     )
-        public
-        view
-        returns (
-            uint256 foundationFee,
-            uint256 creatorSecondaryFee,
-            uint256 ownerRev
-        )
+    private
+    view
+    returns (
+        uint256 foundationFee,
+        address payable creatorSecondaryFeeTo,
+        uint256 creatorSecondaryFee,
+        address payable ownerRevTo,
+        uint256 ownerRev
+    )
     {
+        // The tokenCreatorPaymentAddress replaces the creator as the fee recipient.
+        (address payable creator, address payable tokenCreatorPaymentAddress) =
+        _getCreatorAndPaymentAddress(nftContract, tokenId);
         uint256 foundationFeeBasisPoints;
-        if (_getIsPrimary(nftContract, tokenId, seller)) {
+        if (_getIsPrimary(nftContract, tokenId, creator, seller)) {
             foundationFeeBasisPoints = _primaryFoundationFeeBasisPoints;
             // On a primary sale, the creator is paid the remainder via `ownerRev`.
+            ownerRevTo = tokenCreatorPaymentAddress;
         } else {
             foundationFeeBasisPoints = _secondaryFoundationFeeBasisPoints;
-            // SafeMath is not required when dividing by a constant value > 0.
-            creatorSecondaryFee =
-                price.mul(_secondaryCreatorFeeBasisPoints) /
-                BASIS_POINTS;
+
+            // If there is no creator then funds go to the seller instead.
+            if (tokenCreatorPaymentAddress != address(0)) {
+                // SafeMath is not required when dividing by a constant value > 0.
+                creatorSecondaryFee = price.mul(_secondaryCreatorFeeBasisPoints) / BASIS_POINTS;
+                creatorSecondaryFeeTo = tokenCreatorPaymentAddress;
+            }
+
+            if (seller == creator) {
+                ownerRevTo = tokenCreatorPaymentAddress;
+            } else {
+                ownerRevTo = seller;
+            }
         }
         // SafeMath is not required when dividing by a constant value > 0.
         foundationFee = price.mul(foundationFeeBasisPoints) / BASIS_POINTS;
@@ -158,37 +156,25 @@ abstract contract NFTMarketFees is
         address payable seller,
         uint256 price
     )
-        internal
-        returns (
-            uint256 foundationFee,
-            uint256 creatorFee,
-            uint256 ownerRev
-        )
+    internal
+    returns (
+        uint256 foundationFee,
+        uint256 creatorFee,
+        uint256 ownerRev
+    )
     {
-        (foundationFee, creatorFee, ownerRev) = _getFees(
-            nftContract,
-            tokenId,
-            seller,
-            price
-        );
+        address payable creatorFeeTo;
+        address payable ownerRevTo;
+        (foundationFee, creatorFeeTo, creatorFee, ownerRevTo, ownerRev) = _getFees(nftContract, tokenId, seller, price);
 
         // Anytime fees are distributed that indicates the first sale is complete,
         // which will not change state during a secondary sale.
         // This must come after the `_getFees` call above as this state is considered in the function.
         nftContractToTokenIdToFirstSaleCompleted[nftContract][tokenId] = true;
 
-        _sendValueWithFallbackWithdraw(getFoundationTreasury(), foundationFee);
-        if (creatorFee > 0) {
-            address payable creator = getCreator(nftContract, tokenId);
-            if (creator == address(0)) {
-                // If the creator is unknown, send all revenue to the current seller instead.
-                ownerRev = ownerRev.add(creatorFee);
-                creatorFee = 0;
-            } else {
-                _sendValueWithFallbackWithdraw(creator, creatorFee);
-            }
-        }
-        _sendValueWithFallbackWithdraw(seller, ownerRev);
+        _sendValueWithFallbackWithdrawWithLowGasLimit(getFoundationTreasury(), foundationFee);
+        _sendValueWithFallbackWithdrawWithMediumGasLimit(creatorFeeTo, creatorFee);
+        _sendValueWithFallbackWithdrawWithMediumGasLimit(ownerRevTo, ownerRev);
     }
 
     /**
@@ -199,14 +185,9 @@ abstract contract NFTMarketFees is
         uint256 secondaryFoundationFeeBasisPoints,
         uint256 secondaryCreatorFeeBasisPoints
     ) internal {
+        require(primaryFoundationFeeBasisPoints < BASIS_POINTS, "NFTMarketFees: Fees >= 100%");
         require(
-            primaryFoundationFeeBasisPoints < BASIS_POINTS,
-            "NFTMarketFees: Fees >= 100%"
-        );
-        require(
-            secondaryFoundationFeeBasisPoints.add(
-                secondaryCreatorFeeBasisPoints
-            ) < BASIS_POINTS,
+            secondaryFoundationFeeBasisPoints.add(secondaryCreatorFeeBasisPoints) < BASIS_POINTS,
             "NFTMarketFees: Fees >= 100%"
         );
         _primaryFoundationFeeBasisPoints = primaryFoundationFeeBasisPoints;

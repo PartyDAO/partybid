@@ -4,9 +4,9 @@
 pragma solidity ^0.7.0;
 
 /**
- * @notice Interface for AdminRole which wraps the default admin role from
+ * @notice Interface for OperatorRole which wraps a role from
  * OpenZeppelin's AccessControl for easy integration.
  */
-interface IAdminRole {
-    function isAdmin(address account) external view returns (bool);
+interface IOperatorRole {
+    function isOperator(address account) external view returns (bool);
 }

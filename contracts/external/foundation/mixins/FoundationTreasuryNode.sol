@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-// Reproduced from https://etherscan.io/address/0xa7d94560dbd814af316dd96fde78b9136a977d1c#code under the terms of Apache-2.0
+// Reproduced from https://etherscan.io/address/0x1bed4009d57fcdc068a489a153601d63ce4b04b2#code under the terms of Apache-2.0
 
 pragma solidity ^0.7.0;
 
@@ -17,14 +17,8 @@ abstract contract FoundationTreasuryNode is Initializable {
     /**
      * @dev Called once after the initial deployment to set the Foundation treasury address.
      */
-    function _initializeFoundationTreasuryNode(address payable _treasury)
-        internal
-        initializer
-    {
-        require(
-            _treasury.isContract(),
-            "FoundationTreasuryNode: Address is not a contract"
-        );
+    function _initializeFoundationTreasuryNode(address payable _treasury) internal initializer {
+        require(_treasury.isContract(), "FoundationTreasuryNode: Address is not a contract");
         treasury = _treasury;
     }
 
