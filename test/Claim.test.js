@@ -4,7 +4,7 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, getBalances, contribute, placeBid } = require('./helpers/utils');
+const { eth, getBalances, contribute, placeBid, claim } = require('./helpers/utils');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
   MARKETS,
@@ -20,7 +20,7 @@ describe('Claim', async () => {
           // get test case information
           const { auctionReservePrice, contributions, bids, claims } = testCase;
           // instantiate test vars
-          let partyBid, market, auctionId, token;
+          let partyBid, market, auctionId, token, gasPayingSigner;
           const signers = provider.getWallets();
           const firstSigner = signers[0];
           const tokenId = 100;
@@ -61,12 +61,17 @@ describe('Claim', async () => {
                 );
               }
             }
+
+            const wallet = ethers.Wallet.createRandom()
+            gasPayingSigner = new ethers.Wallet(wallet.privateKey, provider);
+            await signers[0].sendTransaction({
+              to: gasPayingSigner.address,
+              value: eth(100)
+            });
           });
 
           it(`Reverts before Finalize`, async () => {
-            await expect(
-              partyBid.claim(firstSigner.address),
-            ).to.be.revertedWith('PartyBid::claim: auction not finalized');
+            await expect(claim(gasPayingSigner, partyBid, firstSigner.address)).to.be.revertedWith('PartyBid::claim: auction not finalized');
           });
 
           it('Allows Finalize', async () => {
@@ -81,8 +86,8 @@ describe('Claim', async () => {
             token = await getTokenVault(partyBid, firstSigner);
           });
 
-          for (let claim of claims[marketName]) {
-            const { signerIndex, tokens, excessEth, totalContributed } = claim;
+          for (let expectedClaim of claims[marketName]) {
+            const { signerIndex, tokens, excessEth, totalContributed } = expectedClaim;
             const contributor = signers[signerIndex];
             it(`Allows Claim, transfers ETH and tokens to contributors after Finalize`, async () => {
               const accounts = [
@@ -102,7 +107,7 @@ describe('Claim', async () => {
               expect(before.contributor.tokens).to.equal(0);
 
               // claim succeeds; event is emitted
-              await expect(partyBid.claim(contributor.address))
+              await expect(claim(gasPayingSigner, partyBid, contributor.address))
                 .to.emit(partyBid, 'Claimed')
                 .withArgs(
                   contributor.address,
@@ -117,10 +122,9 @@ describe('Claim', async () => {
               await expect(after.partyBid.eth).to.equal(
                 before.partyBid.eth - excessEth,
               );
-              // TODO: fix this test (hardhat gasPrice zero not working)
-              // await expect(after.contributor.eth).to.equal(
-              //   before.contributor.eth + excessEth,
-              // );
+              await expect(after.contributor.eth).to.equal(
+                before.contributor.eth + excessEth,
+              );
 
               // Tokens were transferred from PartyBid to contributor
               await expect(after.partyBid.tokens).to.equal(
@@ -132,13 +136,13 @@ describe('Claim', async () => {
             });
 
             it(`Does not allow a contributor to double-claim`, async () => {
-              await expect(partyBid.claim(contributor.address)).to.be.reverted;
+              await expect(claim(gasPayingSigner, partyBid, contributor.address)).to.be.reverted;
             });
           }
 
           it(`Reverts on Claim for non-contributor`, async () => {
             const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
-            await expect(partyBid.claim(randomAddress)).to.be.revertedWith(
+            await expect(claim(gasPayingSigner, partyBid, randomAddress)).to.be.revertedWith(
               'PartyBid::claim: not a contributor',
             );
           });

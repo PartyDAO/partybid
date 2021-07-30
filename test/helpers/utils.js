@@ -1,4 +1,3 @@
-const { expect } = require('chai');
 const { FOURTY_EIGHT_HOURS_IN_SECONDS, MARKET_NAMES } = require('./constants');
 
 function eth(num) {
@@ -13,13 +12,76 @@ function encodeData(contract, functionName, args) {
   return contract.interface.encodeFunctionData(func, args);
 }
 
+async function sendFromSigner(signer, contract, functionName, args, value = null) {
+  const data = encodeData(contract, functionName, args);
+  return signer.sendTransaction({
+    to: contract.address,
+    data,
+    value
+  });
+}
+
+async function claim(signer, partyBidContract, contributor) {
+  return sendFromSigner(signer, partyBidContract, "claim", [contributor]);
+}
+
+async function approve(signer, tokenContract, to, tokenId) {
+  return sendFromSigner(signer, tokenContract, "approve", [to, tokenId]);
+}
+
+async function placeBid(signer, marketContract, auctionId, value, marketName) {
+  if (marketName == MARKET_NAMES.ZORA) {
+    return sendFromSigner(signer, marketContract, "createBid", [auctionId, value], value);
+  } else {
+    return sendFromSigner(signer, marketContract, "placeBid", [auctionId], value);
+  }
+}
+
+async function contribute(partyBidContract, contributorSigner, value) {
+  return sendFromSigner(contributorSigner, partyBidContract, "contribute", [], value);
+}
+
+async function redeem(partyBidContract, contributorSigner, amount) {
+  return sendFromSigner(contributorSigner, partyBidContract, "redeem", [amount]);
+}
+
+async function createZoraAuction(
+  artist,
+  marketContract,
+  tokenId,
+  tokenContractAddress,
+  reservePrice,
+  duration = FOURTY_EIGHT_HOURS_IN_SECONDS,
+  curatorFeePercentage = 0,
+) {
+  return sendFromSigner(artist, marketContract, "createAuction", [
+    tokenId,
+    tokenContractAddress,
+    duration,
+    reservePrice,
+    artist.address,
+    curatorFeePercentage,
+    ethers.constants.AddressZero,
+  ]);
+}
+
+async function createReserveAuction(
+  artist,
+  marketContract,
+  nftContractAddress,
+  tokenId,
+  reservePrice,
+) {
+  return sendFromSigner(artist, marketContract, "createReserveAuction", [nftContractAddress, tokenId, reservePrice]);
+}
+
 async function getBalances(provider, token, accounts) {
   const balances = {};
   for (let account of accounts) {
     const { name, address } = account;
     balances[name] = {};
     balances[name]['eth'] = parseFloat(
-      weiToEth(await provider.getBalance(address)),
+        weiToEth(await provider.getBalance(address)),
     );
     let tokenBalance = 0;
     if(token.address != ethers.constants.AddressZero) {
@@ -40,159 +102,12 @@ function getTotalContributed(contributions) {
   return totalContributed;
 }
 
-async function approve(signer, tokenContract, to, tokenId) {
-  const data = encodeData(tokenContract, 'approve', [to, tokenId]);
-
-  return signer.sendTransaction({
-    to: tokenContract.address,
-    data,
-  });
-}
-
-async function placeBid(signer, marketContract, auctionId, value, marketName) {
-  let data;
-  if (marketName == MARKET_NAMES.ZORA) {
-    data = encodeData(marketContract, 'createBid', [auctionId, value]);
-  } else {
-    data = encodeData(marketContract, 'placeBid', [auctionId]);
-  }
-
-  return signer.sendTransaction({
-    to: marketContract.address,
-    data,
-    value,
-  });
-}
-
-async function contribute(partyBidContract, contributorSigner, value) {
-  const data = encodeData(partyBidContract, 'contribute');
-
-  return contributorSigner.sendTransaction({
-    to: partyBidContract.address,
-    data,
-    value,
-  });
-}
-
-async function redeem(partyBidContract, contributorSigner, amount) {
-  const data = encodeData(partyBidContract, 'redeem', [amount]);
-
-  return contributorSigner.sendTransaction({
-    to: partyBidContract.address,
-    data,
-  });
-}
-
-async function supportReseller(
-  partyBidContract,
-  contributorSigner,
-  reseller,
-  resellerCalldata,
-) {
-  const data = encodeData(partyBidContract, 'supportReseller', [
-    reseller,
-    resellerCalldata,
-  ]);
-
-  return contributorSigner.sendTransaction({
-    to: partyBidContract.address,
-    data,
-  });
-}
-
-async function transfer(
-  partyBidContract,
-  contributorSigner,
-  recipient,
-  amount,
-) {
-  const data = encodeData(partyBidContract, 'transfer', [recipient, amount]);
-
-  return contributorSigner.sendTransaction({
-    to: partyBidContract.address,
-    data,
-  });
-}
-
-async function createZoraAuction(
-  artist,
-  marketContract,
-  tokenId,
-  tokenContractAddress,
-  reservePrice,
-  duration = FOURTY_EIGHT_HOURS_IN_SECONDS,
-  curatorFeePercentage = 0,
-) {
-  const data = encodeData(marketContract, 'createAuction', [
-    tokenId,
-    tokenContractAddress,
-    duration,
-    reservePrice,
-    artist.address,
-    curatorFeePercentage,
-    ethers.constants.AddressZero,
-  ]);
-
-  return artist.sendTransaction({
-    to: marketContract.address,
-    data,
-  });
-}
-
-async function createReserveAuction(
-  artist,
-  marketContract,
-  nftContractAddress,
-  tokenId,
-  reservePrice,
-) {
-  const data = encodeData(marketContract, 'createReserveAuction', [
-    nftContractAddress,
-    tokenId,
-    reservePrice,
-  ]);
-
-  return artist.sendTransaction({
-    to: marketContract.address,
-    data,
-  });
-}
-
 function initExpectedTotalContributed(signers) {
   const expectedTotalContributed = {};
   signers.map((signer) => {
     expectedTotalContributed[signer.address] = 0;
   });
   return expectedTotalContributed;
-}
-
-// Validate state variables based on ETH amount added to contract
-async function expectRedeemable(
-  provider,
-  partyBid,
-  ethAmountAdded,
-  ethAmountRedeemed,
-) {
-  const redeemableEth = ethAmountAdded - ethAmountRedeemed;
-
-  // eth balance is equal to redeemableEth + excessContributions
-  const excessContributions = await partyBid.excessContributions();
-  const expectedBalance =
-    redeemableEth + parseFloat(weiToEth(excessContributions));
-  const ethBalance = await provider.getBalance(partyBid.address);
-  await expect(ethBalance).to.equal(eth(expectedBalance));
-
-  // redeemableEthBalance is equal to ethAmountAdded
-  const redeemableEthBalance = await partyBid.redeemableEthBalance();
-  await expect(redeemableEthBalance).to.equal(eth(redeemableEth));
-
-  // redeemAmount(tokenAmount) is expected portion
-  const tokenAmount = 100;
-  const totalSupply = await partyBid.totalSupply();
-  const expectedRedeemAmount =
-    redeemableEth * (tokenAmount / parseFloat(weiToEth(totalSupply)));
-  const redeemAmount = await partyBid.redeemAmount(eth(tokenAmount));
-  await expect(redeemAmount).to.equal(eth(expectedRedeemAmount));
 }
 
 module.exports = {
@@ -204,11 +119,9 @@ module.exports = {
   initExpectedTotalContributed,
   approve,
   contribute,
-  placeBid,
+  claim,
   redeem,
-  supportReseller,
-  transfer,
+  placeBid,
   createReserveAuction,
   createZoraAuction,
-  expectRedeemable,
 };
