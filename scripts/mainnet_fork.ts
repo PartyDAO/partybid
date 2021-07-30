@@ -1,5 +1,6 @@
 import hre, { ethers } from "hardhat";
 import "@nomiclabs/hardhat-ethers";
+import { partyBidAbi } from "./helpers/abis";
 
 // https://cmichel.io/replaying-ethereum-hacks-introduction/?no-cache=1
 export const forkFrom = async (blockNumber: number) => {
@@ -71,11 +72,45 @@ const go = async () => {
   });
 
   console.log(JSON.stringify(tx));
-  console.log("txn sent! ^");
 
-  // bid party
+  const provider = vitalik.provider;
+  const startTxnReceipt = await provider.getTransactionReceipt(tx.hash);
+  const parsedStartTxnLogs = startTxnReceipt.logs.map((l) =>
+    partyBidFactory.interface.parseLog(l)
+  );
+  const foundDeployedLog = parsedStartTxnLogs.find(
+    (l) => l.name === "PartyBidDeployed"
+  );
+  if (!foundDeployedLog) {
+    throw new Error(`cant find deploy log`);
+  }
+  const deployedPartyBidAddress = foundDeployedLog.args[0];
 
-  // console.log(JSON.stringify(partyBidFactory));
+  // console.log(JSON.stringify(foundDeployedLog));
+  // console.log(deployedPartyBidAddress);
+
+  // grab the party
+  const party = new ethers.Contract(
+    deployedPartyBidAddress,
+    partyBidAbi,
+    vitalik
+  );
+  const contribAmount = 4 * 10 ** 18;
+
+  const vitalikContrib = await party.contribute({
+    value: contribAmount.toString(),
+  });
+  console.log("contribution:", vitalikContrib);
+  await vitalikContrib.wait();
+  console.log("contribution successful");
+
+  const totalContribed = await party.totalContributedToParty();
+  console.log("total contributed", totalContribed.toString());
+
+  const bid = await party.bid();
+  await bid.wait();
+
+  console.log("bid created successfully", bid);
 };
 
 go().then(() => {
