@@ -1,6 +1,6 @@
 import hre, { ethers } from "hardhat";
 import "@nomiclabs/hardhat-ethers";
-import { partyBidAbi } from "./helpers/abis";
+import { erc20abi, erc721abi, partyBidAbi } from "./helpers/abis";
 
 // https://cmichel.io/replaying-ethereum-hacks-introduction/?no-cache=1
 export const forkFrom = async (blockNumber: number) => {
@@ -52,6 +52,9 @@ const go = async () => {
     "PartyBidFactory",
     PARTY_BID_FACTORY
   );
+
+  const erc721Contract = new ethers.Contract(NFT_CONTRACT, erc721abi, vitalik);
+  console.log("original owner of NFT:", await erc721Contract.ownerOf(TOKEN_ID));
 
   // start party
   const startPartyTxnData = partyBidFactory.interface.encodeFunctionData(
@@ -111,6 +114,43 @@ const go = async () => {
   await bid.wait();
 
   console.log("bid created successfully", bid);
+
+  // increase time and finalize
+  const ONE_HOUR = 60 * 60;
+  const secondsIncrease = ONE_HOUR * 48;
+  await provider.send("evm_increaseTime", [secondsIncrease]);
+  await provider.send("evm_mine", []);
+
+  await party.finalize();
+
+  const status = await party.partyStatus();
+  console.log("status", JSON.stringify(status));
+
+  const fractionalTokenAddress = await party.tokenVault();
+  const fractionalToken = new ethers.Contract(
+    fractionalTokenAddress,
+    erc20abi,
+    vitalik
+  );
+
+  const ogVitalikBalance = await fractionalToken.balanceOf(
+    ADDRESS_TO_IMPERSONATE
+  );
+  console.log("initial balance", ogVitalikBalance.toString());
+
+  await party.claim(ADDRESS_TO_IMPERSONATE);
+
+  const newVitalikBalance = await fractionalToken.balanceOf(
+    ADDRESS_TO_IMPERSONATE
+  );
+  console.log("new balance", newVitalikBalance.toString());
+
+  console.log(
+    "new owner of NFT:",
+    await erc721Contract.ownerOf(TOKEN_ID),
+    "fractional token",
+    fractionalTokenAddress
+  );
 };
 
 go().then(() => {
