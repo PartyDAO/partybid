@@ -139,7 +139,7 @@ async function deployZoraAndStartAuction(
     zoraAuctionHouse,
     tokenId,
     nftContract.address,
-    reservePrice,
+    eth(reservePrice),
   );
 
   const auctionId = 0;
