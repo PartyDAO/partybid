@@ -79,10 +79,10 @@ contract ZoraMarketWrapper is IMarketWrapper {
         // line 173 of Zora Auction House, calculation within createBid() function (calculation not exposed publicly)
         IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
         if (_auction.bidder == address(0)) {
-            // if there are no bids, the reserve price is the minimum bid
+            // if there are NO bids, the minimum bid is the reserve price
             return _auction.reservePrice;
         } else {
-            // if there are bids, the reserve price is the minimum bid
+            // if there ARE bids, the minimum bid is the current bid plus the increment buffer
             return _auction.amount.add(_auction.amount.mul(minBidIncrementPercentage).div(100));
         }
     }
