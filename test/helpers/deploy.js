@@ -225,6 +225,7 @@ async function deployTestContractSetup(
     market,
     partyBid,
     partyDAOMultisig,
+    weth,
   };
 }
 
