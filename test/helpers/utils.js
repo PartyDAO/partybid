@@ -64,6 +64,20 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
   });
 }
 
+async function externalFinalize(signer, marketContract, auctionId, marketName) {
+  let data;
+  if (marketName == MARKET_NAMES.ZORA) {
+    data = encodeData(marketContract, 'endAuction', [auctionId]);
+  } else {
+    data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
+  }
+
+  return signer.sendTransaction({
+    to: marketContract.address,
+    data,
+  });
+}
+
 async function bidThroughParty(partyBidContract, signer) {
   const data = encodeData(partyBidContract, 'bid');
 
@@ -221,4 +235,5 @@ module.exports = {
   createZoraAuction,
   expectRedeemable,
   bidThroughParty,
+  externalFinalize
 };
