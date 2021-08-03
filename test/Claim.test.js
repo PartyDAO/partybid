@@ -4,7 +4,7 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, getBalances, contribute, placeBid } = require('./helpers/utils');
+const { eth, getBalances, bidThroughParty, contribute, placeBid } = require('./helpers/utils');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
   MARKETS,
@@ -50,7 +50,8 @@ describe('Claim', async () => {
             for (let bid of bids) {
               const { placedByPartyBid, amount, success } = bid;
               if (success && placedByPartyBid) {
-                await partyBid.bid();
+                const { signerIndex } = contributions[0];
+                await bidThroughParty(partyBid, signers[signerIndex]);
               } else if (success && !placedByPartyBid) {
                 await placeBid(
                   firstSigner,

@@ -10,6 +10,7 @@ const {
   getTotalContributed,
   contribute,
   placeBid,
+  bidThroughParty,
 } = require('./helpers/utils');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
@@ -30,6 +31,7 @@ describe('Finalize', async () => {
             contributions,
             bids,
             finalBid,
+            finalFee
           } = testCase;
           // instantiate test vars
           let partyBid,
@@ -76,7 +78,8 @@ describe('Finalize', async () => {
             for (let bid of bids) {
               const { placedByPartyBid, amount, success } = bid;
               if (success && placedByPartyBid) {
-                await partyBid.bid();
+                const { signerIndex } = contributions[0];
+                await bidThroughParty(partyBid, signers[signerIndex]);
               } else if (success && !placedByPartyBid) {
                 await placeBid(
                   signers[0],
@@ -124,8 +127,8 @@ describe('Finalize', async () => {
             });
 
             it('Has correct totalSpent, totalSupply of tokens, balanceOf PartyBid tokens, and ETH balance', async () => {
-              const expectedTotalSpent = finalBid[marketName] * 1.05;
-              const expectedTotalSupply = finalBid[marketName] * 1.05 * 1000;
+              const expectedTotalSpent = finalBid[marketName] + finalFee[marketName];
+              const expectedTotalSupply = expectedTotalSpent * 1000;
 
               const totalSpent = await partyBid.totalSpent();
               expect(totalSpent).to.equal(eth(expectedTotalSpent));
@@ -149,7 +152,7 @@ describe('Finalize', async () => {
               );
 
               const multisigBalanceWithFee = eth(
-                balanceBeforeAsFloat + finalBid[marketName] * 0.05,
+                balanceBeforeAsFloat + finalFee[marketName],
               );
               const multisigBalanceAfter = await provider.getBalance(
                 partyDAOMultisig.address,

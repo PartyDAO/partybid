@@ -4,7 +4,7 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, contribute, placeBid } = require('./helpers/utils');
+const { eth, bidThroughParty, contribute, placeBid } = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
 const { MARKETS, MARKET_NAMES } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
@@ -47,11 +47,13 @@ describe('Bid', async () => {
             const { placedByPartyBid, amount, success } = bid;
             if (placedByPartyBid && success) {
               it('Allows PartyBid to bid', async () => {
-                await expect(partyBid.bid()).to.emit(partyBid, 'Bid');
+                const { signerIndex } = contributions[0];
+                await expect(bidThroughParty(partyBid, signers[signerIndex])).to.emit(partyBid, 'Bid');
               });
             } else if (placedByPartyBid && !success) {
               it('Does not allow PartyBid to bid', async () => {
-                await expect(partyBid.bid()).to.be.reverted;
+                const { signerIndex } = contributions[0];
+                await expect(bidThroughParty(partyBid, signers[signerIndex])).to.be.reverted;
               });
             } else if (!placedByPartyBid && success) {
               it('Accepts external bid', async () => {

@@ -64,6 +64,15 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
   });
 }
 
+async function bidThroughParty(partyBidContract, signer) {
+  const data = encodeData(partyBidContract, 'bid');
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
 async function contribute(partyBidContract, contributorSigner, value) {
   const data = encodeData(partyBidContract, 'contribute');
 
@@ -211,4 +220,5 @@ module.exports = {
   createReserveAuction,
   createZoraAuction,
   expectRedeemable,
+  bidThroughParty,
 };

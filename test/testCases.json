@@ -56,6 +56,10 @@
         "ZORA": 1.575,
         "FOUNDATION": 1.65
       },
+      "finalFee": {
+        "ZORA": 0.07875,
+        "FOUNDATION": 0.0825
+      },
       "claims": {
         "ZORA": [
           {
@@ -126,6 +130,10 @@
         "ZORA": 10.5,
         "FOUNDATION": 11
       },
+      "finalFee": {
+        "ZORA": 0.525,
+        "FOUNDATION": 0.55
+      },
       "claims": {
         "ZORA": [
           {
@@ -181,6 +189,10 @@
         }
       ],
       "finalBid": {
+        "ZORA": 0,
+        "FOUNDATION": 0
+      },
+      "finalFee": {
         "ZORA": 0,
         "FOUNDATION": 0
       },
@@ -246,6 +258,10 @@
         "ZORA": 10.5,
         "FOUNDATION": 11
       },
+      "finalFee": {
+        "ZORA": 0.525,
+        "FOUNDATION": 0.55
+      },
       "claims": {
         "ZORA": [
           {
@@ -273,6 +289,52 @@
             "tokens": 0,
             "excessEth": 10,
             "totalContributed": 10
+          }
+        ]
+      }
+    },
+    {
+      "auctionReservePrice": 1,
+      "contributions": [
+        {
+          "signerIndex": 1,
+          "amount": 2
+        }
+      ],
+      "bids": [
+        {
+          "placedByPartyBid": false,
+          "amount": 1,
+          "success": true
+        },
+        {
+          "placedByPartyBid": true,
+          "success": true
+        }
+      ],
+      "finalBid": {
+        "ZORA": 1.05,
+        "FOUNDATION": 1.1
+      },
+      "finalFee": {
+        "ZORA": 0.0525,
+        "FOUNDATION": 0.055
+      },
+      "claims": {
+        "ZORA": [
+          {
+            "signerIndex": 1,
+            "tokens": 1102.5,
+            "excessEth": 0.8975,
+            "totalContributed": 2
+          }
+        ],
+        "FOUNDATION": [
+          {
+            "signerIndex": 1,
+            "tokens": 1155,
+            "excessEth": 0.845,
+            "totalContributed": 2
           }
         ]
       }
