@@ -201,6 +201,10 @@ async function deployTestContractSetup(
     partyDAOMultisig.address,
     tokenVaultFactory.address,
     weth.address,
+    marketWrapper.address,
+    nftContract.address,
+    tokenId,
+    auctionId
   ]);
 
   // Deploy PartyBid proxy

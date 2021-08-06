@@ -44,15 +44,28 @@ contract PartyBidFactory {
     constructor(
         address _partyDAOMultisig,
         address _tokenVaultFactory,
-        address _weth
+        address _weth,
+        address _logicMarketWrapper,
+        address _logicNftContract,
+        uint256 _logicTokenId,
+        uint256 _logicAuctionId
     ) {
         partyDAOMultisig = _partyDAOMultisig;
         tokenVaultFactory = _tokenVaultFactory;
         weth = _weth;
         // deploy logic contract
-        logic = address(
-            new PartyBid(_partyDAOMultisig, _tokenVaultFactory, _weth)
+        PartyBid _logicContract = new PartyBid(_partyDAOMultisig, _tokenVaultFactory, _weth);
+        // initialize logic contract
+        _logicContract.initialize(
+            _logicMarketWrapper,
+            _logicNftContract,
+            _logicTokenId,
+            _logicAuctionId,
+            "PartyBid",
+            "BID"
         );
+        // store logic contract address
+        logic = address(_logicContract);
     }
 
     //======== Deploy function =========
