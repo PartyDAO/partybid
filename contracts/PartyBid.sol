@@ -280,10 +280,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
-        partyStatus = IERC721Metadata(nftContract).ownerOf(tokenId) ==
-            address(this)
-            ? PartyStatus.AUCTION_WON
-            : PartyStatus.AUCTION_LOST;
+        address _owner = _getOwner();
+        partyStatus = _owner == address(this) ? PartyStatus.AUCTION_WON : PartyStatus.AUCTION_LOST;
         uint256 _fee;
         // if the auction was won,
         if (partyStatus == PartyStatus.AUCTION_WON) {
@@ -407,6 +405,28 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     }
 
     // ============ Internal: Finalize ============
+
+    /**
+    * @notice Query the NFT contract to get the token owner
+    * @dev nftContract must implement the ERC-721 token standard exactly:
+    * function ownerOf(uint256 _tokenId) external view returns (address);
+    * See https://eips.ethereum.org/EIPS/eip-721
+    * @dev Returns address(0) if NFT token or NFT contract
+    * no longer exists (token burned or contract self-destructed)
+    * @return _owner the owner of the NFT
+    */
+    function _getOwner() internal returns (address _owner) {
+        (bool success, bytes memory returnData) =
+            nftContract.call(
+                abi.encodeWithSignature(
+                    "ownerOf(uint256)",
+                    tokenId
+                )
+        );
+        if (success) {
+            _owner = abi.decode(returnData, (address));
+        }
+    }
 
     /**
      * @notice Upon winning the auction, transfer the NFT
