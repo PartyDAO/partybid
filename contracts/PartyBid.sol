@@ -184,6 +184,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         );
         address _contributor = msg.sender;
         uint256 _amount = msg.value;
+        require(_amount > 0, "PartyBid::contribute: must contribute more than 0");
         // get the current contract balance
         uint256 _previousTotalContributedToParty = totalContributedToParty;
         // add contribution to contributor's array of contributions
