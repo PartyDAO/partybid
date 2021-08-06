@@ -158,7 +158,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         name = _name;
         symbol = _symbol;
         // validate token exists (ownerOf should revert if token doesn't exist)
-        IERC721Metadata(_nftContract).ownerOf(_tokenId);
+        require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // validate auction exists
         require(
             IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
@@ -423,7 +423,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
                     tokenId
                 )
         );
-        if (success) {
+        if (success && returnData.length > 0) {
             _owner = abi.decode(returnData, (address));
         }
     }

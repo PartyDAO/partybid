@@ -18,7 +18,7 @@ const {
 } = require('../helpers/constants');
 const { MARKETS } = require('../helpers/constants');
 
-describe('NFT Burned', async () => {
+describe('NFT Contract Self-Destructed', async () => {
     MARKETS.map((marketName) => {
         describe(marketName, async () => {
             // instantiate test vars
@@ -79,10 +79,19 @@ describe('NFT Burned', async () => {
                 await externalFinalize(signers[2], market, auctionId, marketName)
             });
 
+            it('Can query balanceOf before self-destruct', async () => {
+                // destruct the NFT contract
+                await expect(nftContract.ownerOf(tokenId)).to.not.be.reverted;
+            });
 
-            it('Allows the owner to burn the NFT', async () => {
-                // burn the NFT
-                await expect(nftContract.burn(tokenId)).to.not.be.reverted;
+            it('Can self-destruct', async () => {
+                // destruct the NFT contract
+                await expect(nftContract.destruct()).to.not.be.reverted;
+            });
+
+            it('Can query NOT balanceOf before self-destruct', async () => {
+                // destruct the NFT contract
+                await expect(nftContract.ownerOf(tokenId)).to.be.reverted;
             });
 
             it('Is ACTIVE before PartyBid-level Finalize', async () => {

@@ -10,4 +10,8 @@ contract TestERC721 is ERC721Burnable {
     function mint(address to, uint256 tokenId) external {
         _mint(to, tokenId);
     }
+
+    function destruct() public {
+        selfdestruct(payable(address(0)));
+    }
 }
