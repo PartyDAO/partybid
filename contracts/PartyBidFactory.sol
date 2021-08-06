@@ -34,6 +34,11 @@ contract PartyBidFactory {
     address public immutable tokenVaultFactory;
     address public immutable weth;
 
+    //======== Mutable storage =========
+
+    // PartyBid proxy => block number deployed at
+    mapping(address => uint256) public deployedAt;
+
     //======== Constructor =========
 
     constructor(
@@ -77,6 +82,8 @@ contract PartyBidFactory {
                 _initializationCalldata
             )
         );
+
+        deployedAt[partyBidProxy] = block.number;
 
         emit PartyBidDeployed(
             partyBidProxy,
