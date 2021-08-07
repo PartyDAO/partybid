@@ -1,6 +1,7 @@
 const fs = require("fs");
 const dotenv = require('dotenv');
 dotenv.config();
+const {getDeployedAddresses} = require("./helpers");
 
 async function verify() {
     // load .env
@@ -11,18 +12,41 @@ async function verify() {
 
     // load config
     const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
-    const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse} = config;
+    const {
+        partyDAOMultisig,
+        fractionalArtERC721VaultFactory,
+        weth,
+        foundationMarket,
+        zoraAuctionHouse,
+        logicNftContract,
+        logicTokenId,
+        logicZoraAuctionId
+    } = config;
+    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && logicNftContract && logicTokenId && logicZoraAuctionId)) {
+        throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse, logicNftContract, logicTokenId, logicZoraAuctionId");
+    }
 
     // load deployed contracts
-    const contracts = JSON.parse(fs.readFileSync(`./deploy/deployed-contracts/${CHAIN_NAME}.json`));
-    const {partyBidFactory, partyBidLogic, marketWrappers} = contracts;
+    const {contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    if (!contractAddresses["marketWrappers"]["zora"]) {
+        throw new Error("No deployed Zora MarketWrapper for chain");
+    }
+    const {partyBidFactory, partyBidLogic, marketWrappers} = contractAddresses;
     const {foundation, zora} = marketWrappers;
 
     console.log(`Verifying ${CHAIN_NAME}`);
 
     // Verify PartyBid Factory
     console.log(`Verify PartyBid Factory`);
-    await verifyContract(partyBidFactory, [partyDAOMultisig, fractionalArtERC721VaultFactory, weth]);
+    await verifyContract(partyBidFactory, [
+        partyDAOMultisig,
+        fractionalArtERC721VaultFactory,
+        weth,
+        zora,
+        logicNftContract,
+        logicTokenId,
+        logicZoraAuctionId
+    ]);
 
     // Verify PartyBid Logic
     console.log(`Verify PartyBid Logic`);

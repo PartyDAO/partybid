@@ -108,7 +108,6 @@ describe('External Finalize', async () => {
                             FOURTY_EIGHT_HOURS_IN_SECONDS,
                         ]);
                         await provider.send('evm_mine');
-                        // TODO: external finalize
 
                         await externalFinalize(signers[2], market, auctionId, marketName)
                     });

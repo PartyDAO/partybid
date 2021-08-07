@@ -157,8 +157,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         auctionId = _auctionId;
         name = _name;
         symbol = _symbol;
-        // validate token exists (ownerOf should revert if token doesn't exist)
-        IERC721Metadata(_nftContract).ownerOf(_tokenId);
+        // validate token exists
+        require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // validate auction exists
         require(
             IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
@@ -184,6 +184,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         );
         address _contributor = msg.sender;
         uint256 _amount = msg.value;
+        require(_amount > 0, "PartyBid::contribute: must contribute more than 0");
         // get the current contract balance
         uint256 _previousTotalContributedToParty = totalContributedToParty;
         // add contribution to contributor's array of contributions
@@ -279,10 +280,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
-        partyStatus = IERC721Metadata(nftContract).ownerOf(tokenId) ==
-            address(this)
-            ? PartyStatus.AUCTION_WON
-            : PartyStatus.AUCTION_LOST;
+        address _owner = _getOwner();
+        partyStatus = _owner == address(this) ? PartyStatus.AUCTION_WON : PartyStatus.AUCTION_LOST;
         uint256 _fee;
         // if the auction was won,
         if (partyStatus == PartyStatus.AUCTION_WON) {
@@ -333,7 +332,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             _calculateTokensAndETHOwed(_contributor);
         // transfer tokens to contributor for their portion of ETH used
         if (_tokenAmount > 0) {
-            ITokenVault(tokenVault).transfer(_contributor, _tokenAmount);
+            _transferTokens(_contributor, _tokenAmount);
         }
         // if there is excess ETH, send it back to the contributor
         if (_ethAmount > 0) {
@@ -391,7 +390,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @return _maxBid the maximum bid
      */
     function _getMaximumBid() internal view returns (uint256 _maxBid) {
-        _maxBid = totalContributedToParty - _getFee(totalContributedToParty);
+        _maxBid = (totalContributedToParty * 100) / (100 + FEE_PERCENT);
     }
 
     /**
@@ -406,6 +405,28 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     }
 
     // ============ Internal: Finalize ============
+
+    /**
+    * @notice Query the NFT contract to get the token owner
+    * @dev nftContract must implement the ERC-721 token standard exactly:
+    * function ownerOf(uint256 _tokenId) external view returns (address);
+    * See https://eips.ethereum.org/EIPS/eip-721
+    * @dev Returns address(0) if NFT token or NFT contract
+    * no longer exists (token burned or contract self-destructed)
+    * @return _owner the owner of the NFT
+    */
+    function _getOwner() internal returns (address _owner) {
+        (bool success, bytes memory returnData) =
+            nftContract.call(
+                abi.encodeWithSignature(
+                    "ownerOf(uint256)",
+                    tokenId
+                )
+        );
+        if (success && returnData.length > 0) {
+            _owner = abi.decode(returnData, (address));
+        }
+    }
 
     /**
      * @notice Upon winning the auction, transfer the NFT
@@ -454,14 +475,6 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
             if (_totalUsedForBid > 0) {
                 _tokenAmount = valueToTokens(_totalUsedForBid);
-                // guard against rounding errors;
-                // if _tokenAmount to send is greater than contract balance,
-                // send full contract balance
-                uint256 _totalBalance =
-                    ITokenVault(tokenVault).balanceOf(address(this));
-                if (_tokenAmount > _totalBalance) {
-                    _tokenAmount = _totalBalance;
-                }
             }
             // the rest of the contributor's ETH should be returned
             _ethAmount = _totalContributed - _totalUsedForBid;
@@ -526,6 +539,24 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         }
         // contribution was not used
         return 0;
+    }
+
+    // ============ Internal: TransferTokens ============
+
+    /**
+    * @notice Transfer tokens to a recipient
+    * @param _to recipient of tokens
+    * @param _value amount of tokens
+    */
+    function _transferTokens(address _to, uint256 _value) internal {
+        // guard against rounding errors;
+        // if token amount to send is greater than contract balance,
+        // send full contract balance
+        uint256 _partyBidBalance = ITokenVault(tokenVault).balanceOf(address(this));
+        if (_value > _partyBidBalance) {
+            _value = _partyBidBalance;
+        }
+        ITokenVault(tokenVault).transfer(_to, _value);
     }
 
     // ============ Internal: TransferEthOrWeth ============

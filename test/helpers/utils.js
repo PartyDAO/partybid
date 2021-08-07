@@ -22,7 +22,7 @@ async function getBalances(provider, token, accounts) {
       weiToEth(await provider.getBalance(address)),
     );
     let tokenBalance = 0;
-    if(token.address != ethers.constants.AddressZero) {
+    if(token && token.address != ethers.constants.AddressZero) {
       tokenBalance = parseFloat(
           weiToEth(await token.balanceOf(address)),
       );

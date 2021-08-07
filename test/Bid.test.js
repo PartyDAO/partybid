@@ -50,6 +50,11 @@ describe('Bid', async () => {
                 const { signerIndex } = contributions[0];
                 await expect(bidThroughParty(partyBid, signers[signerIndex])).to.emit(partyBid, 'Bid');
               });
+
+              it('Does not allow PartyBid to bid twice', async () => {
+                const { signerIndex } = contributions[0];
+                await expect(bidThroughParty(partyBid, signers[signerIndex])).to.be.revertedWith("PartyBid::bid: already highest bidder");
+              });
             } else if (placedByPartyBid && !success) {
               it('Does not allow PartyBid to bid', async () => {
                 const { signerIndex } = contributions[0];

@@ -114,6 +114,14 @@ describe('Finalize', async () => {
             token = await getTokenVault(partyBid, signers[0]);
           });
 
+          it(`Doesn't accept contributions after Finalize`, async () => {
+            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+          });
+
+          it(`Doesn't accept bids after Finalize`, async () => {
+            await expect(bidThroughParty(partyBid, signers[0])).to.be.revertedWith("PartyBid::bid: auction not active");
+          });
+
           if (partyBidWins) {
             it(`Is WON after Finalize`, async () => {
               const partyStatus = await partyBid.partyStatus();
