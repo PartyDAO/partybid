@@ -97,6 +97,33 @@ async function contribute(partyBidContract, contributorSigner, value) {
   });
 }
 
+async function emergencyWithdrawEth(partyBidContract, signer, value) {
+  const data = encodeData(partyBidContract, 'emergencyWithdrawEth', [value]);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
+async function emergencyCall(partyBidContract, signer, contractAddress, calldata) {
+  const data = encodeData(partyBidContract, 'emergencyCall', [contractAddress, calldata]);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
+async function emergencyForceLost(partyBidContract, signer) {
+  const data = encodeData(partyBidContract, 'emergencyForceLost',);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
 async function redeem(partyBidContract, contributorSigner, amount) {
   const data = encodeData(partyBidContract, 'redeem', [amount]);
 
@@ -233,7 +260,9 @@ module.exports = {
   transfer,
   createReserveAuction,
   createZoraAuction,
-  expectRedeemable,
   bidThroughParty,
-  externalFinalize
+  externalFinalize,
+  emergencyWithdrawEth,
+  emergencyCall,
+  emergencyForceLost
 };
