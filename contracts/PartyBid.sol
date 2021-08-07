@@ -390,7 +390,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @return _maxBid the maximum bid
      */
     function _getMaximumBid() internal view returns (uint256 _maxBid) {
-        _maxBid = totalContributedToParty * 100 / 105;
+        _maxBid = (totalContributedToParty * 100) / (100 + FEE_PERCENT);
     }
 
     /**
