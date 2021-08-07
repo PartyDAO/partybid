@@ -157,7 +157,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         auctionId = _auctionId;
         name = _name;
         symbol = _symbol;
-        // validate token exists (ownerOf should revert if token doesn't exist)
+        // validate token exists
         require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // validate auction exists
         require(
