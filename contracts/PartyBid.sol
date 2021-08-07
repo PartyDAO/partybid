@@ -346,88 +346,51 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         );
     }
 
-    // ======== ESCAPE HATCH FUNCTIONS =========
-    // ======== External: Recover =========
+    // ======== External: Emergency Escape Hatches (PartyDAO Multisig Only) =========
 
     /**
-     * @notice If the NFT gets stuck in the PartyBid
-     * (e.g. because of a faulty MarketWrapper that marks the auction Lost)
-     * the PartyDAO Multisig can transfer the NFT to the multisig
-     * NOTE: the NFT can only be custodied in the PartyBid contract
-     * if the PartyBid won the auction AND the Market's auction
-     * has been finalized AND the PartyBid has not been finalized
+     * @notice Escape hatch: in case of emergency,
+     * PartyDAO can use emergencyWithdrawEth to withdraw
+     * ETH stuck in the contract
      */
-    function recover() external {
+    function emergencyWithdrawEth(uint256 _value) external {
         require(
             msg.sender == partyDAOMultisig,
-            "PartyBid::recover: only PartyDAO multisig can recover NFT"
+            "PartyBid::emergencyWithdrawEth: only PartyDAO multisig can execute emergency withdraw ETH"
         );
-        IERC721Metadata(nftContract).transferFrom(
-            address(this),
-            partyDAOMultisig,
-            tokenId
-        );
+        _transferETHOrWETH(partyDAOMultisig, _value);
     }
 
-    // ======== External: Force Finalize =========
-
     /**
-     * @notice Force the PartyBid to finalize with status LOST
-     * @dev to be used in emergency cases where external calls
-     * fail and finalizing the auction is not possible
+     * @notice Escape hatch: in case of emergency,
+     * PartyDAO can use emergencyCall to call an external contract
+     * (e.g. to withdraw a stuck NFT or stuck ERC-20s)
      */
-    function forceLost() external {
+    function emergencyCall(address _contract, bytes memory _calldata)
+        external
+        returns (bool _success, bytes memory _returnData)
+    {
         require(
             msg.sender == partyDAOMultisig,
-            "PartyBid::forceLost: only PartyDAO multisig can force finalize"
+            "PartyBid::emergencyCall: only PartyDAO multisig can execute emergency calldata"
         );
+        (_success, _returnData) = _contract.call(_calldata);
+    }
+
+    /**
+     * @notice Escape hatch: in case of emergency,
+     * PartyDAO can force the PartyBid to finalize with status LOST
+     * (e.g. if finalize is not callable)
+     */
+    function emergencyForceLost() external {
         require(
-            partyStatus == PartyStatus.AUCTION_ACTIVE,
-            "PartyBid::forceLost: auction has already been finalized"
+            msg.sender == partyDAOMultisig,
+            "PartyBid::emergencyForceLost: only PartyDAO multisig can force finalize"
         );
         // set partyStatus to LOST
         partyStatus = PartyStatus.AUCTION_LOST;
         // emit Finalized event
         emit Finalized(partyStatus, 0, 0, totalContributedToParty);
-    }
-
-    /**
-     * @notice Force the PartyBid to finalize with status WON
-     *
-     * If the PartyBid won the auction, PartyDAO should
-     * 1. finalize the auction externally
-     * 2. withdraw the NFT from the PartyBid
-     * 3. deploy a Fractional token vault with the NFT
-     * 4. pass the token vault address as _token
-     *
-     * If, for some reason, PartyDAO is not able to
-     * deploy a Fractional vault, they could
-     * 1. Deploy a representative ERC-20 for shares in the PartyBid
-     * 2. pass the ERC-20 address as _token
-     *
-     * @dev to be used in emergency cases where external calls
-     * fail and finalizing the auction is not possible
-     */
-    function forceWon(address _token) external {
-        require(
-            msg.sender == partyDAOMultisig,
-            "PartyBid::forceWon: only PartyDAO multisig can force finalize"
-        );
-        require(
-            partyStatus == PartyStatus.AUCTION_ACTIVE,
-            "PartyBid::forceWon: auction has already been finalized"
-        );
-        // set partyStatus to WON
-        partyStatus = PartyStatus.AUCTION_WON;
-        // set totalSpent to the amount of ETH removed from the contract
-        totalSpent = totalContributedToParty - address(this).balance;
-        // set the address of the ERC-20 token for contributors to claim
-        // NOTE: PartyBid must have ERC-20 balance greater than or equal to totalSpent*1000
-        // in order to send tokens to contributors
-        require(ITokenVault(_token).balanceOf(address(this)) >= valueToTokens(totalSpent), "PartyBid::forceWon: auction has already been finalized");
-        tokenVault = _token;
-        // emit Finalized event
-        emit Finalized(partyStatus, totalSpent, 0, totalContributedToParty);
     }
 
     // ======== Public: Utility Calculations =========
