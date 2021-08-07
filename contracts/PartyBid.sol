@@ -332,7 +332,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             _calculateTokensAndETHOwed(_contributor);
         // transfer tokens to contributor for their portion of ETH used
         if (_tokenAmount > 0) {
-            ITokenVault(tokenVault).transfer(_contributor, _tokenAmount);
+            _transferTokens(_contributor, _tokenAmount);
         }
         // if there is excess ETH, send it back to the contributor
         if (_ethAmount > 0) {
@@ -475,14 +475,6 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             uint256 _totalUsedForBid = _totalEthUsedForBid(_contributor);
             if (_totalUsedForBid > 0) {
                 _tokenAmount = valueToTokens(_totalUsedForBid);
-                // guard against rounding errors;
-                // if _tokenAmount to send is greater than contract balance,
-                // send full contract balance
-                uint256 _totalBalance =
-                    ITokenVault(tokenVault).balanceOf(address(this));
-                if (_tokenAmount > _totalBalance) {
-                    _tokenAmount = _totalBalance;
-                }
             }
             // the rest of the contributor's ETH should be returned
             _ethAmount = _totalContributed - _totalUsedForBid;
@@ -547,6 +539,24 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         }
         // contribution was not used
         return 0;
+    }
+
+    // ============ Internal: TransferTokens ============
+
+    /**
+    * @notice Transfer tokens to a recipient
+    * @param _to recipient of tokens
+    * @param _value amount of tokens
+    */
+    function _transferTokens(address _to, uint256 _value) internal {
+        // guard against rounding errors;
+        // if token amount to send is greater than contract balance,
+        // send full contract balance
+        uint256 _partyBidBalance = ITokenVault(tokenVault).balanceOf(address(this));
+        if (_value > _partyBidBalance) {
+            _value = _partyBidBalance;
+        }
+        ITokenVault(tokenVault).transfer(_to, _value);
     }
 
     // ============ Internal: TransferEthOrWeth ============
