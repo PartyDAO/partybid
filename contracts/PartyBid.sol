@@ -125,6 +125,16 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         uint256 tokenAmount
     );
 
+    // ======== Modifiers =========
+
+    modifier onlyPartyDAO() {
+        require(
+            msg.sender == partyDAOMultisig,
+            "PartyBid:: only PartyDAO multisig"
+        );
+        _;
+    }
+
     // ======== Constructor =========
 
     constructor(
@@ -353,11 +363,10 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * PartyDAO can use emergencyWithdrawEth to withdraw
      * ETH stuck in the contract
      */
-    function emergencyWithdrawEth(uint256 _value) external {
-        require(
-            msg.sender == partyDAOMultisig,
-            "PartyBid::emergencyWithdrawEth: only PartyDAO multisig can execute emergency withdraw ETH"
-        );
+    function emergencyWithdrawEth(uint256 _value)
+        external
+        onlyPartyDAO
+    {
         _transferETHOrWETH(partyDAOMultisig, _value);
     }
 
@@ -368,12 +377,9 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      */
     function emergencyCall(address _contract, bytes memory _calldata)
         external
+        onlyPartyDAO
         returns (bool _success, bytes memory _returnData)
     {
-        require(
-            msg.sender == partyDAOMultisig,
-            "PartyBid::emergencyCall: only PartyDAO multisig can execute emergency calldata"
-        );
         (_success, _returnData) = _contract.call(_calldata);
     }
 
@@ -382,11 +388,10 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * PartyDAO can force the PartyBid to finalize with status LOST
      * (e.g. if finalize is not callable)
      */
-    function emergencyForceLost() external {
-        require(
-            msg.sender == partyDAOMultisig,
-            "PartyBid::emergencyForceLost: only PartyDAO multisig can force finalize"
-        );
+    function emergencyForceLost()
+        external
+        onlyPartyDAO
+    {
         // set partyStatus to LOST
         partyStatus = PartyStatus.AUCTION_LOST;
         // emit Finalized event
