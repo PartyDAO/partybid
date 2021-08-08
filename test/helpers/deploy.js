@@ -157,6 +157,7 @@ async function deployTestContractSetup(
   artistSigner,
   tokenId = 100,
   reservePrice = 1,
+  fakeMultisig = false
 ) {
   // Deploy WETH
   const weth = await deploy('EtherToken');
@@ -189,7 +190,12 @@ async function deployTestContractSetup(
   const { market, marketWrapper, auctionId } = marketContracts;
 
   // Deploy PartyDAO multisig
-  const partyDAOMultisig = await deploy('PayableContract');
+  let partyDAOMultisig;
+  if(!fakeMultisig) {
+    partyDAOMultisig = await deploy('PayableContract');
+  } else {
+    partyDAOMultisig = artistSigner;
+  }
 
   const tokenVaultSettings = await deploy('Settings');
   const tokenVaultFactory = await deploy('ERC721VaultFactory', [

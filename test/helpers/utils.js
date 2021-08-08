@@ -5,7 +5,7 @@ function eth(num) {
   return ethers.utils.parseEther(num.toString());
 }
 function weiToEth(num) {
-  return ethers.utils.formatEther(num.toString());
+  return parseFloat(ethers.utils.formatEther(num.toString()));
 }
 
 function encodeData(contract, functionName, args) {
@@ -94,6 +94,33 @@ async function contribute(partyBidContract, contributorSigner, value) {
     to: partyBidContract.address,
     data,
     value,
+  });
+}
+
+async function emergencyWithdrawEth(partyBidContract, signer, value) {
+  const data = encodeData(partyBidContract, 'emergencyWithdrawEth', [value]);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
+async function emergencyCall(partyBidContract, signer, contractAddress, calldata) {
+  const data = encodeData(partyBidContract, 'emergencyCall', [contractAddress, calldata]);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
+async function emergencyForceLost(partyBidContract, signer) {
+  const data = encodeData(partyBidContract, 'emergencyForceLost',);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
   });
 }
 
@@ -233,7 +260,9 @@ module.exports = {
   transfer,
   createReserveAuction,
   createZoraAuction,
-  expectRedeemable,
   bidThroughParty,
-  externalFinalize
+  externalFinalize,
+  emergencyWithdrawEth,
+  emergencyCall,
+  emergencyForceLost
 };

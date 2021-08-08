@@ -125,6 +125,16 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         uint256 tokenAmount
     );
 
+    // ======== Modifiers =========
+
+    modifier onlyPartyDAO() {
+        require(
+            msg.sender == partyDAOMultisig,
+            "PartyBid:: only PartyDAO multisig"
+        );
+        _;
+    }
+
     // ======== Constructor =========
 
     constructor(
@@ -346,27 +356,47 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         );
     }
 
-    // ======== External: Recover =========
+    // ======== External: Emergency Escape Hatches (PartyDAO Multisig Only) =========
 
     /**
-     * @notice If the NFT gets stuck in the PartyBid
-     * (e.g. because of a faulty MarketWrapper that marks the auction Lost)
-     * the PartyDAO Multisig can transfer the NFT to the multisig
+     * @notice Escape hatch: in case of emergency,
+     * PartyDAO can use emergencyWithdrawEth to withdraw
+     * ETH stuck in the contract
      */
-    function recover() external {
-        require(
-            msg.sender == partyDAOMultisig,
-            "PartyBid::recover: only PartyDAO multisig can recover NFT"
-        );
-        require(
-            partyStatus == PartyStatus.AUCTION_LOST,
-            "PartyBid::recover: auction must be lost to recover NFT"
-        );
-        IERC721Metadata(nftContract).transferFrom(
-            address(this),
-            partyDAOMultisig,
-            tokenId
-        );
+    function emergencyWithdrawEth(uint256 _value)
+        external
+        onlyPartyDAO
+    {
+        _transferETHOrWETH(partyDAOMultisig, _value);
+    }
+
+    /**
+     * @notice Escape hatch: in case of emergency,
+     * PartyDAO can use emergencyCall to call an external contract
+     * (e.g. to withdraw a stuck NFT or stuck ERC-20s)
+     */
+    function emergencyCall(address _contract, bytes memory _calldata)
+        external
+        onlyPartyDAO
+        returns (bool _success, bytes memory _returnData)
+    {
+        (_success, _returnData) = _contract.call(_calldata);
+        require(_success, string(_returnData));
+    }
+
+    /**
+     * @notice Escape hatch: in case of emergency,
+     * PartyDAO can force the PartyBid to finalize with status LOST
+     * (e.g. if finalize is not callable)
+     */
+    function emergencyForceLost()
+        external
+        onlyPartyDAO
+    {
+        // set partyStatus to LOST
+        partyStatus = PartyStatus.AUCTION_LOST;
+        // emit Finalized event
+        emit Finalized(partyStatus, 0, 0, totalContributedToParty);
     }
 
     // ======== Public: Utility Calculations =========
