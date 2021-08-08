@@ -145,7 +145,7 @@ async function deployPartyBidFactory() {
     // write the updated object
     writeDeployedAddresses(directory, filename, contractAddresses);
 
-    console.log(`Foundation Market Wrapper written to ${filename}`);
+    console.log(`PartyBid Factory and Logic written to ${filename}`);
 }
 
 

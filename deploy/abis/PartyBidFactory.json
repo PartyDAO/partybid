@@ -15,6 +15,26 @@
         "internalType": "address",
         "name": "_weth",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_logicMarketWrapper",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_logicNftContract",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_logicTokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_logicAuctionId",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -74,6 +94,25 @@
     ],
     "name": "PartyBidDeployed",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "deployedAt",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
