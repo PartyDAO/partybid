@@ -5,7 +5,7 @@ function eth(num) {
   return ethers.utils.parseEther(num.toString());
 }
 function weiToEth(num) {
-  return ethers.utils.formatEther(num.toString());
+  return parseFloat(ethers.utils.formatEther(num.toString()));
 }
 
 function encodeData(contract, functionName, args) {
