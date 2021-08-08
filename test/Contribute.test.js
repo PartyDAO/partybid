@@ -38,6 +38,10 @@ describe('Contribute', async () => {
             partyBid = contracts.partyBid;
           });
 
+          it('Does not accept a 0 contribution', async () => {
+            await expect(contribute(partyBid, signers[0], eth(0))).to.be.revertedWith("PartyBid::contribute: must contribute more than 0");
+          });
+
           // submit each contribution & check test conditions
           for (let contribution of contributions) {
             const { signerIndex, amount } = contribution;
