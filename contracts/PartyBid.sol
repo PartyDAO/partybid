@@ -381,6 +381,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         returns (bool _success, bytes memory _returnData)
     {
         (_success, _returnData) = _contract.call(_calldata);
+        require(_success, string(_returnData));
     }
 
     /**
