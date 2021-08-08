@@ -23,15 +23,14 @@ export const forkFrom = async (blockNumber: number) => {
   });
 };
 
-const BLOCK_NUMBER = 12928853;
-const PARTY_BID_FACTORY = "0xD96Ff9e48f095f5a22Db5bDFFCA080bCC3B98c7f";
-const FOUNDATION_MARKET_WRAPPER = "0x96e5b0519983f2f984324b926e6d28C3A4Eb92A1";
+const BLOCK_NUMBER = 12986459;
+const PARTY_BID_FACTORY = "0xdb355da657A3795bD6Faa9b63915cEDbE4fAdb00";
+const MARKET_WRAPPER = "0x11c07cE1315a3b92C9755F90cDF40B04b88c5731";
 const ADDRESS_TO_IMPERSONATE = "0xab5801a7d398351b8be11c439e05c5b3259aec9b"; // vitalik
 
-const MARKET_WRAPPER = FOUNDATION_MARKET_WRAPPER;
-const NFT_CONTRACT = "0x3b3ee1931dc30c1957379fac9aba94d1c48a5405";
-const TOKEN_ID = 209;
-const AUCTION_ID = 177; // found via https://etherscan.io/address/0xcda72070e455bb31c7690a170224ce43623d0b6f#readProxyContract
+const NFT_CONTRACT = "0xb7F7F6C52F2e2fdb1963Eab30438024864c313F6";
+const TOKEN_ID = 3269;
+const AUCTION_ID = 769;
 const TOKEN_NAME = "SIRSU";
 const TOKEN_SYMBOL = "SIRSU";
 
@@ -40,6 +39,8 @@ const go = async () => {
   await forkFrom(BLOCK_NUMBER);
   console.log(`forked from ${BLOCK_NUMBER}`);
 
+  console.log(`impersonate user`);
+
   // impersonate user
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",
@@ -47,12 +48,15 @@ const go = async () => {
   });
   const vitalik = ethers.provider.getSigner(ADDRESS_TO_IMPERSONATE);
 
+  console.log(`get contract`);
+
   // get contract
   const partyBidFactory = await ethers.getContractAt(
     "PartyBidFactory",
     PARTY_BID_FACTORY
   );
 
+  console.log(`get ERC-721`);
   const erc721Contract = new ethers.Contract(NFT_CONTRACT, erc721abi, vitalik);
   console.log("original owner of NFT:", await erc721Contract.ownerOf(TOKEN_ID));
 
@@ -98,7 +102,7 @@ const go = async () => {
     partyBidAbi,
     vitalik
   );
-  const contribAmount = 4 * 10 ** 18;
+  const contribAmount = 500 * 10 ** 18;
 
   const vitalikContrib = await party.contribute({
     value: contribAmount.toString(),
