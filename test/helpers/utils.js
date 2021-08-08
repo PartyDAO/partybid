@@ -78,6 +78,20 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
   });
 }
 
+async function cancelAuction(artistSigner, marketContract, auctionId, marketName) {
+  let data;
+  if (marketName == MARKET_NAMES.ZORA) {
+    data = encodeData(marketContract, 'cancelAuction', [auctionId]);
+  } else {
+    data = encodeData(marketContract, 'cancelReserveAuction', [auctionId]);
+  }
+
+  return artistSigner.sendTransaction({
+    to: marketContract.address,
+    data,
+  });
+}
+
 async function bidThroughParty(partyBidContract, signer) {
   const data = encodeData(partyBidContract, 'bid');
 
@@ -264,5 +278,6 @@ module.exports = {
   externalFinalize,
   emergencyWithdrawEth,
   emergencyCall,
-  emergencyForceLost
+  emergencyForceLost,
+  cancelAuction
 };

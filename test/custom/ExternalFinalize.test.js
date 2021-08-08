@@ -109,7 +109,7 @@ describe('External Finalize', async () => {
                         ]);
                         await provider.send('evm_mine');
 
-                        await externalFinalize(signers[2], market, auctionId, marketName)
+                        await expect(externalFinalize(signers[2], market, auctionId, marketName)).to.not.be.reverted;
                     });
 
                     it('Is ACTIVE before PartyBid-level Finalize', async () => {
