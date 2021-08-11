@@ -53,6 +53,8 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
   let data;
   if (marketName == MARKET_NAMES.ZORA) {
     data = encodeData(marketContract, 'createBid', [auctionId, value]);
+  } else if (marketName == MARKET_NAMES.NOUNS) {
+    data = encodeData(marketContract, 'createBid', [auctionId]);
   } else {
     data = encodeData(marketContract, 'placeBid', [auctionId]);
   }
@@ -68,6 +70,8 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
   let data;
   if (marketName == MARKET_NAMES.ZORA) {
     data = encodeData(marketContract, 'endAuction', [auctionId]);
+  } else if (marketName == MARKET_NAMES.NOUNS) {
+    data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
   } else {
     data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
   }

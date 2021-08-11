@@ -4,7 +4,8 @@ const {
   createReserveAuction,
   createZoraAuction,
 } = require('./utils');
-const { MARKET_NAMES } = require('./constants');
+const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const { upgrades } = require('hardhat');
 
 async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
@@ -151,6 +152,42 @@ async function deployZoraAndStartAuction(
   };
 }
 
+async function deployNounsAndStartAuction(
+  nftContract,
+  weth,
+  reservePrice,
+) {
+  const TIME_BUFFER = 5 * 60;
+  const MIN_INCREMENT_BID_PERCENTAGE = 5;
+
+  // Deploy Nouns Auction House
+  const auctionHouseFactory = await ethers.getContractFactory('NounsAuctionHouse');
+  const nounsAuctionHouse = await upgrades.deployProxy(auctionHouseFactory, [
+    nftContract.address,
+    weth.address,
+    TIME_BUFFER,
+    eth(reservePrice),
+    MIN_INCREMENT_BID_PERCENTAGE,
+    FOURTY_EIGHT_HOURS_IN_SECONDS,
+  ]);
+
+  // Deploy Market Wrapper
+  const marketWrapper = await deploy('NounsMarketWrapper', [
+    nounsAuctionHouse.address,
+  ]);
+
+  // Start auction
+  await nounsAuctionHouse.unpause();
+
+  const { nounId } = await nounsAuctionHouse.auction();
+
+  return {
+    market: nounsAuctionHouse,
+    marketWrapper,
+    auctionId: nounId.toNumber(),
+  };
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
@@ -162,9 +199,14 @@ async function deployTestContractSetup(
   // Deploy WETH
   const weth = await deploy('EtherToken');
 
-  // Deploy NFT Contract & Mint Token
-  const nftContract = await deploy('TestERC721');
-  await nftContract.mint(artistSigner.address, tokenId);
+  // Deploy NFT Contract
+  const nftContract = await deploy('TestERC721', [tokenId]);
+
+  // The Nouns Auction House is responsible for token minting
+  if (marketName !== MARKET_NAMES.NOUNS) {
+    // Mint token to artist
+    await nftContract.mintTo(artistSigner.address, tokenId);
+  }
 
   // Deploy Market and Market Wrapper Contract + Start Auction
   let marketContracts;
@@ -183,6 +225,12 @@ async function deployTestContractSetup(
       weth,
       reservePrice,
     );
+  } else if (marketName == MARKET_NAMES.NOUNS) {
+    marketContracts = await deployNounsAndStartAuction(
+      nftContract,
+      weth,
+      reservePrice,
+    )
   } else {
     throw new Error('Unsupported market type');
   }

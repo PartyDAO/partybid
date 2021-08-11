@@ -18,7 +18,8 @@ const { MARKETS } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 
 describe('Auction Canceled', async () => {
-    MARKETS.map((marketName) => {
+    // Noun auctions cannot be cancelled
+    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS).map((marketName) => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {
                 describe(`Case ${i}`, async () => {

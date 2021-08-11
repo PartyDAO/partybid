@@ -38,7 +38,7 @@ describe('Emergency Call', async () => {
         nftContract = contracts.nftContract;
 
         // mint the NFT to the PartyBid contract
-        await nftContract.mint(partyBid.address, transferTokenId);
+        await nftContract.mintTo(partyBid.address, transferTokenId);
 
         // encode calldata to withdraw NFT
         calldata = encodeData(nftContract, 'transferFrom', [partyBid.address, partyDAOMultisig.address, transferTokenId]);
