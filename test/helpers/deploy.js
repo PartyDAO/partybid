@@ -156,6 +156,7 @@ async function deployNounsAndStartAuction(
   nftContract,
   weth,
   reservePrice,
+  pauseAuctionHouse,
 ) {
   const TIME_BUFFER = 5 * 60;
   const MIN_INCREMENT_BID_PERCENTAGE = 5;
@@ -179,6 +180,11 @@ async function deployNounsAndStartAuction(
   // Start auction
   await nounsAuctionHouse.unpause();
 
+  // If true, pause the auction house after the first Noun is minted
+  if (pauseAuctionHouse) {
+    await nounsAuctionHouse.pause();
+  }
+
   const { nounId } = await nounsAuctionHouse.auction();
 
   return {
@@ -194,7 +200,8 @@ async function deployTestContractSetup(
   artistSigner,
   tokenId = 100,
   reservePrice = 1,
-  fakeMultisig = false
+  fakeMultisig = false,
+  pauseAuctionHouse = false
 ) {
   // Deploy WETH
   const weth = await deploy('EtherToken');
@@ -230,6 +237,7 @@ async function deployTestContractSetup(
       nftContract,
       weth,
       reservePrice,
+      pauseAuctionHouse,
     )
   } else {
     throw new Error('Unsupported market type');

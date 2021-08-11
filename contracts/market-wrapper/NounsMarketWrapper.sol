@@ -60,12 +60,17 @@ contract NounsMarketWrapper is IMarketWrapper {
      * @notice Calculate the minimum next bid for the active auction
      * @return minimum bid amount
      */
-    function getMinimumBid(uint256 /* auctionId */)
+    function getMinimumBid(uint256 auctionId)
       external
       view
       override
       returns (uint256)
     {
+        require(
+            auctionExists(auctionId),
+            "NounsMarketWrapper::getMinimumBid: Auction does not exist"
+        );
+
         (, uint256 amount, , , address payable bidder, ) = market.auction();
         if (bidder == address(0)) {
             // if there are NO bids, the minimum bid is 1 wei (any amount > 0)
@@ -80,12 +85,17 @@ contract NounsMarketWrapper is IMarketWrapper {
      * @notice Query the current highest bidder for this auction
      * @return highest bidder
      */
-    function getCurrentHighestBidder(uint256 /* auctionId */)
+    function getCurrentHighestBidder(uint256 auctionId)
       external
       view
       override
       returns (address)
     {
+        require(
+            auctionExists(auctionId),
+            "NounsMarketWrapper::getCurrentHighestBidder: Auction does not exist"
+        );
+
         (, , , , address payable bidder, ) = market.auction();
         return bidder;
     }
