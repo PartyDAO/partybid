@@ -14,9 +14,9 @@ import {IMarketWrapper} from "./IMarketWrapper.sol";
  * according to the logic of Nouns' Auction Houses
  */
 contract NounsMarketWrapper is IMarketWrapper {
-    // ============ Internal Immutables ============
+    // ============ Public Immutables ============
 
-    INounsAuctionHouse internal immutable market;
+    INounsAuctionHouse public immutable market;
 
     // ======== Constructor =========
 
@@ -27,8 +27,9 @@ contract NounsMarketWrapper is IMarketWrapper {
     // ======== External Functions =========
 
     /**
-     * @notice Determine whether there is an existing auction
-     * for this token is active
+     * @notice Determine whether there is an existing, active auction
+     * for this token. In the Nouns auction house, the current auction
+     * id is the token id, which increments sequentially, forever.
      * @return TRUE if the auction exists
      */
     function auctionExists(uint256 auctionId)
@@ -52,7 +53,7 @@ contract NounsMarketWrapper is IMarketWrapper {
         uint256 tokenId
     ) public view override returns (bool) {
         (uint256 currentAuctionId, , , , , ) = market.auction();
-        return currentAuctionId == tokenId && currentAuctionId == auctionId;
+        return auctionId == tokenId && currentAuctionId == auctionId;
     }
 
     /**
@@ -93,7 +94,7 @@ contract NounsMarketWrapper is IMarketWrapper {
      * @notice Submit bid to Market contract
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
-        // line 85 of Nouns Auction House, createBid() function
+        // line 104 of Nouns Auction House, createBid() function
         (bool success, bytes memory returnData) =
         address(market).call{value: bidAmount}(
             abi.encodeWithSignature(
