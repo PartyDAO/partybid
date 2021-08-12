@@ -29,7 +29,9 @@ contract NounsMarketWrapper is IMarketWrapper {
     /**
      * @notice Determine whether there is an existing, active auction
      * for this token. In the Nouns auction house, the current auction
-     * id is the token id, which increments sequentially, forever.
+     * id is the token id, which increments sequentially, forever. The
+     * auction is considered active while the current block timestamp
+     * is less than the auction's end time.
      * @return TRUE if the auction exists
      */
     function auctionExists(uint256 auctionId)
@@ -38,8 +40,8 @@ contract NounsMarketWrapper is IMarketWrapper {
       override
       returns (bool)
     {
-        (uint256 currentAuctionId, , , , , ) = market.auction();
-        return auctionId == currentAuctionId;
+        (uint256 currentAuctionId, , , uint256 endTime, , ) = market.auction();
+        return auctionId == currentAuctionId && block.timestamp < endTime;
     }
 
     /**
@@ -52,8 +54,7 @@ contract NounsMarketWrapper is IMarketWrapper {
         address /* nftContract */,
         uint256 tokenId
     ) public view override returns (bool) {
-        (uint256 currentAuctionId, , , , , ) = market.auction();
-        return auctionId == tokenId && currentAuctionId == auctionId;
+        return auctionId == tokenId && auctionExists(auctionId);
     }
 
     /**
@@ -73,7 +74,7 @@ contract NounsMarketWrapper is IMarketWrapper {
 
         (, uint256 amount, , , address payable bidder, ) = market.auction();
         if (bidder == address(0)) {
-            // if there are NO bids, the minimum bid is 1 wei (any amount > 0)
+            // if there are NO bids, the minimum bid is the reserve price
             return market.reservePrice();
         }
         // if there ARE bids, the minimum bid is the current bid plus the increment buffer
