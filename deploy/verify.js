@@ -8,6 +8,8 @@ async function verify() {
     const {CHAIN_NAME} = process.env;
     if (!(CHAIN_NAME) ) {
         throw new Error("Must add chain name to .env");
+    } else if(hre.network.name != CHAIN_NAME) {
+        throw new Error(`CHAIN_NAME in .env file is "${CHAIN_NAME}" but hardhat --network in package.json is "${hre.network.name}; change them to match"`)
     }
 
     // load config
