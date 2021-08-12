@@ -18,7 +18,7 @@ describe('Bid When Paused', async () => {
       let partyBid, market, auctionId;
       const marketName = MARKET_NAMES.NOUNS;
       const signers = provider.getWallets();
-      const tokenId = 100;
+      const tokenId = 95;
 
       before(async () => {
         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS

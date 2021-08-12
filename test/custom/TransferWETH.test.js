@@ -26,7 +26,7 @@ describe('Transfer WETH', async () => {
                     marketName,
                     provider,
                     signers[0],
-                    100,
+                    95,
                     1,
                 );
                 partyBid = contracts.partyBid;

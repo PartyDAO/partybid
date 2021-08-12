@@ -18,7 +18,7 @@ async function deployPartyBid(
   whitelist,
   market,
   nftContract,
-  tokenId = 100,
+  tokenId = 95,
   auctionId = 1,
   quorumPercent = 90,
   tokenName = 'Party',
@@ -154,12 +154,33 @@ async function deployZoraAndStartAuction(
 
 async function deployNounsAndStartAuction(
   nftContract,
+  tokenId,
   weth,
   reservePrice,
   pauseAuctionHouse,
 ) {
   const TIME_BUFFER = 5 * 60;
   const MIN_INCREMENT_BID_PERCENTAGE = 5;
+
+  // Deploy the Nouns mock NFT descriptor
+  const nounsDescriptor = await deploy('NounsMockDescriptor', []);
+
+  // Deploy the Nouns mock seed generator
+  const nounsSeeder = await deploy('NounsMockSeeder', []);
+  
+  // Deploy the Nouns NFT Contract. Note that the Nouns
+  // Auction House is responsible for token minting
+  const nounsToken = await deploy('NounsToken', [
+    ethers.constants.AddressZero,
+    ethers.constants.AddressZero,
+    nounsDescriptor.address,
+    nounsSeeder.address,
+    ethers.constants.AddressZero,
+    tokenId,
+  ]);
+
+  // Assign `nounsToken` to `nftContract`
+  nftContract = Object.assign(nftContract, nounsToken);
 
   // Deploy Nouns Auction House
   const auctionHouseFactory = await ethers.getContractFactory('NounsAuctionHouse');
@@ -171,6 +192,9 @@ async function deployNounsAndStartAuction(
     MIN_INCREMENT_BID_PERCENTAGE,
     FOURTY_EIGHT_HOURS_IN_SECONDS,
   ]);
+
+  // Set Nouns Auction House as minter
+  await nounsToken.setMinter(nounsAuctionHouse.address);
 
   // Deploy Market Wrapper
   const marketWrapper = await deploy('NounsMarketWrapper', [
@@ -198,7 +222,7 @@ async function deployTestContractSetup(
   marketName,
   provider,
   artistSigner,
-  tokenId = 100,
+  tokenId = 95,
   reservePrice = 1,
   fakeMultisig = false,
   pauseAuctionHouse = false
@@ -206,13 +230,15 @@ async function deployTestContractSetup(
   // Deploy WETH
   const weth = await deploy('EtherToken');
 
-  // Deploy NFT Contract
-  const nftContract = await deploy('TestERC721', [tokenId]);
-
-  // The Nouns Auction House is responsible for token minting
+  // Nouns uses a custom ERC721 contract. Note that the Nouns
+  // Auction House is responsible for token minting
+  let nftContract = {};
   if (marketName !== MARKET_NAMES.NOUNS) {
+    // Deploy the test NFT Contract
+    nftContract = await deploy('TestERC721', []);
+
     // Mint token to artist
-    await nftContract.mintTo(artistSigner.address, tokenId);
+    await nftContract.mint(artistSigner.address, tokenId);
   }
 
   // Deploy Market and Market Wrapper Contract + Start Auction
@@ -235,6 +261,7 @@ async function deployTestContractSetup(
   } else if (marketName == MARKET_NAMES.NOUNS) {
     marketContracts = await deployNounsAndStartAuction(
       nftContract,
+      tokenId,
       weth,
       reservePrice,
       pauseAuctionHouse,

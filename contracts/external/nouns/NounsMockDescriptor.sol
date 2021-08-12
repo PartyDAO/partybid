@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Interface for NounsDescriptor
+/// @title The Nouns Mock NFT descriptor
 
 /*********************************
  * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ *
@@ -17,10 +17,21 @@
 
 pragma solidity ^0.8.5;
 
-import { INounsSeeder } from './INounsSeeder.sol';
+import { INounsDescriptor } from './interfaces/INounsDescriptor.sol';
+import { INounsSeeder } from './interfaces/INounsSeeder.sol';
 
-interface INounsDescriptor {
-    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view returns (string memory);
+contract NounsMockDescriptor is INounsDescriptor {
+    /**
+     * @notice Given a token ID and seed, construct a mock token URI for a Nouns DAO noun.
+     */
+    function tokenURI(uint256 /* tokenId */, INounsSeeder.Seed memory /* seed */) external pure override returns (string memory) {
+        return string('');
+    }
 
-    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view returns (string memory);
+    /**
+     * @notice Given a token ID and seed, construct a base64 encoded data URI for an official Nouns DAO noun.
+     */
+    function dataURI(uint256 /* tokenId */, INounsSeeder.Seed memory /* seed */) public pure override returns (string memory) {
+        return string('');
+    }
 }

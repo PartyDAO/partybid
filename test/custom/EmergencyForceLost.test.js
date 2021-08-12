@@ -44,7 +44,7 @@ describe('Emergency Force Lost', async () => {
                     const lastBid = bids[bids.length - 1];
                     const partyBidWins = lastBid.placedByPartyBid && lastBid.success;
                     const signers = provider.getWallets();
-                    const tokenId = 100;
+                    const tokenId = 95;
 
                     // only run for tests where PartyBid loses
                     if (partyBidWins) {

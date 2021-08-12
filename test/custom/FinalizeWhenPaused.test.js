@@ -44,7 +44,7 @@ describe('Finalize When Paused', async () => {
       const lastBid = bids[bids.length - 1];
       const partyBidWins = lastBid.placedByPartyBid && lastBid.success;
       const signers = provider.getWallets();
-      const tokenId = 100;
+      const tokenId = 95;
 
       before(async () => {
         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
