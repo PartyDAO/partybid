@@ -16,7 +16,7 @@ const {
     PARTY_STATUS,
     FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../helpers/constants');
-const { MARKETS } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 
 describe('NFT Contract Self-Destructed', async () => {
     // The Nouns NFT contract cannot self-destruct

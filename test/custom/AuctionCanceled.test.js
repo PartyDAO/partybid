@@ -14,7 +14,7 @@ const { deployTestContractSetup } = require('../helpers/deploy');
 const {
     PARTY_STATUS,
 } = require('../helpers/constants');
-const { MARKETS } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 
 describe('Auction Canceled', async () => {
