@@ -69,7 +69,7 @@ contract NounsMarketWrapper is IMarketWrapper {
     {
         require(
             auctionExists(auctionId),
-            "NounsMarketWrapper::getMinimumBid: Auction does not exist"
+            "NounsMarketWrapper::getMinimumBid: Auction not active"
         );
 
         (, uint256 amount, , , address payable bidder, ) = market.auction();
@@ -94,7 +94,7 @@ contract NounsMarketWrapper is IMarketWrapper {
     {
         require(
             auctionExists(auctionId),
-            "NounsMarketWrapper::getCurrentHighestBidder: Auction does not exist"
+            "NounsMarketWrapper::getCurrentHighestBidder: Auction not active"
         );
 
         (, , , , address payable bidder, ) = market.auction();
