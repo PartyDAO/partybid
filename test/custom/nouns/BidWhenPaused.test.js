@@ -4,10 +4,10 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, bidThroughParty, contribute, placeBid } = require('../helpers/utils');
-const { deployTestContractSetup } = require('../helpers/deploy');
-const { MARKET_NAMES } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { eth, bidThroughParty, contribute, placeBid } = require('../../helpers/utils');
+const { deployTestContractSetup } = require('../../helpers/deploy');
+const { MARKET_NAMES } = require('../../helpers/constants');
+const { testCases } = require('../../testCases.json');
 
 describe('Bid When Paused', async () => {
   testCases.map((testCase, i) => {
@@ -42,6 +42,10 @@ describe('Bid When Paused', async () => {
           const signer = signers[signerIndex];
           await contribute(partyBid, signer, eth(amount));
         }
+      });
+
+      it('TokenId equals AuctionId', async () => {
+        await expect(auctionId).to.equal(tokenId);
       });
 
       for (let bid of bids) {

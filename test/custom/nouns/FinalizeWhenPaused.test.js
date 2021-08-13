@@ -11,14 +11,14 @@ const {
   contribute,
   placeBid,
   bidThroughParty,
-} = require('../helpers/utils');
-const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
+} = require('../../helpers/utils');
+const { deployTestContractSetup, getTokenVault } = require('../../helpers/deploy');
 const {
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
-const { MARKET_NAMES } = require('../helpers/constants');
+} = require('../../helpers/constants');
+const { testCases } = require('../../testCases.json');
+const { MARKET_NAMES } = require('../../helpers/constants');
 
 describe('Finalize When Paused', async () => {
   testCases.map((testCase, i) => {
