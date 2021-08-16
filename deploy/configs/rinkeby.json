@@ -5,6 +5,7 @@
   "foundationMarket":"0x21b700d637551f15078E11871a3c0dcCf283D1e7",
   "weth":"0xc778417E063141139Fce010982780140Aa0cD5Ab",
   "zoraAuctionHouse":"0xE7dd1252f50B3d845590Da0c5eADd985049a03ce",
+  "nounsAuctionHouse": "0x7cb0384b923280269b3BD85f0a7fEaB776588382",
   "logicNftContract": "0x7c2668bd0d3c050703cecc956c11bd520c26f7d4",
   "logicTokenId": 3640,
   "logicZoraAuctionId": 658

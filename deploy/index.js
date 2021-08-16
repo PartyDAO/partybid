@@ -102,6 +102,43 @@ async function deployFoundationMarketWrapper() {
     console.log(`Foundation Market Wrapper written to ${filename}`);
 }
 
+async function deployNounsMarketWrapper() {
+    // load .env
+    const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
+
+    // load config.json
+    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const {nounsAuctionHouse} = config;
+    if (!nounsAuctionHouse) {
+        throw new Error("Must populate config with Nouns Auction House address");
+    }
+
+    // setup deployer wallet
+    const deployer = getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY);
+
+    // Deploy Nouns Market Wrapper
+    console.log(`Deploy Nouns Market Wrapper to ${CHAIN_NAME}`);
+    const nounsMarketWrapper = await deploy(deployer,'NounsMarketWrapper', [nounsAuctionHouse]);
+    console.log(`Deployed Nouns Market Wrapper to ${CHAIN_NAME}: `, nounsMarketWrapper.address);
+
+    // get the existing deployed addresses
+    let {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+
+    // update the nouns market wrapper address
+    if (contractAddresses["marketWrappers"]) {
+        contractAddresses["marketWrappers"]["nouns"] = nounsMarketWrapper.address;
+    } else {
+        contractAddresses["marketWrappers"] = {
+            nouns: nounsMarketWrapper.address
+        };
+    }
+
+    // write the updated object
+    writeDeployedAddresses(directory, filename, contractAddresses);
+
+    console.log(`Nouns Market Wrapper written to ${filename}`);
+}
+
 async function deployPartyBidFactory() {
     // load .env
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
@@ -152,6 +189,7 @@ async function deployPartyBidFactory() {
 async function deployChain() {
     await deployZoraMarketWrapper();
     await deployFoundationMarketWrapper();
+    await deployNounsMarketWrapper();
     await deployPartyBidFactory();
 }
 
