@@ -14,11 +14,12 @@ const { deployTestContractSetup } = require('../helpers/deploy');
 const {
     PARTY_STATUS,
 } = require('../helpers/constants');
-const { MARKETS } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 
 describe('Auction Canceled', async () => {
-    MARKETS.map((marketName) => {
+    // Noun auctions cannot be cancelled
+    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS).map((marketName) => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {
                 describe(`Case ${i}`, async () => {

@@ -33,7 +33,7 @@ describe('Maximum First Bid', async () => {
                     // instantiate test vars
                     let partyBid;
                     const signers = provider.getWallets();
-                    const tokenId = 100;
+                    const tokenId = 95;
                     const reservePrice = reserve;
 
                     before(async () => {
@@ -70,7 +70,7 @@ describe('Failed Maximum First Bid', async () => {
                     // instantiate test vars
                     let partyBid;
                     const signers = provider.getWallets();
-                    const tokenId = 100;
+                    const tokenId = 95;
                     const reservePrice = reserve + 0.000000000001;
 
                     before(async () => {

@@ -19,6 +19,7 @@ const testCases = [
         balance: {
             [MARKET_NAMES.ZORA]: 551.25,
             [MARKET_NAMES.FOUNDATION]: 577.5,
+            [MARKET_NAMES.NOUNS]: 551.25,
         }
     },
     {
@@ -26,6 +27,7 @@ const testCases = [
         balance: {
             [MARKET_NAMES.ZORA]: 1.1025,
             [MARKET_NAMES.FOUNDATION]: 1.155,
+            [MARKET_NAMES.NOUNS]: 1.1025,
         }
     }
 ];
@@ -40,7 +42,7 @@ describe('Maximum Outbid', async () => {
                     // instantiate test vars
                     let partyBid;
                     const signers = provider.getWallets();
-                    const tokenId = 100;
+                    const tokenId = 95;
                     const reservePrice = reserve;
 
                     before(async () => {
@@ -88,7 +90,7 @@ describe('Failed Maximum Outbid', async () => {
                     // instantiate test vars
                     let partyBid;
                     const signers = provider.getWallets();
-                    const tokenId = 100;
+                    const tokenId = 95;
                     const reservePrice = reserve + 0.000000000001;
 
                     before(async () => {

@@ -4,6 +4,7 @@
   "partyBidLogic": "0xEbFD06E9D177EebF08668aA4a4BA397f7E8f0685",
   "marketWrappers": {
     "foundation": "0x3183F5AcD2BCD82a4587aA4485DF92Fee3c9bA8b",
-    "zora": "0x8bdf23481fcB9e640F14F24030eF7E273D100643"
+    "zora": "0x8bdf23481fcB9e640F14F24030eF7E273D100643",
+    "nouns": "0xB304bBf823CeD9c7a41a8747ec017C5F42d81105"
   }
 }

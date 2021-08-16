@@ -16,10 +16,11 @@ const {
     PARTY_STATUS,
     FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../helpers/constants');
-const { MARKETS } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 
 describe('NFT Contract Self-Destructed', async () => {
-    MARKETS.map((marketName) => {
+    // The Nouns NFT contract cannot self-destruct
+    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS).map((marketName) => {
         describe(marketName, async () => {
             // instantiate test vars
             let partyBid,
@@ -30,7 +31,7 @@ describe('NFT Contract Self-Destructed', async () => {
                 multisigBalanceBefore,
                 token;
             const signers = provider.getWallets();
-            const tokenId = 100;
+            const tokenId = 95;
             const reservePrice = 100;
             const totalContributed = 500;
 

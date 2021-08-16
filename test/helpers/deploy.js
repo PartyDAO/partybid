@@ -4,7 +4,8 @@ const {
   createReserveAuction,
   createZoraAuction,
 } = require('./utils');
-const { MARKET_NAMES } = require('./constants');
+const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const { upgrades } = require('hardhat');
 
 async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
@@ -17,7 +18,7 @@ async function deployPartyBid(
   whitelist,
   market,
   nftContract,
-  tokenId = 100,
+  tokenId = 95,
   auctionId = 1,
   quorumPercent = 90,
   tokenName = 'Party',
@@ -151,20 +152,96 @@ async function deployZoraAndStartAuction(
   };
 }
 
+async function deployNounsToken(tokenId) {
+  // Deploy the Nouns mock NFT descriptor
+  const nounsDescriptor = await deploy('NounsMockDescriptor', []);
+
+  // Deploy the Nouns mock seed generator
+  const nounsSeeder = await deploy('NounsMockSeeder', []);
+
+  // Deploy the Nouns NFT Contract. Note that the Nouns
+  // Auction House is responsible for token minting
+  return deploy('NounsToken', [
+    ethers.constants.AddressZero,
+    ethers.constants.AddressZero,
+    nounsDescriptor.address,
+    nounsSeeder.address,
+    ethers.constants.AddressZero,
+    tokenId,
+  ]);
+}
+
+async function deployNounsAndStartAuction(
+  nftContract,
+  tokenId,
+  weth,
+  reservePrice,
+  pauseAuctionHouse,
+) {
+  const TIME_BUFFER = 5 * 60;
+  const MIN_INCREMENT_BID_PERCENTAGE = 5;
+
+  // Deploy Nouns Auction House
+  const auctionHouseFactory = await ethers.getContractFactory('NounsAuctionHouse');
+  const nounsAuctionHouse = await upgrades.deployProxy(auctionHouseFactory, [
+    nftContract.address,
+    weth.address,
+    TIME_BUFFER,
+    eth(reservePrice),
+    MIN_INCREMENT_BID_PERCENTAGE,
+    FOURTY_EIGHT_HOURS_IN_SECONDS,
+  ]);
+
+  // Set Nouns Auction House as minter on Nouns NFT contract
+  await nftContract.setMinter(nounsAuctionHouse.address);
+
+  // Deploy Market Wrapper
+  const marketWrapper = await deploy('NounsMarketWrapper', [
+    nounsAuctionHouse.address,
+  ]);
+
+  // Start auction
+  await nounsAuctionHouse.unpause();
+
+  // If true, pause the auction house after the first Noun is minted
+  if (pauseAuctionHouse) {
+    await nounsAuctionHouse.pause();
+  }
+
+  const { nounId } = await nounsAuctionHouse.auction();
+
+  return {
+    market: nounsAuctionHouse,
+    marketWrapper,
+    auctionId: nounId.toNumber(),
+  };
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
   artistSigner,
-  tokenId = 100,
+  tokenId = 95,
   reservePrice = 1,
-  fakeMultisig = false
+  fakeMultisig = false,
+  pauseAuctionHouse = false
 ) {
   // Deploy WETH
   const weth = await deploy('EtherToken');
 
-  // Deploy NFT Contract & Mint Token
-  const nftContract = await deploy('TestERC721');
-  await nftContract.mint(artistSigner.address, tokenId);
+  // Nouns uses a custom ERC721 contract. Note that the Nouns
+  // Auction House is responsible for token minting
+  let nftContract;
+  if (marketName == MARKET_NAMES.NOUNS) {
+    // for Nouns, deploy custom Nouns NFT contract
+    nftContract = await deployNounsToken(tokenId);
+  } else {
+    // For other markets, deploy the test NFT Contract
+    nftContract = await deploy('TestERC721', []);
+
+    // Mint token to artist
+    await nftContract.mint(artistSigner.address, tokenId);
+  }
 
   // Deploy Market and Market Wrapper Contract + Start Auction
   let marketContracts;
@@ -183,6 +260,14 @@ async function deployTestContractSetup(
       weth,
       reservePrice,
     );
+  } else if (marketName == MARKET_NAMES.NOUNS) {
+    marketContracts = await deployNounsAndStartAuction(
+      nftContract,
+      tokenId,
+      weth,
+      reservePrice,
+      pauseAuctionHouse,
+    )
   } else {
     throw new Error('Unsupported market type');
   }

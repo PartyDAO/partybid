@@ -30,7 +30,7 @@ describe('NFT Burned', async () => {
                 multisigBalanceBefore,
                 token;
             const signers = provider.getWallets();
-            const tokenId = 100;
+            const tokenId = 95;
             const reservePrice = 100;
             const totalContributed = 500;
 

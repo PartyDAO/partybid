@@ -20,11 +20,12 @@ async function verify() {
         weth,
         foundationMarket,
         zoraAuctionHouse,
+        nounsAuctionHouse,
         logicNftContract,
         logicTokenId,
         logicZoraAuctionId
     } = config;
-    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && logicNftContract && logicTokenId && logicZoraAuctionId)) {
+    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && nounsAuctionHouse && logicNftContract && logicTokenId && logicZoraAuctionId)) {
         throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse, logicNftContract, logicTokenId, logicZoraAuctionId");
     }
 
@@ -34,7 +35,7 @@ async function verify() {
         throw new Error("No deployed Zora MarketWrapper for chain");
     }
     const {partyBidFactory, partyBidLogic, marketWrappers} = contractAddresses;
-    const {foundation, zora} = marketWrappers;
+    const {foundation, zora, nouns} = marketWrappers;
 
     console.log(`Verifying ${CHAIN_NAME}`);
 
@@ -61,6 +62,10 @@ async function verify() {
     // Verify Zora Market Wrapper
     console.log(`Verify Zora Market Wrapper`);
     await verifyContract(zora, [zoraAuctionHouse]);
+
+    // Verify Nouns Market Wrapper
+    console.log(`Verify Nouns Market Wrapper`);
+    await verifyContract(nouns, [nounsAuctionHouse]);
 }
 
 /*
@@ -84,4 +89,3 @@ async function verifyContract(address, constructorArguments) {
 module.exports = {
     verify
 };
-
