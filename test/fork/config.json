@@ -1,6 +1,6 @@
 {
   "ADDRESS_TO_IMPERSONATE": "0xab5801a7d398351b8be11c439e05c5b3259aec9b",
-  "MARKET_NAME": "zora",
+  "MARKET_NAME": "nouns",
   "zora": {
     "BLOCK_NUMBER": 12986459,
     "NFT_CONTRACT": "0xb7F7F6C52F2e2fdb1963Eab30438024864c313F6",
@@ -8,5 +8,13 @@
     "AUCTION_ID": 769,
     "TOKEN_NAME": "House of Halle",
     "TOKEN_SYMBOL": "HALLE"
+  },
+  "nouns": {
+    "BLOCK_NUMBER": 13034259,
+    "NFT_CONTRACT": "0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03",
+    "TOKEN_ID": 8,
+    "AUCTION_ID": 8,
+    "TOKEN_NAME": "Nouns 8",
+    "TOKEN_SYMBOL": "NOUN8"
   }
 }
