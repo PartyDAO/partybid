@@ -1,43 +1,31 @@
-import hre, { ethers } from "hardhat";
+// @ts-ignore
+import hre, {ethers} from "hardhat";
 import "@nomiclabs/hardhat-ethers";
-import { erc20abi, erc721abi, partyBidAbi } from "./helpers/abis";
+import {erc20abi, erc721abi, partyBidAbi} from "./abis";
+import {forkFrom, getConfig, getDeployedAddresses} from "./helpers";
 
-// https://cmichel.io/replaying-ethereum-hacks-introduction/?no-cache=1
-export const forkFrom = async (blockNumber: number) => {
-  if (!hre.config.networks.forking) {
-    throw new Error(
-      `Forking misconfigured for "hardhat" network in hardhat.config.ts`
-    );
-  }
+// load config
+const config = getConfig();
+const {ADDRESS_TO_IMPERSONATE, MARKET_NAME} = config;
+const market = config[MARKET_NAME];
+const {BLOCK_NUMBER, NFT_CONTRACT, TOKEN_ID, AUCTION_ID, TOKEN_NAME, TOKEN_SYMBOL} = market;
 
-  await hre.network.provider.request({
-    method: "hardhat_reset",
-    params: [
-      {
-        forking: {
-          jsonRpcUrl: (hre.config.networks.forking as any).url,
-          blockNumber: blockNumber,
-        },
-      },
-    ],
-  });
-};
+// load mainnet contract addresses
+const {contractAddresses} = getDeployedAddresses();
+const PARTY_BID_FACTORY = contractAddresses["partyBidFactory"];
+const MARKET_WRAPPER = contractAddresses["marketWrappers"][MARKET_NAME];
 
-const BLOCK_NUMBER = 12986459;
-const PARTY_BID_FACTORY = "0xdb355da657A3795bD6Faa9b63915cEDbE4fAdb00";
-const MARKET_WRAPPER = "0x11c07cE1315a3b92C9755F90cDF40B04b88c5731";
-const ADDRESS_TO_IMPERSONATE = "0xab5801a7d398351b8be11c439e05c5b3259aec9b"; // vitalik
+forkTest().then(() => {
+  console.log("DONE!");
+  process.exit();
+});
 
-const NFT_CONTRACT = "0xb7F7F6C52F2e2fdb1963Eab30438024864c313F6";
-const TOKEN_ID = 3269;
-const AUCTION_ID = 769;
-const TOKEN_NAME = "SIRSU";
-const TOKEN_SYMBOL = "SIRSU";
+async function forkTest() {
+  console.log(`Fork testing ${MARKET_NAME}`);
 
-const go = async () => {
-  console.log(`forking from ${BLOCK_NUMBER}`);
+  console.log(`forking from block ${BLOCK_NUMBER}`);
   await forkFrom(BLOCK_NUMBER);
-  console.log(`forked from ${BLOCK_NUMBER}`);
+  console.log(`forked from block ${BLOCK_NUMBER}`);
 
   console.log(`impersonate user`);
 
@@ -157,6 +145,3 @@ const go = async () => {
   );
 };
 
-go().then(() => {
-  process.exit();
-});

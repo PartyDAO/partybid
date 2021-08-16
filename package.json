@@ -5,11 +5,11 @@
   "main": "",
   "scripts": {
     "test": "npm run compile && hardhat test",
+    "fork-test": "ts-node test/fork/index.ts",
     "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
     "verify": "hardhat --network mainnet verify-contracts",
     "compile": "hardhat compile",
     "prettier": "prettier --write './contracts' ./test",
-    "mainnet:fork": "ts-node ./scripts/mainnet_fork.ts",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
   },
   "repository": {
