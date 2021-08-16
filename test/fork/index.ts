@@ -15,6 +15,8 @@ const {contractAddresses} = getDeployedAddresses();
 const PARTY_BID_FACTORY = contractAddresses["partyBidFactory"];
 const MARKET_WRAPPER = contractAddresses["marketWrappers"][MARKET_NAME];
 
+const gasPrice = 568812338330;
+
 forkTest().then(() => {
   console.log("DONE!");
   process.exit();
@@ -48,6 +50,7 @@ async function forkTest() {
   const erc721Contract = new ethers.Contract(NFT_CONTRACT, erc721abi, vitalik);
   console.log("original owner of NFT:", await erc721Contract.ownerOf(TOKEN_ID));
 
+
   // start party
   const startPartyTxnData = partyBidFactory.interface.encodeFunctionData(
     `startParty`,
@@ -61,10 +64,15 @@ async function forkTest() {
     ]
   );
 
+  console.log(`start party`);
+
   const tx = await vitalik.sendTransaction({
     to: partyBidFactory.address,
     data: startPartyTxnData,
+    gasPrice,
   });
+
+  console.log(`DONE start party`);
 
   console.log(JSON.stringify(tx));
 
@@ -94,6 +102,7 @@ async function forkTest() {
 
   const vitalikContrib = await party.contribute({
     value: contribAmount.toString(),
+    gasPrice,
   });
   console.log("contribution:", vitalikContrib);
   await vitalikContrib.wait();
@@ -102,7 +111,9 @@ async function forkTest() {
   const totalContribed = await party.totalContributedToParty();
   console.log("total contributed", totalContribed.toString());
 
-  const bid = await party.bid();
+  const bid = await party.bid({
+    gasPrice,
+  });
   await bid.wait();
 
   console.log("bid created successfully", bid);
@@ -113,7 +124,9 @@ async function forkTest() {
   await provider.send("evm_increaseTime", [secondsIncrease]);
   await provider.send("evm_mine", []);
 
-  await party.finalize();
+  await party.finalize({
+    gasPrice,
+  });
 
   const status = await party.partyStatus();
   console.log("status", JSON.stringify(status));
@@ -130,7 +143,9 @@ async function forkTest() {
   );
   console.log("initial balance", ogVitalikBalance.toString());
 
-  await party.claim(ADDRESS_TO_IMPERSONATE);
+  await party.claim(ADDRESS_TO_IMPERSONATE, {
+    gasPrice
+  });
 
   const newVitalikBalance = await fractionalToken.balanceOf(
     ADDRESS_TO_IMPERSONATE
