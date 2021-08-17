@@ -18,13 +18,6 @@ pragma solidity 0.8.5;
  */
 interface IMarketWrapper {
     /**
-     * @notice Determine whether there is an existing auction
-     * for this token on the underlying market
-     * @return TRUE if the auction exists
-     */
-    function auctionExists(uint256 auctionId) external view returns (bool);
-
-    /**
      * @notice Determine whether the given auctionId is
      * an auction for the tokenId + nftContract
      * @return TRUE if the auctionId matches the tokenId + nftContract
