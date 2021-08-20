@@ -7,69 +7,6 @@ const {
 const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
 const { upgrades } = require('hardhat');
 
-async function deploy(name, args = []) {
-  const Implementation = await ethers.getContractFactory(name);
-  const contract = await Implementation.deploy(...args);
-  return contract.deployed();
-}
-
-async function deployPartyBid(
-  partyDAOMultisig,
-  whitelist,
-  market,
-  nftContract,
-  tokenId = 95,
-  auctionId = 1,
-  quorumPercent = 90,
-  tokenName = 'Party',
-  tokenSymbol = 'PARTY',
-) {
-  return deploy('PartyBid', [
-    partyDAOMultisig,
-    whitelist,
-    market,
-    nftContract,
-    tokenId,
-    auctionId,
-    quorumPercent,
-    tokenName,
-    tokenSymbol,
-  ]);
-}
-
-async function deployFoundationMarket() {}
-
-async function getTokenVault(partyBid, signer) {
-  const vaultAddress = await partyBid.tokenVault();
-  const TokenVault = await ethers.getContractFactory('TokenVault');
-  return new ethers.Contract(vaultAddress, TokenVault.interface, signer);
-}
-
-async function getPartyBidContractFromEventLogs(
-  provider,
-  factory,
-  artistSigner,
-) {
-  // get logs emitted from PartyBid Factory
-  const logs = await provider.getLogs({ address: factory.address });
-
-  // parse events from logs
-  const PartyBidFactory = await ethers.getContractFactory('PartyBidFactory');
-  const events = logs.map((log) => PartyBidFactory.interface.parseLog(log));
-
-  // extract PartyBid proxy address from PartyBidDeployed log
-  const partyBidProxyAddress = events[0]['args'][0];
-
-  // instantiate ethers contract with PartyBid Logic interface + proxy address
-  const PartyBid = await ethers.getContractFactory('PartyBid');
-  const partyBid = new ethers.Contract(
-    partyBidProxyAddress,
-    PartyBid.interface,
-    artistSigner,
-  );
-  return partyBid;
-}
-
 async function deployFoundationAndStartAuction(
   artistSigner,
   nftContract,
@@ -322,6 +259,67 @@ async function deployTestContractSetup(
     partyDAOMultisig,
     weth,
   };
+}
+
+async function deploy(name, args = []) {
+  const Implementation = await ethers.getContractFactory(name);
+  const contract = await Implementation.deploy(...args);
+  return contract.deployed();
+}
+
+async function deployPartyBid(
+    partyDAOMultisig,
+    whitelist,
+    market,
+    nftContract,
+    tokenId = 95,
+    auctionId = 1,
+    quorumPercent = 90,
+    tokenName = 'Party',
+    tokenSymbol = 'PARTY',
+) {
+  return deploy('PartyBid', [
+    partyDAOMultisig,
+    whitelist,
+    market,
+    nftContract,
+    tokenId,
+    auctionId,
+    quorumPercent,
+    tokenName,
+    tokenSymbol,
+  ]);
+}
+
+async function getTokenVault(partyBid, signer) {
+  const vaultAddress = await partyBid.tokenVault();
+  const TokenVault = await ethers.getContractFactory('TokenVault');
+  return new ethers.Contract(vaultAddress, TokenVault.interface, signer);
+}
+
+async function getPartyBidContractFromEventLogs(
+    provider,
+    factory,
+    artistSigner,
+) {
+  // get logs emitted from PartyBid Factory
+  const logs = await provider.getLogs({ address: factory.address });
+
+  // parse events from logs
+  const PartyBidFactory = await ethers.getContractFactory('PartyBidFactory');
+  const events = logs.map((log) => PartyBidFactory.interface.parseLog(log));
+
+  // extract PartyBid proxy address from PartyBidDeployed log
+  const partyBidProxyAddress = events[0]['args'][0];
+
+  // instantiate ethers contract with PartyBid Logic interface + proxy address
+  const PartyBid = await ethers.getContractFactory('PartyBid');
+  const partyBid = new ethers.Contract(
+      partyBidProxyAddress,
+      PartyBid.interface,
+      artistSigner,
+  );
+  return partyBid;
 }
 
 module.exports = {
