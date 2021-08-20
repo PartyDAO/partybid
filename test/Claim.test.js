@@ -4,7 +4,8 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, getBalances, bidThroughParty, contribute, placeBid } = require('./helpers/utils');
+const { eth, getBalances, bidThroughParty, contribute } = require('./helpers/utils');
+const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
   MARKETS,

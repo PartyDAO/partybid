@@ -7,12 +7,12 @@ const { expect } = require('chai');
 const {
     eth,
     contribute,
-    placeBid,
     bidThroughParty,
     getBalances,
     emergencyForceLost,
     getTotalContributed,
 } = require('../helpers/utils');
+const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const {
     PARTY_STATUS,

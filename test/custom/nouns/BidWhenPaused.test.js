@@ -4,7 +4,8 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, bidThroughParty, contribute, placeBid } = require('../../helpers/utils');
+const { eth, bidThroughParty, contribute } = require('../../helpers/utils');
+const { placeBid } = require('../../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../../helpers/deploy');
 const { MARKET_NAMES } = require('../../helpers/constants');
 const { testCases } = require('../../testCases.json');

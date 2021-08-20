@@ -9,9 +9,11 @@ const {
   weiToEth,
   getTotalContributed,
   contribute,
-  placeBid,
   bidThroughParty,
 } = require('../../helpers/utils');
+const {
+  placeBid,
+} = require('../../helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('../../helpers/deploy');
 const {
   PARTY_STATUS,

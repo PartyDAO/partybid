@@ -6,7 +6,8 @@ const MARKET_NAMES = {
   NOUNS: 'NOUNS',
 };
 
-const MARKETS = [MARKET_NAMES.ZORA, MARKET_NAMES.FOUNDATION, MARKET_NAMES.NOUNS];
+// MARKETS is an array of all values in MARKET_NAMES
+const MARKETS = Object.keys(MARKET_NAMES).map(key => MARKET_NAMES[key]);
 
 const NFT_TYPE_ENUM = {
   ZORA: 0,
