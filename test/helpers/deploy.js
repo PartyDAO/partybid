@@ -323,9 +323,7 @@ async function getPartyBidContractFromEventLogs(
 }
 
 module.exports = {
-  deployPartyBid,
-  getTokenVault,
   deployTestContractSetup,
-  deployFoundationMarket,
   deploy,
+  getTokenVault,
 };

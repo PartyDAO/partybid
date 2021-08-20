@@ -37,7 +37,6 @@ contract NounsMarketWrapper is IMarketWrapper {
     function auctionExists(uint256 auctionId)
       public
       view
-      override
       returns (bool)
     {
         (uint256 currentAuctionId, , , uint256 endTime, , ) = market.auction();
