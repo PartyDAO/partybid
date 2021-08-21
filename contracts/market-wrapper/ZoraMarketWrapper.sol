@@ -41,7 +41,6 @@ contract ZoraMarketWrapper is IMarketWrapper {
     function auctionExists(uint256 auctionId)
         public
         view
-        override
         returns (bool)
     {
         // line 375 of Zora Auction House, _exists() function (not exposed publicly)

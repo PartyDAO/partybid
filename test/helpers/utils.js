@@ -49,53 +49,6 @@ async function approve(signer, tokenContract, to, tokenId) {
   });
 }
 
-async function placeBid(signer, marketContract, auctionId, value, marketName) {
-  let data;
-  if (marketName == MARKET_NAMES.ZORA) {
-    data = encodeData(marketContract, 'createBid', [auctionId, value]);
-  } else if (marketName == MARKET_NAMES.NOUNS) {
-    data = encodeData(marketContract, 'createBid', [auctionId]);
-  } else {
-    data = encodeData(marketContract, 'placeBid', [auctionId]);
-  }
-
-  return signer.sendTransaction({
-    to: marketContract.address,
-    data,
-    value,
-  });
-}
-
-async function externalFinalize(signer, marketContract, auctionId, marketName) {
-  let data;
-  if (marketName == MARKET_NAMES.ZORA) {
-    data = encodeData(marketContract, 'endAuction', [auctionId]);
-  } else if (marketName == MARKET_NAMES.NOUNS) {
-    data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
-  } else {
-    data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
-  }
-
-  return signer.sendTransaction({
-    to: marketContract.address,
-    data,
-  });
-}
-
-async function cancelAuction(artistSigner, marketContract, auctionId, marketName) {
-  let data;
-  if (marketName == MARKET_NAMES.ZORA) {
-    data = encodeData(marketContract, 'cancelAuction', [auctionId]);
-  } else {
-    data = encodeData(marketContract, 'cancelReserveAuction', [auctionId]);
-  }
-
-  return artistSigner.sendTransaction({
-    to: marketContract.address,
-    data,
-  });
-}
-
 async function bidThroughParty(partyBidContract, signer) {
   const data = encodeData(partyBidContract, 'bid');
 
@@ -272,16 +225,13 @@ module.exports = {
   initExpectedTotalContributed,
   approve,
   contribute,
-  placeBid,
   redeem,
   supportReseller,
   transfer,
   createReserveAuction,
   createZoraAuction,
   bidThroughParty,
-  externalFinalize,
   emergencyWithdrawEth,
   emergencyCall,
   emergencyForceLost,
-  cancelAuction
 };

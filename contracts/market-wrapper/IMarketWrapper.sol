@@ -18,16 +18,19 @@ pragma solidity 0.8.5;
  */
 interface IMarketWrapper {
     /**
-     * @notice Determine whether there is an existing auction
-     * for this token on the underlying market
-     * @return TRUE if the auction exists
-     */
-    function auctionExists(uint256 auctionId) external view returns (bool);
-
-    /**
-     * @notice Determine whether the given auctionId is
-     * an auction for the tokenId + nftContract
-     * @return TRUE if the auctionId matches the tokenId + nftContract
+     * @notice Given the auctionId, nftContract, and tokenId, check that:
+     * 1. the auction ID matches the token
+     * referred to by tokenId + nftContract
+     * 2. the auctionId refers to an *ACTIVE* auction
+     * (e.g. an auction that will accept bids)
+     * within this market contract
+     * 3. any additional validation to ensure that
+     * a PartyBid can bid on this auction
+     * (ex: if the market allows arbitrary bidding currencies,
+     * check that the auction currency is ETH)
+     * Note: This function probably should have been named "isValidAuction"
+     * @dev Called in PartyBid.sol in `initialize` at line 174
+     * @return TRUE if the auction is valid
      */
     function auctionIdMatchesToken(
         uint256 auctionId,
@@ -36,13 +39,21 @@ interface IMarketWrapper {
     ) external view returns (bool);
 
     /**
-     * @notice Calculate the minimum next bid for this auction
+     * @notice Calculate the minimum next bid for this auction.
+     * PartyBid contracts always submit the minimum possible
+     * bid that will be accepted by the Market contract.
+     * usually, this is either the reserve price (if there are no bids)
+     * or a certain percentage increase above the current highest bid
+     * @dev Called in PartyBid.sol in `bid` at line 251
      * @return minimum bid amount
      */
     function getMinimumBid(uint256 auctionId) external view returns (uint256);
 
     /**
      * @notice Query the current highest bidder for this auction
+     * It is assumed that there is always 1 winning highest bidder for an auction
+     * This is used to ensure that PartyBid cannot outbid itself if it is already winning
+     * @dev Called in PartyBid.sol in `bid` at line 241
      * @return highest bidder
      */
     function getCurrentHighestBidder(uint256 auctionId)
@@ -52,17 +63,27 @@ interface IMarketWrapper {
 
     /**
      * @notice Submit bid to Market contract
+     * @dev Called in PartyBid.sol in `bid` at line 259
      */
     function bid(uint256 auctionId, uint256 bidAmount) external;
 
     /**
      * @notice Determine whether the auction has been finalized
+     * Used to check if it is still possible to bid
+     * And to determine whether the PartyBid should finalize the auction
+     * @dev Called in PartyBid.sol in `bid` at line 247
+     * @dev and in `finalize` at line 288
      * @return TRUE if the auction has been finalized
      */
     function isFinalized(uint256 auctionId) external view returns (bool);
 
     /**
      * @notice Finalize the results of the auction
+     * on the Market contract
+     * It is assumed  that this operation is performed once for each auction,
+     * that after it is done the auction is over and the NFT has been
+     * transferred to the auction winner.
+     * @dev Called in PartyBid.sol in `finalize` at line 289
      */
     function finalize(uint256 auctionId) external;
 }

@@ -8,8 +8,10 @@ const {
     eth,
     weiToEth,
     contribute,
-    cancelAuction
 } = require('../helpers/utils');
+const {
+    cancelAuction
+} = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const {
     PARTY_STATUS,

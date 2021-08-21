@@ -35,7 +35,6 @@ contract FoundationMarketWrapper is IMarketWrapper {
     function auctionExists(uint256 auctionId)
         public
         view
-        override
         returns (bool)
     {
         // line 219 of NFTMarketReserveAuction, logic within placeBid() function (not exposed publicly)
