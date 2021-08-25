@@ -3,19 +3,18 @@ pragma solidity 0.8.5;
 
 // ============ Internal Imports ============
 import {IPartyBid} from "../IPartyBid.sol";
+import {IPartyBidFactory} from "../IPartyBidFactory.sol";
 
 /**
- * @title PartyPeople
+ * @title MultiplePartyGated
  * @author Anna Carroll
- * @notice PartyPeople contract can be inherited
- * by any contract that wants to easily use
- * the onlyPartyPeople modifier in order to dispense
- * party favors to contributors from a defined set of parties
+ * @notice Only allow contributors to a *defined set* of parties
+ * to call a function with onlyContributors modifier
  */
-contract PartyPeople {
-    //======== Immutable Storage =========
+contract MultiplePartyGated {
+    //======== Mutable Storage =========
 
-    // the list of PartyBids you wish to gate with
+    // the list of PartyBids to gate contributors
     address[] public parties;
 
     //======== Modifiers =========
@@ -25,25 +24,24 @@ contract PartyPeople {
      * contributors to the specified parties
      * @dev reverts if msg.sender did not contribute to any of the parties
      */
-    modifier onlyPartyPeople() {
-        require(isPartyPerson(msg.sender), "PartyPeople:onlyPartyPeople");
+    modifier onlyContributors() {
+        require(isContributor(msg.sender), "MultiplePartyGated:onlyContributors");
         _;
     }
 
     //======== Constructor =========
 
     /**
-     * @notice Supply the PartyBids you wish to gate with
+     * @notice Supply the PartyBids for gating contributors
+     * @param _partyBidFactory address of the PartyBid Factory
      * @param _parties array of PartyBid addresses whose contributors to restrict to
      */
-    constructor(address[] memory _parties) {
-        require(_parties.length > 0, "PartyPeople::constructor: supply at least one party");
+    constructor(address _partyBidFactory, address[] memory _parties) {
+        require(_parties.length > 0, "MultiplePartyGated::constructor: supply at least one party");
         for (uint256 i = 0; i < _parties.length; i++) {
             address _party = _parties[i];
-            // TODO: require is a contract?
-            // TODO: require was deployed by partybid factory?
-            // TODO: require parties is less than certain length?
-            // TODO: require that party is unique?
+            uint256 _deployedAtBlock = IPartyBidFactory(_partyBidFactory).deployedAt(_party);
+            require(_deployedAtBlock != 0, "MultiplePartyGated::constructor: not a party");
             parties.push(_party);
         }
     }
@@ -56,7 +54,7 @@ contract PartyPeople {
      * @param _contributor address that might have contributed to parties
      * @return TRUE if they contributed
      */
-    function isPartyPerson(address _contributor) public returns (bool) {
+    function isContributor(address _contributor) public view returns (bool) {
         for (uint256 i = 0; i < parties.length; i++) {
             if (IPartyBid(parties[i]).totalContributed(_contributor) > 0) {
                 return true;
