@@ -20,47 +20,47 @@ interface IPartyBid {
 
     // market wrapper contract exposing interface for
     // market auctioning the NFT
-    function marketWrapper() external returns(address);
+    function marketWrapper() external view returns(address);
 
     // NFT contract
-    function nftContract() external returns(address);
+    function nftContract() external view returns(address);
 
     // Fractionalized NFT vault responsible for post-auction value capture
-    function tokenVault() external returns(address);
+    function tokenVault() external view returns(address);
 
     // ID of auction within market contract
-    function auctionId() external returns(uint256);
+    function auctionId() external view returns(uint256);
 
     // ID of token within NFT contract
-    function tokenId() external returns(uint256);
+    function tokenId() external view returns(uint256);
 
     // ERC-20 symbol for fractional tokens
-    function symbol() external returns(string memory);
+    function symbol() external view returns(string memory);
 
     // ERC-20 name for fractional tokens
-    function name() external returns(string memory);
+    function name() external view returns(string memory);
 
     // state of the contract
-    function partyStatus() external returns(PartyStatus);
+    function partyStatus() external view returns(PartyStatus);
 
     // total ETH deposited by all contributors
-    function totalContributedToParty() external returns(uint256);
+    function totalContributedToParty() external view returns(uint256);
 
     // the total spent by PartyBid on the auction;
     // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
-    function totalSpent() external returns(uint256);
+    function totalSpent() external view returns(uint256);
 
     // the highest bid submitted by PartyBid
-    function highestBid() external returns(uint256);
+    function highestBid() external view returns(uint256);
 
     // contributor => array of Contributions
-    function contributions(address _contributor) external returns(Contribution[] memory);
+    function contributions(address _contributor) external view returns(Contribution[] memory);
 
     // contributor => total amount contributed
-    function totalContributed(address _contributor) external returns(uint256);
+    function totalContributed(address _contributor) external view returns(uint256);
 
     // contributor => true if contribution has been claimed
-    function claimed(address _contributor) external returns(bool);
+    function claimed(address _contributor) external view returns(bool);
 
 
     // ======== Initializer =========
@@ -118,5 +118,5 @@ interface IPartyBid {
     /**
      * @notice Convert ETH value to equivalent token amount
      */
-    function valueToTokens(uint256 _value) external returns (uint256 _tokens);
+    function valueToTokens(uint256 _value) external pure returns (uint256 _tokens);
 }
