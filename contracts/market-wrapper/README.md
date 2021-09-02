@@ -22,7 +22,7 @@ When a `PartyBid` is deployed, it is initialized with the address of the `Market
 
 0. Gather supporting resources
    - Use previous PRs adding Market Wrappers as a reference / guide throughout this process. See: [PR adding Nouns Market Wrapper](https://github.com/PartyDAO/partybid/pull/43)
-   - [Join the PartyDAO Discord](https://discord.gg/YFqPBZET) and introduce yourself in the `#dev` channel.
+   - [Join the PartyDAO Discord](https://discord.gg/uMJxGZ6emD) and introduce yourself in the `#dev` channel.
    - The PartyDAO team is happy to help and answer questions, but please read the documentation first (including the Overview and Warning sections).
 
 1. Write the MarketWrapper contract 
