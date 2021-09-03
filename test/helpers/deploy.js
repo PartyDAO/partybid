@@ -154,6 +154,15 @@ async function deployNounsAndStartAuction(
   };
 }
 
+async function deployFractionalAndStartAuction(
+  artistSigner,
+  nftContract,
+  tokenId,
+  reservePrice
+) {
+  const fractionalFactory = await deploy('FractionalFactory')
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
@@ -205,6 +214,8 @@ async function deployTestContractSetup(
       reservePrice,
       pauseAuctionHouse,
     )
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    marketContracts = await deployFractionalAndStartAuction();
   } else {
     throw new Error('Unsupported market type');
   }

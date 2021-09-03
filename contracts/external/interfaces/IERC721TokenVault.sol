@@ -14,76 +14,63 @@ import "../fractional/OpenZeppelin/upgradeable/token/ERC721/utils/ERC721HolderUp
 import "../fractional/OpenZeppelin/upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 // contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
-contract TokenVault is IERC20, IERC721 {
-    using Address for address;
-
+// interface IERC721TokenVault is IERC20, IERC721 {
+interface IERC721TokenVault {
     /// -----------------------------------
     /// -------- BASIC INFORMATION --------
     /// -----------------------------------
-
-    /// @notice weth address
-    address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     /// -----------------------------------
     /// -------- TOKEN INFORMATION --------
     /// -----------------------------------
 
-    /// @notice the ERC721 token address of the vault's token
-    address public token;
+    // /// @notice the ERC721 token address of the vault's token
+    // address external token;
 
-    /// @notice the ERC721 token ID of the vault's token
-    uint256 public id;
+    // /// @notice the ERC721 token ID of the vault's token
+    // uint256 external id;
 
     /// -------------------------------------
     /// -------- AUCTION INFORMATION --------
     /// -------------------------------------
 
-    /// @notice the unix timestamp end time of the token auction
-    uint256 public auctionEnd;
-
-    /// @notice the length of auctions
-    uint256 public auctionLength;
-
-    /// @notice reservePrice * votingTokens
-    uint256 public reserveTotal;
-
     /// @notice the current price of the token during an auction
-    uint256 public livePrice;
+    function livePrice() external view returns (uint);
 
     /// @notice the current user winning the token auction
-    address payable public winning;
+    function winning() external view returns (address);
 
     enum State { inactive, live, ended, redeemed }
 
-    State public auctionState;
+    function auctionState() external view returns (State);
 
     /// -----------------------------------
     /// -------- VAULT INFORMATION --------
     /// -----------------------------------
 
-    /// @notice the governance contract which gets paid in ETH
-    address public immutable settings;
+    // /// @notice the governance contract which gets paid in ETH
+    // address external immutable settings;
 
-    /// @notice the address who initially deposited the NFT
-    address public curator;
+    // /// @notice the address who initially deposited the NFT
+    // address external curator;
 
-    /// @notice the AUM fee paid to the curator yearly. 3 decimals. ie. 100 = 10%
-    uint256 public fee;
+    // /// @notice the AUM fee paid to the curator yearly. 3 decimals. ie. 100 = 10%
+    // uint256 external fee;
 
-    /// @notice the last timestamp where fees were claimed
-    uint256 public lastClaimed;
+    // /// @notice the last timestamp where fees were claimed
+    // uint256 external lastClaimed;
 
-    /// @notice a boolean to indicate if the vault has closed
-    bool public vaultClosed;
+    // /// @notice a boolean to indicate if the vault has closed
+    // bool external vaultClosed;
 
-    /// @notice the number of ownership tokens voting on the reserve price at any given time
-    uint256 public votingTokens;
+    // /// @notice the number of ownership tokens voting on the reserve price at any given time
+    // uint256 external votingTokens;
 
-    /// @notice a mapping of users to their desired token price
-    mapping(address => uint256) public userPrices;
+    // /// @notice a mapping of users to their desired token price
+    // mapping(address => uint256) external userPrices;
 
-    /// @notice a non transferable NFT
-    FNFT public nft;
+    // /// @notice a non transferable NFT
+    // FNFT external nft;
 
     /// ------------------------
     /// -------- EVENTS --------
@@ -114,7 +101,7 @@ contract TokenVault is IERC20, IERC721 {
     /// -------- VIEW FUNCTIONS --------
     /// --------------------------------
 
-    function reservePrice() public view returns(uint256);
+    function reservePrice() external view returns(uint256);
 
     /// -------------------------------
     /// -------- GOV FUNCTIONS --------
@@ -164,7 +151,7 @@ contract TokenVault is IERC20, IERC721 {
     function end() external;
 
     /// @notice an external function to burn all ERC20 tokens to receive the ERC721 token
-    function redeem() external {}
+    function redeem() external;
 
     /// @notice an external function to burn ERC20 tokens to receive ETH from ERC721 token purchase
     function cash() external;

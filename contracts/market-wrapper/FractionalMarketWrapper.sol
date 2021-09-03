@@ -2,7 +2,8 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports ============
-// import {IFractional} from "../external/interfaces/IFractional.sol";
+import {IERC721TokenVault} from "../external/interfaces/IERC721TokenVault.sol";
+import {ISettings} from "../external/fractional/Interfaces/ISettings.sol";
 
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./IMarketWrapper.sol";
@@ -16,31 +17,28 @@ import {IMarketWrapper} from "./IMarketWrapper.sol";
 contract FractionalMarketWrapper is IMarketWrapper {
     // ============ Public Immutables ============
 
-    IFractional public immutable market;
+    ISettings public immutable settings = ISettings(0xE0FC79183a22106229B84ECDd55cA017A07eddCa);
+
+    uint256 public registrationCounter = 1; // The zero value is a sentinel for not existing
+    mapping(uint256 => address) public auctionToAddress;
+    mapping(address => uint256) public addressToAuction;
 
     // ======== Constructor =========
 
-    constructor(address _fractional) {
-        market = IFractional(_market);
-    }
+    constructor(address /* _fractional */) {}
 
     // ======== External Functions =========
 
     /**
-     * @notice Determine whether there is an existing, active auction
-     * for this token. In the Nouns auction house, the current auction
-     * id is the token id, which increments sequentially, forever. The
-     * auction is considered active while the current block timestamp
-     * is less than the auction's end time.
-     * @return TRUE if the auction exists
+     * @notice Register a Fractional Vault within the contract
      */
-    function auctionExists(uint256 auctionId)
-      public
-      view
-      returns (bool)
-    {
-        (uint256 currentAuctionId, , , uint256 endTime, , ) = market.auction();
-        return auctionId == currentAuctionId && block.timestamp < endTime;
+    function registerVault(
+        address nftContract
+    ) public {
+        require(addressToAuction[nftContract] == 0, "Vault already registered");
+        auctionToAddress[registrationCounter] = nftContract;
+        addressToAuction[nftContract] = registrationCounter;
+        registrationCounter += 1;
     }
 
     /**
@@ -50,10 +48,16 @@ contract FractionalMarketWrapper is IMarketWrapper {
      */
     function auctionIdMatchesToken(
         uint256 auctionId,
-        address /* nftContract */,
+        address nftContract,
         uint256 tokenId
     ) public view override returns (bool) {
-        return auctionId == tokenId && auctionExists(auctionId);
+        address marketAddress = auctionToAddress[auctionId];
+        if (marketAddress == address(0)) {
+            return false;
+        } else {
+            uint auctionState = uint(IERC721TokenVault(marketAddress).auctionState());
+            return (auctionState == 0 || auctionState == 1); // See https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol#L55
+        }
     }
 
     /**
@@ -66,19 +70,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
       override
       returns (uint256)
     {
-        require(
-            auctionExists(auctionId),
-            "NounsMarketWrapper::getMinimumBid: Auction not active"
-        );
-
-        (, uint256 amount, , , address payable bidder, ) = market.auction();
-        if (bidder == address(0)) {
-            // if there are NO bids, the minimum bid is the reserve price
-            return market.reservePrice();
-        }
-        // if there ARE bids, the minimum bid is the current bid plus the increment buffer
-        uint8 minBidIncrementPercentage = market.minBidIncrementPercentage();
-        return amount + ((amount * minBidIncrementPercentage) / 100);
+        return (IERC721TokenVault(auctionToAddress[auctionId]).livePrice() * (settings.minBidIncrease() + 1000)) / 1000;
     }
 
     /**
@@ -91,25 +83,17 @@ contract FractionalMarketWrapper is IMarketWrapper {
       override
       returns (address)
     {
-        require(
-            auctionExists(auctionId),
-            "NounsMarketWrapper::getCurrentHighestBidder: Auction not active"
-        );
-
-        (, , , , address payable bidder, ) = market.auction();
-        return bidder;
+        return IERC721TokenVault(auctionToAddress[auctionId]).winning();
     }
 
     /**
      * @notice Submit bid to Market contract
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
-        // line 104 of Nouns Auction House, createBid() function
         (bool success, bytes memory returnData) =
-        address(market).call{value: bidAmount}(
+        auctionToAddress[auctionId].call{value: bidAmount}(
             abi.encodeWithSignature(
-                "createBid(uint256)",
-                auctionId
+                "bid())"
             )
         );
         require(success, string(returnData));
@@ -125,20 +109,17 @@ contract FractionalMarketWrapper is IMarketWrapper {
       override
       returns (bool)
     {
-        (uint256 currentAuctionId, , , , , bool settled) = market.auction();
-        bool settledNormally = auctionId != currentAuctionId;
-        bool settledWhenPaused = auctionId == currentAuctionId && settled;
-        return settledNormally || settledWhenPaused;
+        return uint(IERC721TokenVault(auctionToAddress[auctionId]).auctionState()) == 3;
     }
 
     /**
      * @notice Finalize the results of the auction
      */
     function finalize(uint256 /* auctionId */) external override {
-        if (market.paused()) {
-            market.settleAuction();
-        } else {
-            market.settleCurrentAndCreateNewAuction();
-        }
+        // if (market.paused()) {
+        //     market.settleAuction();
+        // } else {
+        //     market.settleCurrentAndCreateNewAuction();
+        // }
     }
 }

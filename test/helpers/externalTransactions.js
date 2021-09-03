@@ -7,8 +7,10 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
         data = encodeData(marketContract, 'createBid', [auctionId, value]);
     } else if (marketName == MARKET_NAMES.NOUNS) {
         data = encodeData(marketContract, 'createBid', [auctionId]);
-    } else if(marketName == MARKET_NAMES.FOUNDATION) {
+    } else if (marketName == MARKET_NAMES.FOUNDATION) {
         data = encodeData(marketContract, 'placeBid', [auctionId]);
+    } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+        data = encodeData(marketContract, 'bid', [])
     } else {
         throw new Error("Unsupported Market");
     }
@@ -26,8 +28,10 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
         data = encodeData(marketContract, 'endAuction', [auctionId]);
     } else if (marketName == MARKET_NAMES.NOUNS) {
         data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
-    } else if(marketName == MARKET_NAMES.FOUNDATION) {
+    } else if (marketName == MARKET_NAMES.FOUNDATION) {
         data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
+    } else if (marketName == MARKET_NAME.FRACTIONAL) {
+        data = encodeData(marketContract, 'TODO', []);
     } else {
         throw new Error("Unsupported Market");
     }
@@ -39,6 +43,7 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
 }
 
 async function cancelAuction(artistSigner, marketContract, auctionId, marketName) {
+    // Neither Nouns nor Fractional let you cancel an auction
     let data;
     if (marketName == MARKET_NAMES.ZORA) {
         data = encodeData(marketContract, 'cancelAuction', [auctionId]);
