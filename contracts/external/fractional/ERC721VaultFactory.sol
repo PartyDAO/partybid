@@ -31,7 +31,7 @@ contract ERC721VaultFactory is Ownable, Pausable {
 
   constructor(address _settings, address _weth) {
     settings = _settings;
-    logic = address(new TokenVault(_settings));
+    logic = address(new TokenVault(_settings, _weth));
     weth = _weth;
   }
 
