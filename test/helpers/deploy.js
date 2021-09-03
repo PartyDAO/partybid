@@ -264,13 +264,12 @@ async function deployTestContractSetup(
     partyDAOMultisig = artistSigner;
   }
 
+  // These are the Fractional vaults that will be used for splitting the PartyDAO allocation
+  // Not the vaults for bidding on a Fractional NFT
   const tokenVaultSettings = await deploy('Settings');
   const tokenVaultFactory = await deploy('ERC721VaultFactory', [
     tokenVaultSettings.address,
   ]);
-
-  // let vaultFactory = await marketWrapper.vaultFactory();
-  // console.log(`vaultFactory at ${vaultFactory}`);
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
   console.log(`marketWrapper is ${marketWrapper.address}`);

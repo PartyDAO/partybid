@@ -10,11 +10,13 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
     } else if (marketName == MARKET_NAMES.NOUNS) {
         data = encodeData(marketContract, 'createBid', [auctionId]);
     } else if (marketName == MARKET_NAMES.FOUNDATION) {
+        console.log(marketContract.toString());
         data = encodeData(marketContract, 'placeBid', [auctionId]);
     } else if (marketName == MARKET_NAMES.FRACTIONAL) {
-        let vaultAddress = await marketContract.functions.vaults(auctionId);
+        let vaultAddress = (await marketContract.functions.vaults(auctionId)).toString(); // This is key
         let vaultContract = await ethers.getContractFactory("TokenVault");
-        vaultContract = await vaultContract.attach(vaultAddress); // This is not a token vault? Func selector not recognized
+        vaultContract = await vaultContract.attach(vaultAddress);
+        console.log(vaultContract.toString());
         // vaultContract = await vaultContract.attach("0x5cc657F6c8A9314c9aD2Ad51daa44eC929EF5b9a"); // random one
         console.log(`vaultAddress: ${vaultAddress}, vaultContract.address: ${vaultContract.address}`);
         let token = await vaultContract.functions.token();
@@ -23,6 +25,7 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
         // console.log(`factory interface: ${marketContract.interface.format(ethers.utils.FormatTypes.full)}`);
         data = encodeData(vaultContract, 'bid', [])
         targetAddress = vaultAddress;
+        // targetAddress = vaultAddress.toString();
         console.log('end of encoding');
     } else {
         throw new Error("Unsupported Market");

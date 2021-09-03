@@ -43,7 +43,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
         uint256 tokenId
     ) public view override returns (bool) {
         address marketAddress = vaultFactory.vaults(auctionId);
-        console.log("vault count is %s at %s", vaultFactory.vaultCount(), address(this));
+        console.log("Market wrapper at %s finds vault count is %s at %s", address(this), vaultFactory.vaultCount(), address(vaultFactory));
         console.log("auctionId is %s, address is %s", auctionId, marketAddress);
         if (marketAddress == address(0)) {
             return false;

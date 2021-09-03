@@ -59,7 +59,7 @@ contract ERC721VaultFactory is Ownable, Pausable {
         _initializationCalldata
       )
     );
-    console.log("Initializing vault with id %s at %s", vaultCount, vault);
+    console.log("Factory at %s is initializing vault with id %s at %s", address(this), vaultCount, vault);
 
     emit Mint(_token, _id, _listPrice, vault, vaultCount);
 
