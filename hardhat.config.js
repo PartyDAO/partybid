@@ -75,7 +75,13 @@ module.exports = {
   },
 
   networks: {
-    hardhat: {},
+    hardhat: {
+      // forking: {
+      //   // url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      //   url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_PROJECT_ID}@13022296`,
+      //   blockNumber: 13022296, // So we can use the WETH address for Fractional
+      // }
+    },
     localhost: {
       url: 'http://localhost:8545',
     },
@@ -84,6 +90,7 @@ module.exports = {
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      // blockNumber: 13022296, // So we can use the WETH address for Fractional
     }
   },
 };

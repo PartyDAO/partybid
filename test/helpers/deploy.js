@@ -159,11 +159,13 @@ async function deployFractionalAndStartAuction(
   artistSigner,
   nftContract,
   tokenId,
+  weth,
   reservePrice
 ) {
   const fractionalSettings = await deploy('Settings');
   const fractionalFactory = await deploy('ERC721VaultFactory', [
-    fractionalSettings.address
+    fractionalSettings.address,
+    weth.address
   ]);
 
   const fractionalWrapper = await deploy('FractionalMarketWrapper', [
@@ -247,6 +249,7 @@ async function deployTestContractSetup(
       artistSigner,
       nftContract,
       tokenId,
+      weth,
       reservePrice,
     );
   } else {
@@ -269,6 +272,7 @@ async function deployTestContractSetup(
   const tokenVaultSettings = await deploy('Settings');
   const tokenVaultFactory = await deploy('ERC721VaultFactory', [
     tokenVaultSettings.address,
+    weth.address,
   ]);
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)

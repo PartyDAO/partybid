@@ -14,6 +14,8 @@ import {
 ERC20Upgradeable
 } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
+import "hardhat/console.sol";
+
 contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     using Address for address;
 
@@ -390,7 +392,10 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     /// @dev internal helper function to send ETH and WETH on failure
     function _sendWETH(address who, uint256 amount) internal {
+        console.log("about to deposit");
+        console.log("block.number is %s", block.number);
         IWETH(weth).deposit{value: amount}();
+        console.log("deposited");
         IWETH(weth).transfer(who, IWETH(weth).balanceOf(address(this)));
     }
 

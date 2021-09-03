@@ -25,11 +25,14 @@ contract ERC721VaultFactory is Ownable, Pausable {
   /// @notice the TokenVault logic contract
   address public immutable logic;
 
+  address public immutable weth;
+
   event Mint(address indexed token, uint256 id, uint256 price, address vault, uint256 vaultId);
 
-  constructor(address _settings) {
+  constructor(address _settings, address _weth) {
     settings = _settings;
     logic = address(new TokenVault(_settings));
+    weth = _weth;
   }
 
   /// @notice the function to mint a new vault
