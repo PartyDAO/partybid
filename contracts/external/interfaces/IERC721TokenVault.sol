@@ -1,18 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IWETH.sol";
-import "../fractional/OpenZeppelin/math/Math.sol";
-import "../fractional/OpenZeppelin/token/ERC20/ERC20.sol";
-import "../fractional/OpenZeppelin/token/ERC721/ERC721.sol";
-import "../fractional/OpenZeppelin/token/ERC721/ERC721Holder.sol";
-
-import "../fractional/Settings.sol";
-import "../fractional/FNFT.sol";
-
-import "../fractional/OpenZeppelin/upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import "../fractional/OpenZeppelin/upgradeable/token/ERC20/ERC20Upgradeable.sol";
-
 // contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 // interface IERC721TokenVault is IERC20, IERC721 {
 interface IERC721TokenVault {

@@ -11,6 +11,8 @@ import {InitializedProxy} from "../../InitializedProxy.sol";
 import "./Settings.sol";
 import "./ERC721TokenVault.sol";
 
+import "hardhat/console.sol";
+
 contract ERC721VaultFactory is Ownable, Pausable {
   /// @notice the number of ERC721 vaults
   uint256 public vaultCount;
@@ -57,6 +59,7 @@ contract ERC721VaultFactory is Ownable, Pausable {
         _initializationCalldata
       )
     );
+    console.log("Initializing vault with id %s at %s", vaultCount, vault);
 
     emit Mint(_token, _id, _listPrice, vault, vaultCount);
 

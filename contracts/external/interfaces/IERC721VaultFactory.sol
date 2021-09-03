@@ -7,6 +7,8 @@ interface IERC721VaultFactory {
 
     function settings() external view returns (address);
 
+    function vaultCount() external view returns (uint);
+
     /// @notice the function to mint a new vault
     /// @param _name the desired name of the vault
     /// @param _symbol the desired sumbol of the vault

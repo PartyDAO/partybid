@@ -9,6 +9,8 @@ import {ISettings} from "../external/fractional/Interfaces/ISettings.sol";
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./IMarketWrapper.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title FractionalMarketWrapper
  * @author 0xfoobar
@@ -41,13 +43,17 @@ contract FractionalMarketWrapper is IMarketWrapper {
         uint256 tokenId
     ) public view override returns (bool) {
         address marketAddress = vaultFactory.vaults(auctionId);
+        console.log("vault count is %s at %s", vaultFactory.vaultCount(), address(this));
+        console.log("auctionId is %s, address is %s", auctionId, marketAddress);
         if (marketAddress == address(0)) {
             return false;
         } else {
+            return true;
             IERC721TokenVault vault = IERC721TokenVault(vaultFactory.vaults(auctionId));
             IERC721TokenVault.State auctionState = IERC721TokenVault(marketAddress).auctionState();
             return (
-                (auctionState == IERC721TokenVault.State.live && block.timestamp < vault.auctionEnd())
+                auctionState == IERC721TokenVault.State.inactive
+                || (auctionState == IERC721TokenVault.State.live && block.timestamp < vault.auctionEnd())
                 || auctionState == IERC721TokenVault.State.ended
             ); // See https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol#L55
         }

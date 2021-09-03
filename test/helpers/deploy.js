@@ -181,7 +181,7 @@ async function deployFractionalAndStartAuction(
   );
 
   // Create auction here
-  const auctionId = 1;
+  const auctionId = 0;
 
   return {
     market: fractionalFactory,
@@ -269,8 +269,11 @@ async function deployTestContractSetup(
     tokenVaultSettings.address,
   ]);
 
+  let vaultFactory = await marketWrapper.vaultFactory();
+  console.log(`vaultFactory at ${vaultFactory}`);
+
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
-  console.log(`marketWrapper is ${marketWrapper}`);
+  console.log(`marketWrapper is ${marketWrapper.address}`);
   const factory = await deploy('PartyBidFactory', [
     partyDAOMultisig.address,
     tokenVaultFactory.address,
