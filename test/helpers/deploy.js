@@ -301,6 +301,7 @@ async function deployTestContractSetup(
     artistSigner,
   );
 
+  console.log("Finished deployTestContractSetup");
   return {
     nftContract,
     market,

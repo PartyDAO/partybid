@@ -13,23 +13,29 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
         data = encodeData(marketContract, 'placeBid', [auctionId]);
     } else if (marketName == MARKET_NAMES.FRACTIONAL) {
         let vaultAddress = await marketContract.functions.vaults(auctionId);
-        // console.log(`vaultAddress: ${vaultAddress}`);
         let vaultContract = await ethers.getContractFactory("TokenVault");
         vaultContract = await vaultContract.attach(vaultAddress); // This is not a token vault? Func selector not recognized
-        // console.log(vaultContract);
+        // vaultContract = await vaultContract.attach("0x5cc657F6c8A9314c9aD2Ad51daa44eC929EF5b9a"); // random one
+        console.log(`vaultAddress: ${vaultAddress}, vaultContract.address: ${vaultContract.address}`);
+        let token = await vaultContract.functions.token();
+        console.log(`token: ${token}`);
         // console.log(`vault interface: ${vaultContract.interface.format(ethers.utils.FormatTypes.full)}`);
         // console.log(`factory interface: ${marketContract.interface.format(ethers.utils.FormatTypes.full)}`);
-        data = encodeData(vaultContract, 'bid')
+        data = encodeData(vaultContract, 'bid', [])
         targetAddress = vaultAddress;
+        console.log('end of encoding');
     } else {
         throw new Error("Unsupported Market");
     }
 
-    return signer.sendTransaction({
+    console.log(`Sending tx from ${signer.address} to ${targetAddress}`);
+    let res = await signer.sendTransaction({
         to: targetAddress,
-        data,
-        value,
+        data: data,
+        value: value,
     });
+    console.log(`Success, ${res}`);
+    return res;
 }
 
 async function externalFinalize(signer, marketContract, auctionId, marketName) {
