@@ -2,7 +2,7 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports ============
-import {IERC721VaultFactory} from "../external/interfaces/IERC721VaultFactory";
+import {IERC721VaultFactory} from "../external/interfaces/IERC721VaultFactory.sol";
 import {IERC721TokenVault} from "../external/interfaces/IERC721TokenVault.sol";
 import {ISettings} from "../external/fractional/Interfaces/ISettings.sol";
 
@@ -25,7 +25,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
 
     constructor(address _fractional) {
         vaultFactory = IERC721VaultFactory(_fractional);
-        settings = vaultFactory.settings();
+        settings = ISettings(IERC721VaultFactory(_fractional).settings());
     }
 
     // ======== External Functions =========
@@ -40,14 +40,14 @@ contract FractionalMarketWrapper is IMarketWrapper {
         address nftContract,
         uint256 tokenId
     ) public view override returns (bool) {
-        address marketAddress = auctionToAddress[auctionId];
+        address marketAddress = vaultFactory.vaults(auctionId);
         if (marketAddress == address(0)) {
             return false;
         } else {
             IERC721TokenVault vault = IERC721TokenVault(vaultFactory.vaults(auctionId));
             IERC721TokenVault.State auctionState = IERC721TokenVault(marketAddress).auctionState();
             return (
-                (auctionState == IERC721TokenVault.State.live && block.timestamp < auction.auctionEnd())
+                (auctionState == IERC721TokenVault.State.live && block.timestamp < vault.auctionEnd())
                 || auctionState == IERC721TokenVault.State.ended
             ); // See https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol#L55
         }
@@ -76,7 +76,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
       override
       returns (address)
     {
-        return IERC721TokenVault(auctionToAddress[auctionId]).winning();
+        return IERC721TokenVault(vaultFactory.vaults(auctionId)).winning();
     }
 
     /**
@@ -84,7 +84,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
         (bool success, bytes memory returnData) =
-        auctionToAddress[auctionId].call{value: bidAmount}(
+        (vaultFactory.vaults(auctionId)).call{value: bidAmount}(
             abi.encodeWithSignature(
                 "bid())"
             )

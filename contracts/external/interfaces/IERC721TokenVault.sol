@@ -34,6 +34,9 @@ interface IERC721TokenVault {
     /// -------- AUCTION INFORMATION --------
     /// -------------------------------------
 
+    /// @notice the unix timestamp end time of the token auction
+    function auctionEnd() external view returns (uint);
+
     /// @notice the current price of the token during an auction
     function livePrice() external view returns (uint);
 
