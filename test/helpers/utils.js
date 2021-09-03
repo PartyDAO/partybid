@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { FOURTY_EIGHT_HOURS_IN_SECONDS, MARKET_NAMES } = require('./constants');
+const { SEVEN_DAYS_IN_SECONDS, MARKET_NAMES } = require('./constants');
 
 function eth(num) {
   return ethers.utils.parseEther(num.toString());
@@ -22,10 +22,8 @@ async function getBalances(provider, token, accounts) {
       weiToEth(await provider.getBalance(address)),
     );
     let tokenBalance = 0;
-    if(token && token.address != ethers.constants.AddressZero) {
-      tokenBalance = parseFloat(
-          weiToEth(await token.balanceOf(address)),
-      );
+    if (token && token.address != ethers.constants.AddressZero) {
+      tokenBalance = parseFloat(weiToEth(await token.balanceOf(address)));
     }
     balances[name]['tokens'] = tokenBalance;
   }
@@ -77,8 +75,16 @@ async function emergencyWithdrawEth(partyBidContract, signer, value) {
   });
 }
 
-async function emergencyCall(partyBidContract, signer, contractAddress, calldata) {
-  const data = encodeData(partyBidContract, 'emergencyCall', [contractAddress, calldata]);
+async function emergencyCall(
+  partyBidContract,
+  signer,
+  contractAddress,
+  calldata,
+) {
+  const data = encodeData(partyBidContract, 'emergencyCall', [
+    contractAddress,
+    calldata,
+  ]);
 
   return signer.sendTransaction({
     to: partyBidContract.address,
@@ -87,7 +93,7 @@ async function emergencyCall(partyBidContract, signer, contractAddress, calldata
 }
 
 async function emergencyForceLost(partyBidContract, signer) {
-  const data = encodeData(partyBidContract, 'emergencyForceLost',);
+  const data = encodeData(partyBidContract, 'emergencyForceLost');
 
   return signer.sendTransaction({
     to: partyBidContract.address,
@@ -141,7 +147,7 @@ async function createZoraAuction(
   tokenId,
   tokenContractAddress,
   reservePrice,
-  duration = FOURTY_EIGHT_HOURS_IN_SECONDS,
+  duration = SEVEN_DAYS_IN_SECONDS,
   curatorFeePercentage = 0,
 ) {
   const data = encodeData(marketContract, 'createAuction', [

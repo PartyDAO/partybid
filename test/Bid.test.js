@@ -49,24 +49,34 @@ describe('Bid', async () => {
             if (placedByPartyBid && success) {
               it('Allows PartyBid to bid', async () => {
                 const { signerIndex } = contributions[0];
-                await expect(bidThroughParty(partyBid, signers[signerIndex])).to.emit(partyBid, 'Bid');
+                await expect(
+                  bidThroughParty(partyBid, signers[signerIndex]),
+                ).to.emit(partyBid, 'Bid');
               });
 
               it('Does not allow PartyBid to bid twice', async () => {
                 const { signerIndex } = contributions[0];
-                await expect(bidThroughParty(partyBid, signers[signerIndex])).to.be.revertedWith("PartyBid::bid: already highest bidder");
+                await expect(
+                  bidThroughParty(partyBid, signers[signerIndex]),
+                ).to.be.revertedWith('PartyBid::bid: already highest bidder');
               });
             } else if (placedByPartyBid && !success) {
               it('Does not allow PartyBid to bid', async () => {
                 const { signerIndex } = contributions[0];
-                await expect(bidThroughParty(partyBid, signers[signerIndex])).to.be.reverted;
+                await expect(bidThroughParty(partyBid, signers[signerIndex])).to
+                  .be.reverted;
               });
             } else if (!placedByPartyBid && success) {
               it('Accepts external bid', async () => {
-                const eventName =
-                  marketName == MARKET_NAMES.FOUNDATION
-                    ? 'ReserveAuctionBidPlaced'
-                    : 'AuctionBid';
+                let eventName;
+                if (marketName == MARKET_NAMES.FOUNDATION) {
+                  eventName = 'ReserveAuctionBidPlaced';
+                } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+                  const auctionState = await market.auctionState();
+                  eventName = auctionState === 0 ? 'Start' : 'Bid';
+                } else {
+                  eventName = 'AuctionBid';
+                }
                 await expect(
                   placeBid(
                     signers[0],

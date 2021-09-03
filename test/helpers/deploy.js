@@ -4,7 +4,7 @@ const {
   createReserveAuction,
   createZoraAuction,
 } = require('./utils');
-const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const { MARKET_NAMES, SEVEN_DAYS_IN_SECONDS } = require('./constants');
 const { upgrades } = require('hardhat');
 
 async function deployFoundationAndStartAuction(
@@ -119,14 +119,16 @@ async function deployNounsAndStartAuction(
   const MIN_INCREMENT_BID_PERCENTAGE = 5;
 
   // Deploy Nouns Auction House
-  const auctionHouseFactory = await ethers.getContractFactory('NounsAuctionHouse');
+  const auctionHouseFactory = await ethers.getContractFactory(
+    'NounsAuctionHouse',
+  );
   const nounsAuctionHouse = await upgrades.deployProxy(auctionHouseFactory, [
     nftContract.address,
     weth.address,
     TIME_BUFFER,
     eth(reservePrice),
     MIN_INCREMENT_BID_PERCENTAGE,
-    FOURTY_EIGHT_HOURS_IN_SECONDS,
+    SEVEN_DAYS_IN_SECONDS,
   ]);
 
   // Set Nouns Auction House as minter on Nouns NFT contract
@@ -154,6 +156,53 @@ async function deployNounsAndStartAuction(
   };
 }
 
+async function deployFractionalAndStartAuction(
+  artistSigner,
+  nftContract,
+  tokenId,
+  weth,
+  reservePrice,
+) {
+  // deploy Vault Factory
+  const settings = await deploy('Settings');
+  const vaultFactory = await deploy('ERC721VaultFactory', [settings.address]);
+
+  // Approve NFT Transfer to Vault Factory
+  await approve(artistSigner, nftContract, vaultFactory.address, tokenId);
+
+  // deploy Token Vault
+  await vaultFactory
+    .connect(artistSigner)
+    .mint(
+      'TEST',
+      'TEST',
+      nftContract.address,
+      tokenId,
+      1,
+      eth(reservePrice),
+      0,
+    );
+  const auctionId = 0;
+  const tokenVaultAddress = await vaultFactory.vaults(0);
+  const tokenVault = await ethers.getContractAt(
+    'TokenVault',
+    tokenVaultAddress,
+  );
+  // set weth address
+  await tokenVault.setWeth(weth.address);
+
+  // Deploy Market Wrapper
+  const marketWrapper = await deploy('FractionalMarketWrapper', [
+    vaultFactory.address,
+  ]);
+
+  return {
+    market: tokenVault,
+    marketWrapper,
+    auctionId,
+  };
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
@@ -161,7 +210,7 @@ async function deployTestContractSetup(
   tokenId = 95,
   reservePrice = 1,
   fakeMultisig = false,
-  pauseAuctionHouse = false
+  pauseAuctionHouse = false,
 ) {
   // Deploy WETH
   const weth = await deploy('EtherToken');
@@ -204,7 +253,15 @@ async function deployTestContractSetup(
       weth,
       reservePrice,
       pauseAuctionHouse,
-    )
+    );
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    marketContracts = await deployFractionalAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      weth,
+      reservePrice,
+    );
   } else {
     throw new Error('Unsupported market type');
   }
@@ -213,7 +270,7 @@ async function deployTestContractSetup(
 
   // Deploy PartyDAO multisig
   let partyDAOMultisig;
-  if(!fakeMultisig) {
+  if (!fakeMultisig) {
     partyDAOMultisig = await deploy('PayableContract');
   } else {
     partyDAOMultisig = artistSigner;
@@ -232,7 +289,7 @@ async function deployTestContractSetup(
     marketWrapper.address,
     nftContract.address,
     tokenId,
-    auctionId
+    auctionId,
   ]);
 
   // Deploy PartyBid proxy
@@ -268,15 +325,15 @@ async function deploy(name, args = []) {
 }
 
 async function deployPartyBid(
-    partyDAOMultisig,
-    whitelist,
-    market,
-    nftContract,
-    tokenId = 95,
-    auctionId = 1,
-    quorumPercent = 90,
-    tokenName = 'Party',
-    tokenSymbol = 'PARTY',
+  partyDAOMultisig,
+  whitelist,
+  market,
+  nftContract,
+  tokenId = 95,
+  auctionId = 1,
+  quorumPercent = 90,
+  tokenName = 'Party',
+  tokenSymbol = 'PARTY',
 ) {
   return deploy('PartyBid', [
     partyDAOMultisig,
@@ -298,9 +355,9 @@ async function getTokenVault(partyBid, signer) {
 }
 
 async function getPartyBidContractFromEventLogs(
-    provider,
-    factory,
-    artistSigner,
+  provider,
+  factory,
+  artistSigner,
 ) {
   // get logs emitted from PartyBid Factory
   const logs = await provider.getLogs({ address: factory.address });
@@ -315,9 +372,9 @@ async function getPartyBidContractFromEventLogs(
   // instantiate ethers contract with PartyBid Logic interface + proxy address
   const PartyBid = await ethers.getContractFactory('PartyBid');
   const partyBid = new ethers.Contract(
-      partyBidProxyAddress,
-      PartyBid.interface,
-      artistSigner,
+    partyBidProxyAddress,
+    PartyBid.interface,
+    artistSigner,
   );
   return partyBid;
 }

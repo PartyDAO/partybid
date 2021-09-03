@@ -22,7 +22,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     /// -----------------------------------
 
     /// @notice weth address
-    address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     /// -----------------------------------
     /// -------- TOKEN INFORMATION --------
@@ -106,6 +106,11 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     constructor(address _settings) {
         settings = _settings;
+    }
+
+    //NOTE: Added just for locally testing with partyBid
+    function setWeth(address _weth) external {
+        weth = _weth;
     }
 
     function initialize(address _curator, address _token, uint256 _id, uint256 _supply, uint256 _listPrice, uint256 _fee, string memory _name, string memory _symbol) external initializer {
