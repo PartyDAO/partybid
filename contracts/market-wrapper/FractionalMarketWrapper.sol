@@ -2,6 +2,7 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports ============
+import {IERC721VaultFactory} from "../external/interfaces/IERC721VaultFactory";
 import {IERC721TokenVault} from "../external/interfaces/IERC721TokenVault.sol";
 import {ISettings} from "../external/fractional/Interfaces/ISettings.sol";
 
@@ -17,29 +18,17 @@ import {IMarketWrapper} from "./IMarketWrapper.sol";
 contract FractionalMarketWrapper is IMarketWrapper {
     // ============ Public Immutables ============
 
-    ISettings public immutable settings = ISettings(0xE0FC79183a22106229B84ECDd55cA017A07eddCa);
-
-    uint256 public registrationCounter = 1; // The zero value is a sentinel for not existing
-    mapping(uint256 => address) public auctionToAddress;
-    mapping(address => uint256) public addressToAuction;
+    IERC721VaultFactory public immutable vaultFactory;
+    ISettings public immutable settings;
 
     // ======== Constructor =========
 
-    constructor(address /* _fractional */) {}
+    constructor(address _fractional) {
+        vaultFactory = IERC721VaultFactory(_fractional);
+        settings = vaultFactory.settings();
+    }
 
     // ======== External Functions =========
-
-    /**
-     * @notice Register a Fractional Vault within the contract
-     */
-    function registerVault(
-        address nftContract
-    ) public {
-        require(addressToAuction[nftContract] == 0, "Vault already registered");
-        auctionToAddress[registrationCounter] = nftContract;
-        addressToAuction[nftContract] = registrationCounter;
-        registrationCounter += 1;
-    }
 
     /**
      * @notice Determine whether the given auctionId and tokenId is active.
@@ -55,8 +44,12 @@ contract FractionalMarketWrapper is IMarketWrapper {
         if (marketAddress == address(0)) {
             return false;
         } else {
-            uint auctionState = uint(IERC721TokenVault(marketAddress).auctionState());
-            return (auctionState == 0 || auctionState == 1); // See https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol#L55
+            IERC721TokenVault vault = IERC721TokenVault(vaultFactory.vaults(auctionId));
+            IERC721TokenVault.State auctionState = IERC721TokenVault(marketAddress).auctionState();
+            return (
+                (auctionState == IERC721TokenVault.State.live && block.timestamp < auction.auctionEnd())
+                || auctionState == IERC721TokenVault.State.ended
+            ); // See https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol#L55
         }
     }
 
@@ -70,7 +63,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
       override
       returns (uint256)
     {
-        return (IERC721TokenVault(auctionToAddress[auctionId]).livePrice() * (settings.minBidIncrease() + 1000)) / 1000;
+        return (IERC721TokenVault(vaultFactory.vaults(auctionId)).livePrice() * (settings.minBidIncrease() + 1000)) / 1000;
     }
 
     /**
@@ -109,17 +102,13 @@ contract FractionalMarketWrapper is IMarketWrapper {
       override
       returns (bool)
     {
-        return uint(IERC721TokenVault(auctionToAddress[auctionId]).auctionState()) == 3;
+        return IERC721TokenVault(vaultFactory.vaults(auctionId)).auctionState() == IERC721TokenVault.State.ended;
     }
 
     /**
      * @notice Finalize the results of the auction
      */
-    function finalize(uint256 /* auctionId */) external override {
-        // if (market.paused()) {
-        //     market.settleAuction();
-        // } else {
-        //     market.settleCurrentAndCreateNewAuction();
-        // }
+    function finalize(uint256 auctionId) external override {
+        IERC721TokenVault(vaultFactory.vaults(auctionId)).end();
     }
 }
