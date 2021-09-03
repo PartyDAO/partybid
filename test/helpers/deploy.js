@@ -269,8 +269,8 @@ async function deployTestContractSetup(
     tokenVaultSettings.address,
   ]);
 
-  let vaultFactory = await marketWrapper.vaultFactory();
-  console.log(`vaultFactory at ${vaultFactory}`);
+  // let vaultFactory = await marketWrapper.vaultFactory();
+  // console.log(`vaultFactory at ${vaultFactory}`);
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
   console.log(`marketWrapper is ${marketWrapper.address}`);
