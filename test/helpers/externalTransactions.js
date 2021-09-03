@@ -23,6 +23,7 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
         data = encodeData(vaultContract, 'bid', [])
         targetAddress = vaultAddress;
         console.log('end of encoding');
+        return (await vaultContract.connect(signer).functions.bid({value: value}));
     } else {
         throw new Error("Unsupported Market");
     }
