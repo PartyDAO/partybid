@@ -20,5 +20,5 @@ interface ISettings {
     function minReserveFactor() external returns(uint256);
 
     function feeReceiver() external returns(address payable);
-
+    
 }
