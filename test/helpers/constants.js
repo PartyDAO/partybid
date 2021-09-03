@@ -1,13 +1,14 @@
-const FOURTY_EIGHT_HOURS_IN_SECONDS = 48 * 60 * 60;
+const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
 
 const MARKET_NAMES = {
   ZORA: 'ZORA',
   FOUNDATION: 'FOUNDATION',
   NOUNS: 'NOUNS',
+  FRACTIONAL: 'FRACTIONAL',
 };
 
 // MARKETS is an array of all values in MARKET_NAMES
-const MARKETS = Object.keys(MARKET_NAMES).map(key => MARKET_NAMES[key]);
+const MARKETS = Object.keys(MARKET_NAMES).map((key) => MARKET_NAMES[key]);
 
 const NFT_TYPE_ENUM = {
   ZORA: 0,
@@ -30,5 +31,5 @@ module.exports = {
   NFT_TYPE_ENUM,
   ONE_ETH,
   PARTY_STATUS,
-  FOURTY_EIGHT_HOURS_IN_SECONDS,
+  SEVEN_DAYS_IN_SECONDS,
 };

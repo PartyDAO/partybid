@@ -13,10 +13,7 @@ const {
 } = require('./helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
-const {
-  PARTY_STATUS,
-  FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('./helpers/constants');
+const { PARTY_STATUS, SEVEN_DAYS_IN_SECONDS } = require('./helpers/constants');
 const { MARKETS } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
@@ -31,7 +28,7 @@ describe('Finalize', async () => {
             contributions,
             bids,
             finalBid,
-            finalFee
+            finalFee,
           } = testCase;
           // instantiate test vars
           let partyBid,
@@ -103,9 +100,7 @@ describe('Finalize', async () => {
 
           it('Does allow Finalize after the auction is over', async () => {
             // increase time on-chain so that auction can be finalized
-            await provider.send('evm_increaseTime', [
-              FOURTY_EIGHT_HOURS_IN_SECONDS,
-            ]);
+            await provider.send('evm_increaseTime', [SEVEN_DAYS_IN_SECONDS]);
             await provider.send('evm_mine');
 
             // finalize auction
@@ -115,11 +110,15 @@ describe('Finalize', async () => {
           });
 
           it(`Doesn't accept contributions after Finalize`, async () => {
-            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+            await expect(
+              contribute(partyBid, signers[0], eth(1)),
+            ).to.be.revertedWith('PartyBid::contribute: auction not active');
           });
 
           it(`Doesn't accept bids after Finalize`, async () => {
-            await expect(bidThroughParty(partyBid, signers[0])).to.be.revertedWith("PartyBid::bid: auction not active");
+            await expect(
+              bidThroughParty(partyBid, signers[0]),
+            ).to.be.revertedWith('PartyBid::bid: auction not active');
           });
 
           if (partyBidWins) {
@@ -135,7 +134,8 @@ describe('Finalize', async () => {
             });
 
             it('Has correct totalSpent, totalSupply of tokens, balanceOf PartyBid tokens, and ETH balance', async () => {
-              const expectedTotalSpent = finalBid[marketName] + finalFee[marketName];
+              const expectedTotalSpent =
+                finalBid[marketName] + finalFee[marketName];
               const expectedTotalSupply = expectedTotalSpent * 1000;
 
               const totalSpent = await partyBid.totalSpent();

@@ -4,13 +4,15 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, getBalances, bidThroughParty, contribute } = require('./helpers/utils');
+const {
+  eth,
+  getBalances,
+  bidThroughParty,
+  contribute,
+} = require('./helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
-const {
-  MARKETS,
-  FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('./helpers/constants');
+const { MARKETS, SEVEN_DAYS_IN_SECONDS } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
 describe('Claim', async () => {
@@ -73,9 +75,7 @@ describe('Claim', async () => {
 
           it('Allows Finalize', async () => {
             // increase time on-chain so that auction can be finalized
-            await provider.send('evm_increaseTime', [
-              FOURTY_EIGHT_HOURS_IN_SECONDS,
-            ]);
+            await provider.send('evm_increaseTime', [SEVEN_DAYS_IN_SECONDS]);
             await provider.send('evm_mine');
 
             // finalize auction

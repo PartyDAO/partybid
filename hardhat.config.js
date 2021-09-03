@@ -4,9 +4,9 @@ require('@nomiclabs/hardhat-etherscan');
 require('@openzeppelin/hardhat-upgrades');
 const dotenv = require('dotenv');
 dotenv.config();
-const {verify} = require("./deploy/verify");
+const { verify } = require('./deploy/verify');
 
-task("verify-contracts", "Verifies the core contracts").setAction(verify);
+task('verify-contracts', 'Verifies the core contracts').setAction(verify);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -26,23 +26,19 @@ module.exports = {
       {
         version: '0.7.5',
         settings: {
-          "optimizer": {
-            "enabled": true,
-            "runs": 1337
+          optimizer: {
+            enabled: true,
+            runs: 1337,
           },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi"
-              ]
-            }
+          outputSelection: {
+            '*': {
+              '*': ['evm.bytecode', 'evm.deployedBytecode', 'abi'],
+            },
           },
-          "metadata": {
-            "useLiteralContent": true
+          metadata: {
+            useLiteralContent: true,
           },
-          "libraries": {}
+          libraries: {},
         },
       },
       {
@@ -62,7 +58,7 @@ module.exports = {
             runs: 999999,
           },
         },
-      }
+      },
     ],
   },
 
@@ -71,7 +67,7 @@ module.exports = {
   },
 
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 
   networks: {
@@ -84,6 +80,9 @@ module.exports = {
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-    }
+    },
+  },
+  mocha: {
+    timeout: 200000,
   },
 };
