@@ -389,13 +389,13 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     }
 
     /// @dev internal helper function to send ETH and WETH on failure
-    function _sendWETH(address who, uint256 amount) internal {
+    function _sendWETH(address who, uint256 amount) internal virtual {
         IWETH(weth).deposit{value: amount}();
         IWETH(weth).transfer(who, IWETH(weth).balanceOf(address(this)));
     }
 
     /// @dev internal helper function to send ETH and WETH on failure
-    function _sendETHOrWETH(address who, uint256 amount) internal {
+    function _sendETHOrWETH(address who, uint256 amount) internal virtual {
         // contracts get bet WETH because they can be mean
         if (who.isContract()) {
             IWETH(weth).deposit{value: amount}();
