@@ -180,7 +180,7 @@ async function deployFractionalAndStartAuction(
     reservePrice,
   );
 
-  // Create auction here
+  // Record the auctionId
   const auctionId = 0;
 
   return {

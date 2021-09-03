@@ -34,7 +34,6 @@ contract FractionalMarketWrapper is IMarketWrapper {
 
     /**
      * @notice Determine whether the given auctionId and tokenId is active.
-     * We ignore nftContract since it is static for all nouns auctions.
      * @return TRUE if the auctionId and tokenId matches the active auction
      */
     function auctionIdMatchesToken(
@@ -52,8 +51,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
             IERC721TokenVault vault = IERC721TokenVault(vaultFactory.vaults(auctionId));
             IERC721TokenVault.State auctionState = IERC721TokenVault(marketAddress).auctionState();
             return (
-                auctionState == IERC721TokenVault.State.inactive
-                || (auctionState == IERC721TokenVault.State.live && block.timestamp < vault.auctionEnd())
+                (auctionState == IERC721TokenVault.State.live && block.timestamp < vault.auctionEnd())
                 || auctionState == IERC721TokenVault.State.ended
             ); // See https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol#L55
         }

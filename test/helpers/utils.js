@@ -155,11 +155,17 @@ async function createFractionalAuction(
   ]);
   // const data = encodeData(vaultFactoryContract, 'paused', []);
 
-  return artist.sendTransaction({
+  await artist.sendTransaction({
     to: vaultFactoryContract.address,
     data,
   });
-  // return 1;
+
+  let auctionId = "0";
+  let vaultAddress = (await vaultFactoryContract.functions.vaults(auctionId)).toString(); // This is key
+  let vaultContract = await ethers.getContractFactory("TokenVault");
+  vaultContract = await vaultContract.attach(vaultAddress);
+
+  await vaultContract.connect(artist).start({value: reservePrice});
 }
 
 async function createZoraAuction(
