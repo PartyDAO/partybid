@@ -5,6 +5,7 @@
   "main": "",
   "scripts": {
     "test": "npm run compile && hardhat test",
+    "test-nocompile": "hardhat test",
     "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
     "verify": "hardhat --network mainnet verify-contracts",
     "compile": "hardhat compile",

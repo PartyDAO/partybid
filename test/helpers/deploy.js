@@ -160,7 +160,7 @@ async function deployFractionalAndStartAuction(
   tokenId,
   reservePrice
 ) {
-  const fractionalFactory = await deploy('FractionalFactory')
+  // const fractionalFactory = await deploy('FractionalFactory')
 }
 
 async function deployTestContractSetup(
