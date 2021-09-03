@@ -9,9 +9,9 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
         data = encodeData(marketContract, 'createBid', [auctionId]);
     } else if (marketName == MARKET_NAMES.FOUNDATION) {
         data = encodeData(marketContract, 'placeBid', [auctionId]);
-    } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    } /*else if (marketName == MARKET_NAMES.FRACTIONAL) {
         data = encodeData(marketContract, 'bid', [])
-    } else {
+    }*/ else {
         throw new Error("Unsupported Market");
     }
 
@@ -30,9 +30,9 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
         data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
     } else if (marketName == MARKET_NAMES.FOUNDATION) {
         data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
-    } else if (marketName == MARKET_NAME.FRACTIONAL) {
+    } /*else if (marketName == MARKET_NAME.FRACTIONAL) {
         data = encodeData(marketContract, 'TODO', []);
-    } else {
+    }*/ else {
         throw new Error("Unsupported Market");
     }
 

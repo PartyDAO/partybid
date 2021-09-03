@@ -160,7 +160,23 @@ async function deployFractionalAndStartAuction(
   tokenId,
   reservePrice
 ) {
-  // const fractionalFactory = await deploy('FractionalFactory')
+  const fractionalSettings = await deploy('Settings');
+  console.log(`settings are ${fractionalSettings}, ${Object.keys(fractionalSettings)}\n`);
+  const fractionalFactory = await deploy('ERC721VaultFactory', [fractionalSettings.address]);
+  console.log(`factory is ${fractionalFactory}, ${Object.keys(fractionalFactory)}\n`);
+
+  const fractionalWrapper = await deploy('FractionalMarketWrapper', [fractionalFactory.address]);
+  console.log(`wrapper is ${fractionalWrapper}, ${Object.keys(fractionalWrapper)}\n`);
+
+  // Create auction here
+  const auctionId = 1;
+
+  return {
+    market: fractionalFactory,
+    marketWrapper: fractionalWrapper,
+    auctionId: auctionId,
+  };
+
 }
 
 async function deployTestContractSetup(
@@ -221,6 +237,7 @@ async function deployTestContractSetup(
   }
 
   const { market, marketWrapper, auctionId } = marketContracts;
+  console.log(`market is ${market}, marketWrapper is ${marketWrapper}, auctionId is ${auctionId}`);
 
   // Deploy PartyDAO multisig
   let partyDAOMultisig;
@@ -236,6 +253,7 @@ async function deployTestContractSetup(
   ]);
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
+  console.log(`marketWrapper is ${marketWrapper}`);
   const factory = await deploy('PartyBidFactory', [
     partyDAOMultisig.address,
     tokenVaultFactory.address,
