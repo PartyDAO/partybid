@@ -4,6 +4,7 @@ const MARKET_NAMES = {
   ZORA: 'ZORA',
   FOUNDATION: 'FOUNDATION',
   NOUNS: 'NOUNS',
+  FRACTIONAL: 'FRACTIONAL'
 };
 
 // MARKETS is an array of all values in MARKET_NAMES
