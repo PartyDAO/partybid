@@ -3,6 +3,7 @@ const {
   approve,
   createReserveAuction,
   createZoraAuction,
+  createFractionalAuction
 } = require('./utils');
 const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
 const { upgrades } = require('hardhat');
@@ -161,12 +162,23 @@ async function deployFractionalAndStartAuction(
   reservePrice
 ) {
   const fractionalSettings = await deploy('Settings');
-  console.log(`settings are ${fractionalSettings}, ${Object.keys(fractionalSettings)}\n`);
-  const fractionalFactory = await deploy('ERC721VaultFactory', [fractionalSettings.address]);
-  console.log(`factory is ${fractionalFactory}, ${Object.keys(fractionalFactory)}\n`);
+  const fractionalFactory = await deploy('ERC721VaultFactory', [
+    fractionalSettings.address
+  ]);
 
-  const fractionalWrapper = await deploy('FractionalMarketWrapper', [fractionalFactory.address]);
-  console.log(`wrapper is ${fractionalWrapper}, ${Object.keys(fractionalWrapper)}\n`);
+  const fractionalWrapper = await deploy('FractionalMarketWrapper', [
+    fractionalFactory.address
+  ]);
+
+  await approve(artistSigner, nftContract, fractionalFactory.address, tokenId);
+
+  await createFractionalAuction(
+    artistSigner,
+    fractionalFactory,
+    tokenId,
+    nftContract.address,
+    reservePrice,
+  );
 
   // Create auction here
   const auctionId = 1;
@@ -229,9 +241,14 @@ async function deployTestContractSetup(
       weth,
       reservePrice,
       pauseAuctionHouse,
-    )
+    );
   } else if (marketName == MARKET_NAMES.FRACTIONAL) {
-    marketContracts = await deployFractionalAndStartAuction();
+    marketContracts = await deployFractionalAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      reservePrice,
+    );
   } else {
     throw new Error('Unsupported market type');
   }

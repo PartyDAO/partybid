@@ -9,8 +9,13 @@ function weiToEth(num) {
 }
 
 function encodeData(contract, functionName, args) {
+  console.log(`in encodeData, contract: ${contract}, interface: ${contract.interface}`);
   const func = contract.interface.getFunction(functionName);
-  return contract.interface.encodeFunctionData(func, args);
+  console.log(`got func, it's ${func}`);
+  console.log(contract.interface.format(ethers.utils.FormatTypes.full));
+  let encodedData = contract.interface.encodeFunctionData(func, args);
+  console.log(`got encoded data, it's ${encodedData}`);
+  return encodedData;
 }
 
 async function getBalances(provider, token, accounts) {
@@ -135,6 +140,34 @@ async function transfer(
   });
 }
 
+async function createFractionalAuction(
+  artist,
+  vaultFactoryContract,
+  tokenId,
+  tokenContractAddress,
+  reservePrice,
+) {
+  let fractionalSupply = 10;
+  let fee = 0;
+  console.log(`contract: ${vaultFactoryContract}, interface: ${vaultFactoryContract.interface}, address: ${vaultFactoryContract.address}`);
+  const data = encodeData(vaultFactoryContract, 'mint', [
+    "Test", // name
+    "TEST", // symbol
+    tokenContractAddress, // token
+    tokenId, // id
+    fractionalSupply, // supply
+    reservePrice, // list price
+    fee // fee
+  ]);
+  // const data = encodeData(vaultFactoryContract, 'paused', []);
+
+  // return artist.sendTransaction({
+  //   to: vaultFactoryContract.address,
+  //   data,
+  // });
+  return 1;
+}
+
 async function createZoraAuction(
   artist,
   marketContract,
@@ -230,6 +263,7 @@ module.exports = {
   transfer,
   createReserveAuction,
   createZoraAuction,
+  createFractionalAuction,
   bidThroughParty,
   emergencyWithdrawEth,
   emergencyCall,
