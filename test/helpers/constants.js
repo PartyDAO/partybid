@@ -1,9 +1,9 @@
-const FOURTY_EIGHT_HOURS_IN_SECONDS = 48 * 60 * 60;
+const FOURTY_EIGHT_HOURS_IN_SECONDS = 72 * 60 * 60;
 
 const MARKET_NAMES = {
-  ZORA: 'ZORA',
-  FOUNDATION: 'FOUNDATION',
-  NOUNS: 'NOUNS',
+  // ZORA: 'ZORA',
+  // FOUNDATION: 'FOUNDATION',
+  // NOUNS: 'NOUNS',
   FRACTIONAL: 'FRACTIONAL'
 };
 
@@ -11,9 +11,10 @@ const MARKET_NAMES = {
 const MARKETS = Object.keys(MARKET_NAMES).map(key => MARKET_NAMES[key]);
 
 const NFT_TYPE_ENUM = {
-  ZORA: 0,
-  FOUNDATION: 1,
-  NOUNS: 2,
+  // ZORA: 0,
+  // FOUNDATION: 1,
+  // NOUNS: 2,
+  FRACTIONAL: 3
 };
 
 const PARTY_STATUS = {

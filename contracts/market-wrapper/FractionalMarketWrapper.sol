@@ -12,11 +12,12 @@ import {IMarketWrapper} from "./IMarketWrapper.sol";
 
 /**
  * @title FractionalMarketWrapper
- * @author vick9453, Jacob Frantz
+ * @author vick.eth, Jacob Frantz
  * @notice MarketWrapper contract implementing IMarketWrapper interface
  * according to the logic of Fractional's TokenVaults
  * Original Fractional TokenVault code: https://github.com/fractional-company/contracts/blob/master/src/ERC721TokenVault.sol
  */
+
 contract FractionalMarketWrapper is IMarketWrapper {
     using SafeMath for uint256;
 
@@ -113,10 +114,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
         view
         returns (address) {
             TokenVault auction = TokenVault(vaultFactory.vaults(auctionId));
-            address winning = auction.winning();
-            require (address(0) != winning, "no auction");
-
-            return winning;
+            return auction.winning();
         }
 
     /**
@@ -144,10 +142,7 @@ contract FractionalMarketWrapper is IMarketWrapper {
      */
     function isFinalized(uint256 auctionId) external override view returns (bool) {
         TokenVault auction = TokenVault(vaultFactory.vaults(auctionId));
-        TokenVault.State auctionState = auction.auctionState();
-        return 
-            (auctionState == TokenVault.State.live && block.timestamp < auction.auctionEnd())
-            || (auctionState == TokenVault.State.ended);
+        return auction.auctionState() == TokenVault.State.ended;
     }
 
     /**

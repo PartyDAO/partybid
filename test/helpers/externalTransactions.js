@@ -7,8 +7,12 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
         data = encodeData(marketContract, 'createBid', [auctionId, value]);
     } else if (marketName == MARKET_NAMES.NOUNS) {
         data = encodeData(marketContract, 'createBid', [auctionId]);
-    } else if(marketName == MARKET_NAMES.FOUNDATION) {
+    } else if (marketName == MARKET_NAMES.FOUNDATION) {
         data = encodeData(marketContract, 'placeBid', [auctionId]);
+    } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+        const state = await marketContract.auctionState()
+        const method = state == 0 ? 'start' : 'bid'
+        data = encodeData(marketContract, method)
     } else {
         throw new Error("Unsupported Market");
     }
