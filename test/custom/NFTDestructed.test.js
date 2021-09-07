@@ -33,6 +33,8 @@ describe('NFT Contract Self-Destructed', async () => {
             const tokenId = 95;
             const reservePrice = 100;
             const totalContributed = 500;
+            const tokenRecipient = "0x0000000000000000000000000000000000000000";
+            const tokenRecipientBasisPoints = 0;
 
             before(async () => {
 
@@ -41,8 +43,10 @@ describe('NFT Contract Self-Destructed', async () => {
                     marketName,
                     provider,
                     signers[0],
-                    tokenId,
+                    tokenRecipient,
+                    tokenRecipientBasisPoints,
                     reservePrice,
+                    tokenId,
                 );
                 partyBid = contracts.partyBid;
                 market = contracts.market;
@@ -151,8 +155,8 @@ describe('NFT Contract Self-Destructed', async () => {
                 const after = await getBalances(provider, token, accounts);
 
                 // ETH was transferred from PartyBid to contributor
-                await expect(after.partyBid.eth).to.equal(before.partyBid.eth - totalContributed,);
-                await expect(after.contributor.eth).to.equal(before.contributor.eth + totalContributed,);
+                await expect(after.partyBid.eth.toNumber()).to.equal(before.partyBid.eth.minus(totalContributed).toNumber());
+                await expect(after.contributor.eth.toNumber()).to.equal(before.contributor.eth.plus(totalContributed).toNumber());
             });
         });
     });

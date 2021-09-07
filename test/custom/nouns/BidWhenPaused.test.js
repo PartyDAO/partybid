@@ -14,7 +14,7 @@ describe('Bid When Paused', async () => {
   testCases.map((testCase, i) => {
     describe(`Case ${i}`, async () => {
       // get test case information
-      const { auctionReservePrice, contributions, bids } = testCase;
+      const { auctionReservePrice, tokenRecipient, tokenRecipientBasisPoints, contributions, bids } = testCase;
       // instantiate test vars
       let partyBid, market, auctionId;
       const marketName = MARKET_NAMES.NOUNS;
@@ -27,8 +27,10 @@ describe('Bid When Paused', async () => {
           marketName,
           provider,
           signers[0],
-          tokenId,
+          tokenRecipient,
+          tokenRecipientBasisPoints,
           auctionReservePrice,
+          tokenId,
           false,
           true, // Pause the auction house
         );

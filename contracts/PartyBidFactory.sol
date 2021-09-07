@@ -23,6 +23,8 @@ contract PartyBidFactory {
         uint256 tokenId,
         address marketWrapper,
         uint256 auctionId,
+        address partyHost,
+        uint256 partyHostBasisPoints,
         string name,
         string symbol
     );
@@ -61,6 +63,8 @@ contract PartyBidFactory {
             _logicNftContract,
             _logicTokenId,
             _logicAuctionId,
+            address(0),
+            0,
             "PartyBid",
             "BID"
         );
@@ -75,16 +79,20 @@ contract PartyBidFactory {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
+        address _partyHost,
+        uint256 _partyHostBasisPoints,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBidProxy) {
         bytes memory _initializationCalldata =
             abi.encodeWithSignature(
-                "initialize(address,address,uint256,uint256,string,string)",
+                "initialize(address,address,uint256,uint256,address,uint256,string,string)",
                 _marketWrapper,
                 _nftContract,
                 _tokenId,
                 _auctionId,
+                _partyHost,
+                _partyHostBasisPoints,
                 _name,
                 _symbol
             );
@@ -105,6 +113,8 @@ contract PartyBidFactory {
             _tokenId,
             _marketWrapper,
             _auctionId,
+            _partyHost,
+            _partyHostBasisPoints,
             _name,
             _symbol
         );

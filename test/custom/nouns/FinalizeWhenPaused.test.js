@@ -3,6 +3,7 @@
 const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
+const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
 const {
   eth,
@@ -20,7 +21,7 @@ const {
   FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../../helpers/constants');
 const { testCases } = require('../../testCases.json');
-const { MARKET_NAMES } = require('../../helpers/constants');
+const { MARKET_NAMES, TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE } = require('../../helpers/constants');
 
 describe('Finalize When Paused', async () => {
   testCases.map((testCase, i) => {
@@ -28,10 +29,11 @@ describe('Finalize When Paused', async () => {
       // get test case information
       const {
         auctionReservePrice,
+        tokenRecipient,
+        tokenRecipientBasisPoints,
         contributions,
         bids,
         finalBid,
-        finalFee
       } = testCase;
       // instantiate test vars
       let partyBid,
@@ -42,11 +44,27 @@ describe('Finalize When Paused', async () => {
         multisigBalanceBefore,
         token;
       const marketName = MARKET_NAMES.NOUNS;
-      const totalContributed = getTotalContributed(contributions);
       const lastBid = bids[bids.length - 1];
       const partyBidWins = lastBid.placedByPartyBid && lastBid.success;
       const signers = provider.getWallets();
       const tokenId = 95;
+      // total contributed
+      const totalContributed = new BigNumber(getTotalContributed(contributions));
+      // final bid
+      const finBid = new BigNumber(finalBid[marketName]);
+      // token fee
+      const tokenFeeBps = new BigNumber(TOKEN_FEE_BASIS_POINTS);
+      const tokenFeeFactor = tokenFeeBps.div(10000);
+      // ETH fee
+      const ethFeeBps = new BigNumber(ETH_FEE_BASIS_POINTS);
+      const ethFeeFactor = ethFeeBps.div(10000);
+      // token recipient
+      const tokenRecipientBps = new BigNumber(tokenRecipientBasisPoints);
+      const tokenRecipientFactor = tokenRecipientBps.div(10000);
+      // ETH fee + total ETH spent
+      const ethFee = finBid.times(ethFeeFactor);
+      const expectedTotalSpent = finBid.plus(ethFee);
+
 
       before(async () => {
         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -54,8 +72,10 @@ describe('Finalize When Paused', async () => {
           marketName,
           provider,
           signers[0],
-          tokenId,
+          tokenRecipient,
+          tokenRecipientBasisPoints,
           auctionReservePrice,
+          tokenId,
           false,
           true, // Pause the auction house
         );
@@ -137,40 +157,48 @@ describe('Finalize When Paused', async () => {
           expect(owner).to.equal(vaultAddress);
         });
 
-        it('Has correct totalSpent, totalSupply of tokens, balanceOf PartyBid tokens, and ETH balance', async () => {
-          const expectedTotalSpent = finalBid[marketName] + finalFee[marketName];
-          const expectedTotalSupply = expectedTotalSpent * 1000;
-
+        it('Has correct totalSpent', async () => {
           const totalSpent = await partyBid.totalSpent();
-          expect(totalSpent).to.equal(eth(expectedTotalSpent));
-
-          const totalSupply = await token.totalSupply();
-          expect(totalSupply).to.equal(eth(expectedTotalSupply));
-
-          const partyBidTokenBalance = await token.balanceOf(
-            partyBid.address,
-          );
-          expect(partyBidTokenBalance).to.equal(eth(expectedTotalSupply));
-
-          const expectedEthBalance = totalContributed - expectedTotalSpent;
-          const ethBalance = await provider.getBalance(partyBid.address);
-          expect(ethBalance).to.equal(eth(expectedEthBalance));
+          expect(weiToEth(totalSpent)).to.equal(expectedTotalSpent.toNumber());
         });
 
-        it(`Transferred fee to multisig`, async () => {
-          const balanceBeforeAsFloat = parseFloat(
-            weiToEth(multisigBalanceBefore),
+        it('Has correct balance of tokens in PartyBid', async () => {
+          const expectedPartyBidBalance = expectedTotalSpent.times(TOKEN_SCALE);
+          const partyBidTokenBalance = await token.balanceOf(
+              partyBid.address,
           );
+          expect(weiToEth(partyBidTokenBalance)).to.equal(expectedPartyBidBalance.toNumber());
+        });
 
-          const multisigBalanceWithFee = eth(
-            balanceBeforeAsFloat + finalFee[marketName],
+        it('Transferred token fee to PartyDAO multisig', async () => {
+          const totalSupply = await token.totalSupply();
+          const expectedMultisigBalance =  tokenFeeFactor.times(weiToEth(totalSupply));
+          const multisigBalance = await token.balanceOf(
+              partyDAOMultisig.address,
           );
+          expect(weiToEth(multisigBalance)).to.equal(expectedMultisigBalance.toNumber());
+        });
+
+        it('Transferred tokens to tokenRecipient', async () => {
+          const totalSupply = await token.totalSupply();
+          const expectedTokenRecipientBalance = tokenRecipientFactor.times(weiToEth(totalSupply));
+          const tokenRecipientBalance = await token.balanceOf(tokenRecipient);
+          expect(weiToEth(tokenRecipientBalance)).to.equal(expectedTokenRecipientBalance.toNumber());
+        });
+
+        it(`Transferred ETH fee to multisig`, async () => {
+          const balanceBefore = new BigNumber(weiToEth(multisigBalanceBefore));
+          const expectedBalanceAfter = balanceBefore.plus(ethFee);
           const multisigBalanceAfter = await provider.getBalance(
-            partyDAOMultisig.address,
+              partyDAOMultisig.address,
           );
-          expect(weiToEth(multisigBalanceAfter)).to.equal(
-            weiToEth(multisigBalanceWithFee),
-          );
+          expect(weiToEth(multisigBalanceAfter)).to.equal(expectedBalanceAfter.toNumber());
+        });
+
+        it('Has correct balance of ETH in PartyBid', async () => {
+          const expectedEthBalance = totalContributed.minus(expectedTotalSpent);
+          const ethBalance = await provider.getBalance(partyBid.address);
+          expect(weiToEth(ethBalance)).to.equal(expectedEthBalance.toNumber());
         });
       } else {
         it(`Is LOST after Finalize`, async () => {

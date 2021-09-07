@@ -18,6 +18,10 @@ describe('Transfer WETH', async () => {
             // instantiate test vars
             let partyBid, token, nonPayable, accounts;
             const contributionAmount = 1;
+            const reservePrice = 1;
+            const tokenId = 95;
+            const tokenRecipient = "0x0000000000000000000000000000000000000000";
+            const tokenRecipientBasisPoints = 0;
 
             before(async () => {
                 const signers = provider.getWallets();
@@ -27,8 +31,10 @@ describe('Transfer WETH', async () => {
                     marketName,
                     provider,
                     signers[0],
-                    95,
-                    1,
+                    tokenRecipient,
+                    tokenRecipientBasisPoints,
+                    reservePrice,
+                    tokenId,
                 );
                 partyBid = contracts.partyBid;
                 token = contracts.weth;
@@ -74,14 +80,14 @@ describe('Transfer WETH', async () => {
             it('Has correct balances before contribute', async () => {
                 const balances = await getBalances(provider, token, accounts);
                 // partyBid has ETH before contribute
-                expect(balances.partyBid.eth).to.equal(0);
+                expect(balances.partyBid.eth.toNumber()).to.equal(0);
                 // partyBid has no WETH before contribute
-                expect(balances.partyBid.tokens).to.equal(0);
+                expect(balances.partyBid.tokens.toNumber()).to.equal(0);
 
                 // contributor has ETH before contribute
-                expect(balances.nonPayable.eth).to.equal(contributionAmount);
+                expect(balances.nonPayable.eth.toNumber()).to.equal(contributionAmount);
                 // contributor has no WETH before contribute
-                expect(balances.nonPayable.tokens).to.equal(0);
+                expect(balances.nonPayable.tokens.toNumber()).to.equal(0);
             });
 
             it('Accepts contribution from contract', async () => {
@@ -95,14 +101,14 @@ describe('Transfer WETH', async () => {
             it('Has correct balances after contribute, before claim', async () => {
                 const balances = await getBalances(provider, token, accounts);
                 // partyBid has ETH after contribute, before claim
-                expect(balances.partyBid.eth).to.equal(contributionAmount);
+                expect(balances.partyBid.eth.toNumber()).to.equal(contributionAmount);
                 // partyBid has no WETH after contribute, before claim
-                expect(balances.partyBid.tokens).to.equal(0);
+                expect(balances.partyBid.tokens.toNumber()).to.equal(0);
 
                 // contributor has ETH after contribute, before claim
-                expect(balances.nonPayable.eth).to.equal(0);
+                expect(balances.nonPayable.eth.toNumber()).to.equal(0);
                 // contributor has no WETH after contribute, before claim
-                expect(balances.nonPayable.tokens).to.equal(0);
+                expect(balances.nonPayable.tokens.toNumber()).to.equal(0);
             });
 
             it('Allows Finalize', async () => {
@@ -131,14 +137,14 @@ describe('Transfer WETH', async () => {
             it('Has correct balances after claim', async () => {
                 const balances = await getBalances(provider, token, accounts);
                 // partyBid has ETH after contribute, before claim
-                expect(balances.partyBid.eth).to.equal(0);
+                expect(balances.partyBid.eth.toNumber()).to.equal(0);
                 // partyBid has no WETH after contribute, before claim
-                expect(balances.partyBid.tokens).to.equal(0);
+                expect(balances.partyBid.tokens.toNumber()).to.equal(0);
 
                 // contributor has ETH after contribute, before claim
-                expect(balances.nonPayable.eth).to.equal(0);
+                expect(balances.nonPayable.eth.toNumber()).to.equal(0);
                 // contributor has no WETH after contribute, before claim
-                expect(balances.nonPayable.tokens).to.equal(contributionAmount);
+                expect(balances.nonPayable.tokens.toNumber()).to.equal(contributionAmount);
             });
         });
     });

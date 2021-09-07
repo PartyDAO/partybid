@@ -11,6 +11,10 @@ const { PARTY_STATUS, MARKETS } = require('./helpers/constants');
 describe('Deploy', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
+      const tokenRecipient = "0x0000000000000000000000000000000000000000";
+      const tokenRecipientBasisPoints = 0;
+      const reservePrice = 1;
+      const tokenId = 95;
       let partyBid, signer, artist;
 
       before(async () => {
@@ -22,6 +26,10 @@ describe('Deploy', async () => {
           marketName,
           provider,
           artist,
+          tokenRecipient,
+          tokenRecipientBasisPoints,
+          reservePrice,
+          tokenId,
         );
         partyBid = contracts.partyBid;
       });
@@ -29,6 +37,11 @@ describe('Deploy', async () => {
       it('Party Status is Active', async () => {
         const partyStatus = await partyBid.partyStatus();
         expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+      });
+
+      it('Version is 2', async () => {
+        const version = await partyBid.VERSION();
+        expect(version).to.equal(2);
       });
 
       it('Total contributed to party is zero', async () => {

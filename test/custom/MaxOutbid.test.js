@@ -3,31 +3,33 @@
 const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
+const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
 const {
     eth,
+    weiToEth,
     contribute,
     bidThroughParty,
 } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
-const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES, ETH_FEE_BASIS_POINTS } = require('../helpers/constants');
 
 const testCases = [
     {
         reserve: 500,
         balance: {
-            [MARKET_NAMES.ZORA]: 551.25,
-            [MARKET_NAMES.FOUNDATION]: 577.5,
-            [MARKET_NAMES.NOUNS]: 551.25,
+            [MARKET_NAMES.ZORA]: 538.125,
+            [MARKET_NAMES.FOUNDATION]: 563.75,
+            [MARKET_NAMES.NOUNS]: 538.125,
         }
     },
     {
         reserve: 1,
         balance: {
-            [MARKET_NAMES.ZORA]: 1.1025,
-            [MARKET_NAMES.FOUNDATION]: 1.155,
-            [MARKET_NAMES.NOUNS]: 1.1025,
+            [MARKET_NAMES.ZORA]: 1.07625,
+            [MARKET_NAMES.FOUNDATION]: 1.1275,
+            [MARKET_NAMES.NOUNS]: 1.07625,
         }
     }
 ];
@@ -44,6 +46,8 @@ describe('Maximum Outbid', async () => {
                     const signers = provider.getWallets();
                     const tokenId = 95;
                     const reservePrice = reserve;
+                    const tokenRecipient = "0x0000000000000000000000000000000000000000";
+                    const tokenRecipientBasisPoints = 0;
 
                     before(async () => {
                         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -51,8 +55,10 @@ describe('Maximum Outbid', async () => {
                             marketName,
                             provider,
                             signers[0],
-                            tokenId,
+                            tokenRecipient,
+                            tokenRecipientBasisPoints,
                             reservePrice,
+                            tokenId,
                         );
                         partyBid = contracts.partyBid;
                         const market = contracts.market;
@@ -69,6 +75,14 @@ describe('Maximum Outbid', async () => {
                             eth(reservePrice),
                             marketName,
                         );
+                    });
+
+                    it(`Gives correct value for getMaximumBid`, async () => {
+                        const bal = new BigNumber(balance[marketName]);
+                        const ethFeeBps = new BigNumber(ETH_FEE_BASIS_POINTS);
+                        const ethFeeFactor = ethFeeBps.div(10000).plus(1);
+                        const maxBid = await partyBid.getMaximumBid();
+                        await expect(weiToEth(maxBid)).to.equal(bal.dividedBy(ethFeeFactor).toNumber());
                     });
 
                     it(`Allows outbidding a ${reservePrice} ETH bid`, async () => {
@@ -92,6 +106,8 @@ describe('Failed Maximum Outbid', async () => {
                     const signers = provider.getWallets();
                     const tokenId = 95;
                     const reservePrice = reserve + 0.000000000001;
+                    const tokenRecipient = "0x0000000000000000000000000000000000000000";
+                    const tokenRecipientBasisPoints = 0;
 
                     before(async () => {
                         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -99,8 +115,10 @@ describe('Failed Maximum Outbid', async () => {
                             marketName,
                             provider,
                             signers[0],
-                            tokenId,
+                            tokenRecipient,
+                            tokenRecipientBasisPoints,
                             reservePrice,
+                            tokenId,
                         );
                         partyBid = contracts.partyBid;
                         const market = contracts.market;

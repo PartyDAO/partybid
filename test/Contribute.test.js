@@ -20,9 +20,9 @@ describe('Contribute', async () => {
         describe(`Case ${i}`, async () => {
           // get test case information
           let partyBid;
-          const { contributions } = testCase;
+          const { tokenRecipient, tokenRecipientBasisPoints, auctionReservePrice, contributions } = testCase;
+          const tokenId = 95;
           const signers = provider.getWallets();
-
           let expectedTotalContributedToParty = 0;
           const expectedTotalContributed = initExpectedTotalContributed(
             signers,
@@ -34,6 +34,10 @@ describe('Contribute', async () => {
               marketName,
               provider,
               signers[0],
+              tokenRecipient,
+              tokenRecipientBasisPoints,
+              auctionReservePrice,
+              tokenId,
             );
             partyBid = contracts.partyBid;
           });
