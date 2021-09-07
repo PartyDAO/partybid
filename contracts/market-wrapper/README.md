@@ -18,7 +18,7 @@ Any auction contract that adheres to these expectations can write its own `Marke
 When a `PartyBid` is deployed, it is initialized with the address of the `MarketWrapper` contract for the given auction type. This cannot be changed after deployment.
 
 
-## How to Buidl
+## How to Build
 
 0. Gather supporting resources
    - Use previous PRs adding Market Wrappers as a reference / guide throughout this process. See: [PR adding Nouns Market Wrapper](https://github.com/PartyDAO/partybid/pull/43)
