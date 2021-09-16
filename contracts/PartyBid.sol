@@ -59,7 +59,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     // ============ Internal Constants ============
 
-    // PartyBid version 1.2
+    // PartyBid version 2
     uint16 public constant VERSION = 2;
     // tokens are minted at a rate of 1 ETH : 1000 tokens
     uint16 internal constant TOKEN_SCALE = 1000;
