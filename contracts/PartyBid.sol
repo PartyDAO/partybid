@@ -129,7 +129,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     event Bid(uint256 amount);
 
-    event Finalized(PartyStatus result, uint256 totalSpent, uint256 ethFee, uint256 totalContributed);
+    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed);
 
     event Claimed(
         address indexed contributor,
