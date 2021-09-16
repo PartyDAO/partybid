@@ -573,7 +573,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // users receive tokens at a rate of 1:TOKEN_SCALE for each ETH they contributed that was ultimately spent
         // partyDAO receives a percentage of the total token supply equivalent to TOKEN_FEE_BASIS_POINTS
         // partyHost receives a percentage of the total token supply equivalent to partyHostBasisPoints
-        (uint256 _tokenSupply, uint256 _tokenFee, uint256 _partyHostAmount) = _getTokenInflationAmounts(totalSpent);
+        (uint256 _tokenSupply, uint256 _partyDAOAmount, uint256 _partyHostAmount) = _getTokenInflationAmounts(totalSpent);
         // deploy fractionalized NFT vault
         uint256 vaultNumber =
             IERC721VaultFactory(tokenVaultFactory).mint(
@@ -590,7 +590,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // transfer curator to null address (burn the curator role)
         ITokenVault(tokenVault).updateCurator(address(0));
         // transfer tokens to PartyDAO multisig
-        _transferTokens(partyDAOMultisig, _tokenFee);
+        _transferTokens(partyDAOMultisig, _partyDAOAmount);
         // transfer tokens to token recipient
         if (partyHost != address(0)) {
             _transferTokens(partyHost, _partyHostAmount);
