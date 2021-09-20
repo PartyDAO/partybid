@@ -29,7 +29,8 @@ contract SuperRareMarketWrapper is IMarketWrapper {
 
     // ============ Public Variables ============
     uint256 public auctionIdTracker;
-    mapping(uint256 => Token) public auctions;
+    mapping(uint256 => Token) public auctionIdToToken;
+    mapping(address => mapping(uint256 => uint256)) public tokenToAuctionId;
 
     // ======== Constructor =========
     constructor(address _superRareAuctionHouse) {
@@ -40,19 +41,6 @@ contract SuperRareMarketWrapper is IMarketWrapper {
     uint256 public nextAuctionId = 1;
 
     // ======== External Functions =========
-
-    /**
-     * @notice SuperRare doesn't use auction Ids so this function 
-     * will always return true
-     * @return TRUE always
-     */
-    function auctionExists(uint256 _auctionId)
-        external
-        view
-        returns (bool)
-    {
-        return true;
-    }
 
     /**
      * @notice Determines whether an auction exists/is not finished
@@ -68,10 +56,6 @@ contract SuperRareMarketWrapper is IMarketWrapper {
         ISuperRareAuctionHouse.Auction memory auction = 
             auctionHouse.getAuctionDetails(_contractAddress, _tokenId);
 
-        auctions[nextAuctionId] = Token(_contractAddress, _tokenId);
-
-        nextAuctionId++;
-
         require(
             auction.auctionType != NO_AUCTION,
             "bid::Must have existing auction"
@@ -81,6 +65,11 @@ contract SuperRareMarketWrapper is IMarketWrapper {
             auction.startingBlock <= block.number,
             "bid::Must have a running auction or pending coldie auction"
         );
+
+        auctionIdToToken[nextAuctionId] = Token(_contractAddress, _tokenId);
+        tokenToAuctionId[_contractAddress][_tokenId] = nextAuctionId;
+
+        nextAuctionId++;
 
         return true;
     }
@@ -94,7 +83,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
         view 
         returns (uint256) 
     {
-        Token token = auctions[_auctionId];
+        Token token = auctionIdToToken[_auctionId];
 
         reqiure(token.tokenId != 0, "getMinimumBid::Auction doesnt exist for given auctionId");
 
@@ -123,7 +112,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
         view
         returns (address) 
     {
-        Token token = auctions[_auctionId];
+        Token token = auctionIdToToken[_auctionId];
 
         reqiure(token.tokenId != 0, "getCurrentHighestBidder::Auction doesnt exist for given auctionId");
 
@@ -136,7 +125,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
      * @notice Submit bid to Market contract
      */
     function bid(uint256 auctionId, uint256 bidAmount) external {
-        Token token = auctions[_auctionId];
+        Token token = auctionIdToToken[_auctionId];
 
         (bool success, bytes memory returnData) = 
             address(auctionHouse).call{ value: bidAmount }(
@@ -155,7 +144,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
      * @return TRUE if the auction has been finalized
      */
     function isFinalized(uint256 auctionId) external view returns (bool) {
-        Token token = auctions[_auctionId];
+        Token token = auctionIdToToken[_auctionId];
         ISuperRareAuctionHouse.Auction memory auction = 
             auctionHouse.getAuctionDetails(_contractAddress, _tokenId);
 
@@ -166,7 +155,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
      * @notice Finalize the results of the auction
      */
     function finalize(uint256 auctionId) external {
-        Token token = auctions[_auctionId];
+        Token token = auctionIdToToken[_auctionId];
         ISuperRareAuctionHouse.Auction memory auction = 
             auctionHouse.getAuctionDetails(_contractAddress, _tokenId);
         
