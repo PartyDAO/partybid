@@ -73,6 +73,7 @@ The findings from the security review for PartyBid contracts can be found [here]
 - [Danny Aranda](https://twitter.com/daranda) managed operations, partnerships & marketing
 - [fractional.art](https://fractional.art/) team created the fractionalized NFT code for the post-auction experience
 - [Denis Nazarov](https://twitter.com/Iiterature) had the [original idea](https://twitter.com/Iiterature/status/1383238473767813125?s=20) for PartyBid and organized the [crowdfund](https://d.mirror.xyz/FLqkPA3iN4x-p97UhfhWwaCx8rBmVo-1yttY20oaob4) that created PartyDAO
+- [Lawrence Forman](https://merklejerk.com/) provided a [thoughtful review](https://github.com/merklejerk/partybid-review/pull/1) of the PartyBid V2 contracts
 
 ## License
 PartyBid contracts are reproduceable under the terms of [MIT license](https://en.wikipedia.org/wiki/MIT_License). 
