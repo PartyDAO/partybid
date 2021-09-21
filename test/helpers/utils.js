@@ -135,6 +135,39 @@ async function transfer(
   });
 }
 
+async function createFractionalAuction(
+  artist,
+  vaultFactoryContract,
+  tokenId,
+  tokenContractAddress,
+  reservePrice,
+) {
+  let fractionalSupply = 10;
+  let fee = 0;
+  const data = encodeData(vaultFactoryContract, 'mint', [
+    "Test", // name
+    "TEST", // symbol
+    tokenContractAddress, // token
+    tokenId, // id
+    fractionalSupply, // supply
+    reservePrice, // list price
+    fee // fee
+  ]);
+  // const data = encodeData(vaultFactoryContract, 'paused', []);
+
+  await artist.sendTransaction({
+    to: vaultFactoryContract.address,
+    data,
+  });
+
+  let auctionId = "0";
+  let vaultAddress = (await vaultFactoryContract.functions.vaults(auctionId)).toString(); // This is key
+  let vaultContract = await ethers.getContractFactory("TokenVault");
+  vaultContract = await vaultContract.attach(vaultAddress);
+
+  await vaultContract.connect(artist).start({value: reservePrice});
+}
+
 async function createZoraAuction(
   artist,
   marketContract,
@@ -230,6 +263,7 @@ module.exports = {
   transfer,
   createReserveAuction,
   createZoraAuction,
+  createFractionalAuction,
   bidThroughParty,
   emergencyWithdrawEth,
   emergencyCall,

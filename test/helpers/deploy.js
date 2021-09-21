@@ -3,6 +3,7 @@ const {
   approve,
   createReserveAuction,
   createZoraAuction,
+  createFractionalAuction
 } = require('./utils');
 const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
 const { upgrades } = require('hardhat');
@@ -154,6 +155,44 @@ async function deployNounsAndStartAuction(
   };
 }
 
+async function deployFractionalAndStartAuction(
+  artistSigner,
+  nftContract,
+  tokenId,
+  weth,
+  reservePrice
+) {
+  const fractionalSettings = await deploy('Settings');
+  const fractionalFactory = await deploy('ERC721VaultFactory', [
+    fractionalSettings.address,
+    weth.address
+  ]);
+
+  const fractionalWrapper = await deploy('FractionalMarketWrapper', [
+    fractionalFactory.address
+  ]);
+
+  await approve(artistSigner, nftContract, fractionalFactory.address, tokenId);
+
+  await createFractionalAuction(
+    artistSigner,
+    fractionalFactory,
+    tokenId,
+    nftContract.address,
+    reservePrice,
+  );
+
+  // Record the auctionId
+  const auctionId = 0;
+
+  return {
+    market: fractionalFactory,
+    marketWrapper: fractionalWrapper,
+    auctionId: auctionId,
+  };
+
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
@@ -204,12 +243,21 @@ async function deployTestContractSetup(
       weth,
       reservePrice,
       pauseAuctionHouse,
-    )
+    );
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    marketContracts = await deployFractionalAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      weth,
+      reservePrice,
+    );
   } else {
     throw new Error('Unsupported market type');
   }
 
   const { market, marketWrapper, auctionId } = marketContracts;
+  console.log(`market is ${market}, marketWrapper is ${marketWrapper}, auctionId is ${auctionId}`);
 
   // Deploy PartyDAO multisig
   let partyDAOMultisig;
@@ -219,12 +267,16 @@ async function deployTestContractSetup(
     partyDAOMultisig = artistSigner;
   }
 
+  // These are the Fractional vaults that will be used for splitting the PartyDAO allocation
+  // Not the vaults for bidding on a Fractional NFT
   const tokenVaultSettings = await deploy('Settings');
   const tokenVaultFactory = await deploy('ERC721VaultFactory', [
     tokenVaultSettings.address,
+    weth.address,
   ]);
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
+  console.log(`marketWrapper is ${marketWrapper.address}`);
   const factory = await deploy('PartyBidFactory', [
     partyDAOMultisig.address,
     tokenVaultFactory.address,
@@ -252,6 +304,7 @@ async function deployTestContractSetup(
     artistSigner,
   );
 
+  console.log("Finished deployTestContractSetup");
   return {
     nftContract,
     market,

@@ -40,6 +40,7 @@ describe('Claim', async () => {
 
             auctionId = await partyBid.auctionId();
 
+            console.log("submitting contributions");
             // submit contributions before bidding begins
             for (let contribution of contributions) {
               const { signerIndex, amount } = contribution;
@@ -47,13 +48,16 @@ describe('Claim', async () => {
               await contribute(partyBid, signer, eth(amount));
             }
 
+            console.log("submitting bids");
             // submit the valid bids in order
             for (let bid of bids) {
               const { placedByPartyBid, amount, success } = bid;
               if (success && placedByPartyBid) {
                 const { signerIndex } = contributions[0];
+                console.log("bidThroughParty");
                 await bidThroughParty(partyBid, signers[signerIndex]);
               } else if (success && !placedByPartyBid) {
+                console.log("placeBid");
                 await placeBid(
                   firstSigner,
                   market,
@@ -61,8 +65,10 @@ describe('Claim', async () => {
                   eth(amount),
                   marketName,
                 );
+                console.log("placeBid succcess");
               }
             }
+            console.log("finished beforeAll");
           });
 
           it(`Reverts before Finalize`, async () => {

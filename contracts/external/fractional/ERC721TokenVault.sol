@@ -14,6 +14,8 @@ import {
 ERC20Upgradeable
 } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
+import "hardhat/console.sol";
+
 contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     using Address for address;
 
@@ -22,7 +24,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     /// -----------------------------------
 
     /// @notice weth address
-    address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public weth;
 
     /// -----------------------------------
     /// -------- TOKEN INFORMATION --------
@@ -104,8 +106,9 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     /// @notice An event emitted when someone cashes in ERC20 tokens for ETH from an ERC721 token sale
     event Cash(address indexed owner, uint256 shares);
 
-    constructor(address _settings) {
+    constructor(address _settings, address _weth) {
         settings = _settings;
+        weth = _weth;
     }
 
     function initialize(address _curator, address _token, uint256 _id, uint256 _supply, uint256 _listPrice, uint256 _fee, string memory _name, string memory _symbol) external initializer {
@@ -390,7 +393,10 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     /// @dev internal helper function to send ETH and WETH on failure
     function _sendWETH(address who, uint256 amount) internal {
+        console.log("about to deposit");
+        console.log("block.number is %s", block.number);
         IWETH(weth).deposit{value: amount}();
+        console.log("deposited");
         IWETH(weth).transfer(who, IWETH(weth).balanceOf(address(this)));
     }
 

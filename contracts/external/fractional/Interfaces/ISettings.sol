@@ -11,7 +11,7 @@ interface ISettings {
 
     function governanceFee() external returns(uint256);
 
-    function minBidIncrease() external returns(uint256);
+    function minBidIncrease() external view returns(uint256);
 
     function minVotePercentage() external returns(uint256);
 
