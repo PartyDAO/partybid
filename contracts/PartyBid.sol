@@ -549,9 +549,9 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     * no longer exists (token burned or contract self-destructed)
     * @return _owner the owner of the NFT
     */
-    function _getOwner() internal returns (address _owner) {
+    function _getOwner() internal view returns (address _owner) {
         (bool success, bytes memory returnData) =
-            address(nftContract).call(
+            address(nftContract).staticcall(
                 abi.encodeWithSignature(
                     "ownerOf(uint256)",
                     tokenId
