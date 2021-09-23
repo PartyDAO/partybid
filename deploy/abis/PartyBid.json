@@ -128,6 +128,19 @@
   },
   {
     "inputs": [],
+    "name": "VERSION",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "auctionId",
     "outputs": [
       {
@@ -271,6 +284,43 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_contributor",
+        "type": "address"
+      }
+    ],
+    "name": "getClaimAmounts",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_ethAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMaximumBid",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxBid",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "highestBid",
     "outputs": [
@@ -306,6 +356,16 @@
         "type": "uint256"
       },
       {
+        "internalType": "address",
+        "name": "_splitRecipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_splitBasisPoints",
+        "type": "uint256"
+      },
+      {
         "internalType": "string",
         "name": "_name",
         "type": "string"
@@ -326,7 +386,7 @@
     "name": "marketWrapper",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IMarketWrapper",
         "name": "",
         "type": "address"
       }
@@ -352,7 +412,7 @@
     "name": "nftContract",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC721Metadata",
         "name": "",
         "type": "address"
       }
@@ -422,6 +482,32 @@
   },
   {
     "inputs": [],
+    "name": "splitBasisPoints",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "splitRecipient",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "symbol",
     "outputs": [
       {
@@ -451,7 +537,7 @@
     "name": "tokenVault",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract ITokenVault",
         "name": "",
         "type": "address"
       }
@@ -464,7 +550,7 @@
     "name": "tokenVaultFactory",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC721VaultFactory",
         "name": "",
         "type": "address"
       }
@@ -498,6 +584,25 @@
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_contributor",
+        "type": "address"
+      }
+    ],
+    "name": "totalEthUsedForBid",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_total",
         "type": "uint256"
       }
     ],
@@ -541,7 +646,7 @@
     "name": "weth",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IWETH",
         "name": "",
         "type": "address"
       }

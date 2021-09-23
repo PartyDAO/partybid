@@ -6,7 +6,7 @@
   "weth":"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   "zoraAuctionHouse":"0xE468cE99444174Bd3bBBEd09209577d25D1ad673",
   "nounsAuctionHouse": "0x830BD73E4184ceF73443C15111a1DF14e495C706",
-  "logicNftContract": "0xb7F7F6C52F2e2fdb1963Eab30438024864c313F6",
-  "logicTokenId": 3269,
-  "logicZoraAuctionId": 769
+  "logicNftContract": "0x8d04a8c79cEB0889Bdd12acdF3Fa9D207eD3Ff63",
+  "logicTokenId": 252,
+  "logicZoraAuctionId": 782
 }

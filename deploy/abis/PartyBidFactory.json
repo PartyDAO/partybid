@@ -81,6 +81,18 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "splitRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "splitBasisPoints",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "name",
         "type": "string"
@@ -160,6 +172,16 @@
       {
         "internalType": "uint256",
         "name": "_auctionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_splitRecipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_splitBasisPoints",
         "type": "uint256"
       },
       {
