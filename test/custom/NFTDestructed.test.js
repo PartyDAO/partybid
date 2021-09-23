@@ -33,8 +33,8 @@ describe('NFT Contract Self-Destructed', async () => {
             const tokenId = 95;
             const reservePrice = 100;
             const totalContributed = 500;
-            const tokenRecipient = "0x0000000000000000000000000000000000000000";
-            const tokenRecipientBasisPoints = 0;
+            const splitRecipient = "0x0000000000000000000000000000000000000000";
+            const splitBasisPoints = 0;
 
             before(async () => {
 
@@ -43,8 +43,8 @@ describe('NFT Contract Self-Destructed', async () => {
                     marketName,
                     provider,
                     signers[0],
-                    tokenRecipient,
-                    tokenRecipientBasisPoints,
+                    splitRecipient,
+                    splitBasisPoints,
                     reservePrice,
                     tokenId,
                 );

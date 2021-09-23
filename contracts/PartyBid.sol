@@ -92,10 +92,10 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     uint256 public tokenId;
     // the address that will receive a portion of the tokens
     // if the PartyBid wins the auction
-    address public partyHost;
+    address public splitRecipient;
     // percent of the total token supply
-    // taken by the partyHost
-    uint256 public partyHostBasisPoints;
+    // taken by the splitRecipient
+    uint256 public splitBasisPoints;
     // ERC-20 name and symbol for fractional tokens
     string public name;
     string public symbol;
@@ -109,7 +109,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // the highest bid submitted by PartyBid
     uint256 public highestBid;
     // the total spent by PartyBid on the auction;
-    // 0 if the NFT is lost; highest bid + 5% PartyDAO fee if NFT is won
+    // 0 if the NFT is lost; highest bid + 2.5% PartyDAO fee if NFT is won
     uint256 public totalSpent;
     // contributor => array of Contributions
     mapping(address => Contribution[]) public contributions;
@@ -167,8 +167,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
-        address _partyHost,
-        uint256 _partyHostBasisPoints,
+        address _splitRecipient,
+        uint256 _splitBasisPoints,
         string memory _name,
         string memory _symbol
     ) external initializer {
@@ -182,15 +182,15 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         auctionId = _auctionId;
         name = _name;
         symbol = _symbol;
-        // validate that party host won't retain the total token supply
+        // validate that party split won't retain the total token supply
         uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
-        require(_partyHostBasisPoints < _remainingBasisPoints, "PartyBid::initialize: basis points can't take 100%");
+        require(_splitBasisPoints < _remainingBasisPoints, "PartyBid::initialize: basis points can't take 100%");
         // validate that a portion of the token supply is not being burned
-        if (_partyHost == address(0)) {
-            require(_partyHostBasisPoints == 0, "PartyBid::initialize: can't send tokens to burn addr");
+        if (_splitRecipient == address(0)) {
+            require(_splitBasisPoints == 0, "PartyBid::initialize: can't send tokens to burn addr");
         }
-        partyHostBasisPoints = _partyHostBasisPoints;
-        partyHost = _partyHost;
+        splitBasisPoints = _splitBasisPoints;
+        splitRecipient = _splitRecipient;
         // validate token exists
         require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // validate auction exists
@@ -518,22 +518,22 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @return _totalSupply the total token supply
      * @return _partyDAOAmount the amount of tokens for partyDAO fee,
      * which is equivalent to TOKEN_FEE_BASIS_POINTS of total supply
-     * @return _partyHostAmount the amount of tokens for the token recipient,
-     * which is equivalent to partyHostBasisPoints of total supply
+     * @return _splitRecipientAmount the amount of tokens for the token recipient,
+     * which is equivalent to splitBasisPoints of total supply
      */
     function _getTokenInflationAmounts(uint256 _winningBid)
         internal
         view
-        returns (uint256 _totalSupply, uint256 _partyDAOAmount, uint256 _partyHostAmount)
+        returns (uint256 _totalSupply, uint256 _partyDAOAmount, uint256 _splitRecipientAmount)
     {
         // the token supply will be inflated to provide a portion of the
-        // total supply for PartyDAO, and a portion for the partyHost
-        uint256 inflationBasisPoints = TOKEN_FEE_BASIS_POINTS + partyHostBasisPoints;
+        // total supply for PartyDAO, and a portion for the splitRecipient
+        uint256 inflationBasisPoints = TOKEN_FEE_BASIS_POINTS + splitBasisPoints;
         _totalSupply = valueToTokens((_winningBid * 10000) / (10000 - inflationBasisPoints));
         // PartyDAO receives TOKEN_FEE_BASIS_POINTS of the total supply
         _partyDAOAmount = (_totalSupply * TOKEN_FEE_BASIS_POINTS) / 10000;
-        // partyHost receives partyHostBasisPoints of the total supply
-        _partyHostAmount = (_totalSupply * partyHostBasisPoints) / 10000;
+        // splitRecipient receives splitBasisPoints of the total supply
+        _splitRecipientAmount = (_totalSupply * splitBasisPoints) / 10000;
     }
 
     // ============ Internal: Finalize ============
@@ -572,8 +572,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         uint256 _listPrice = RESALE_MULTIPLIER * highestBid;
         // users receive tokens at a rate of 1:TOKEN_SCALE for each ETH they contributed that was ultimately spent
         // partyDAO receives a percentage of the total token supply equivalent to TOKEN_FEE_BASIS_POINTS
-        // partyHost receives a percentage of the total token supply equivalent to partyHostBasisPoints
-        (uint256 _tokenSupply, uint256 _partyDAOAmount, uint256 _partyHostAmount) = _getTokenInflationAmounts(totalSpent);
+        // splitRecipient receives a percentage of the total token supply equivalent to splitBasisPoints
+        (uint256 _tokenSupply, uint256 _partyDAOAmount, uint256 _splitRecipientAmount) = _getTokenInflationAmounts(totalSpent);
         // deploy fractionalized NFT vault
         uint256 vaultNumber =
             IERC721VaultFactory(tokenVaultFactory).mint(
@@ -592,8 +592,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // transfer tokens to PartyDAO multisig
         _transferTokens(partyDAOMultisig, _partyDAOAmount);
         // transfer tokens to token recipient
-        if (partyHost != address(0)) {
-            _transferTokens(partyHost, _partyHostAmount);
+        if (splitRecipient != address(0)) {
+            _transferTokens(splitRecipient, _splitRecipientAmount);
         }
     }
 

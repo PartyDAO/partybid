@@ -20,8 +20,8 @@ describe('Transfer WETH', async () => {
             const contributionAmount = 1;
             const reservePrice = 1;
             const tokenId = 95;
-            const tokenRecipient = "0x0000000000000000000000000000000000000000";
-            const tokenRecipientBasisPoints = 0;
+            const splitRecipient = "0x0000000000000000000000000000000000000000";
+            const splitBasisPoints = 0;
 
             before(async () => {
                 const signers = provider.getWallets();
@@ -31,8 +31,8 @@ describe('Transfer WETH', async () => {
                     marketName,
                     provider,
                     signers[0],
-                    tokenRecipient,
-                    tokenRecipientBasisPoints,
+                    splitRecipient,
+                    splitBasisPoints,
                     reservePrice,
                     tokenId,
                 );

@@ -29,8 +29,8 @@ describe('Finalize When Paused', async () => {
       // get test case information
       const {
         auctionReservePrice,
-        tokenRecipient,
-        tokenRecipientBasisPoints,
+        splitRecipient,
+        splitBasisPoints,
         contributions,
         bids,
         finalBid,
@@ -59,8 +59,8 @@ describe('Finalize When Paused', async () => {
       const ethFeeBps = new BigNumber(ETH_FEE_BASIS_POINTS);
       const ethFeeFactor = ethFeeBps.div(10000);
       // token recipient
-      const tokenRecipientBps = new BigNumber(tokenRecipientBasisPoints);
-      const tokenRecipientFactor = tokenRecipientBps.div(10000);
+      const splitRecipientBps = new BigNumber(splitBasisPoints);
+      const splitRecipientFactor = splitRecipientBps.div(10000);
       // ETH fee + total ETH spent
       const ethFee = finBid.times(ethFeeFactor);
       const expectedTotalSpent = finBid.plus(ethFee);
@@ -72,8 +72,8 @@ describe('Finalize When Paused', async () => {
           marketName,
           provider,
           signers[0],
-          tokenRecipient,
-          tokenRecipientBasisPoints,
+          splitRecipient,
+          splitBasisPoints,
           auctionReservePrice,
           tokenId,
           false,
@@ -179,11 +179,11 @@ describe('Finalize When Paused', async () => {
           expect(weiToEth(multisigBalance)).to.equal(expectedMultisigBalance.toNumber());
         });
 
-        it('Transferred tokens to tokenRecipient', async () => {
+        it('Transferred tokens to splitRecipient', async () => {
           const totalSupply = await token.totalSupply();
-          const expectedTokenRecipientBalance = tokenRecipientFactor.times(weiToEth(totalSupply));
-          const tokenRecipientBalance = await token.balanceOf(tokenRecipient);
-          expect(weiToEth(tokenRecipientBalance)).to.equal(expectedTokenRecipientBalance.toNumber());
+          const expectedsplitRecipientBalance = splitRecipientFactor.times(weiToEth(totalSupply));
+          const splitRecipientBalance = await token.balanceOf(splitRecipient);
+          expect(weiToEth(splitRecipientBalance)).to.equal(expectedsplitRecipientBalance.toNumber());
         });
 
         it(`Transferred ETH fee to multisig`, async () => {
