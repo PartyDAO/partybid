@@ -74,18 +74,18 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Immutables ============
 
     address public immutable partyDAOMultisig;
-    address public immutable tokenVaultFactory;
-    address public immutable weth;
+    IERC721VaultFactory public immutable tokenVaultFactory;
+    IWETH public immutable weth;
 
     // ============ Public Not-Mutated Storage ============
 
     // market wrapper contract exposing interface for
     // market auctioning the NFT
-    address public marketWrapper;
+    IMarketWrapper public marketWrapper;
     // NFT contract
-    address public nftContract;
+    IERC721Metadata public nftContract;
     // Fractionalized NFT vault responsible for post-auction value capture
-    address public tokenVault;
+    ITokenVault public tokenVault;
     // ID of auction within market contract
     uint256 public auctionId;
     // ID of token within NFT contract
@@ -156,8 +156,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         address _weth
     ) {
         partyDAOMultisig = _partyDAOMultisig;
-        tokenVaultFactory = _tokenVaultFactory;
-        weth = _weth;
+        tokenVaultFactory = IERC721VaultFactory(_tokenVaultFactory);
+        weth = IWETH(_weth);
     }
 
     // ======== Initializer =========
@@ -176,8 +176,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         __ReentrancyGuard_init();
         __ERC721Holder_init();
         // set storage variables
-        marketWrapper = _marketWrapper;
-        nftContract = _nftContract;
+        marketWrapper = IMarketWrapper(_marketWrapper);
+        nftContract = IERC721Metadata(_nftContract);
         tokenId = _tokenId;
         auctionId = _auctionId;
         name = _name;
@@ -195,7 +195,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // validate auction exists
         require(
-            IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
+            marketWrapper.auctionIdMatchesToken(
                 _auctionId,
                 _nftContract,
                 _tokenId
@@ -262,17 +262,17 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         );
         require(
             address(this) !=
-                IMarketWrapper(marketWrapper).getCurrentHighestBidder(
+                marketWrapper.getCurrentHighestBidder(
                     auctionId
                 ),
             "PartyBid::bid: already highest bidder"
         );
         require(
-            !IMarketWrapper(marketWrapper).isFinalized(auctionId),
+            !marketWrapper.isFinalized(auctionId),
             "PartyBid::bid: auction already finalized"
         );
         // get the minimum next bid for the auction
-        uint256 _bid = IMarketWrapper(marketWrapper).getMinimumBid(auctionId);
+        uint256 _bid = marketWrapper.getMinimumBid(auctionId);
         // ensure there is enough ETH to place the bid including PartyDAO fee
         require(
             _bid <= getMaximumBid(),
@@ -280,7 +280,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         );
         // submit bid to Auction contract using delegatecall
         (bool success, bytes memory returnData) =
-            marketWrapper.delegatecall(
+            address(marketWrapper).delegatecall(
                 abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
         require(
@@ -309,8 +309,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             "PartyBid::finalize: auction not active"
         );
         // finalize auction if it hasn't already been done
-        if (!IMarketWrapper(marketWrapper).isFinalized(auctionId)) {
-            IMarketWrapper(marketWrapper).finalize(auctionId);
+        if (!marketWrapper.isFinalized(auctionId)) {
+            marketWrapper.finalize(auctionId);
         }
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
@@ -549,7 +549,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     */
     function _getOwner() internal returns (address _owner) {
         (bool success, bytes memory returnData) =
-            nftContract.call(
+            address(nftContract).call(
                 abi.encodeWithSignature(
                     "ownerOf(uint256)",
                     tokenId
@@ -566,7 +566,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      */
     function _fractionalizeNFT() internal {
         // approve fractionalized NFT Factory to withdraw NFT
-        IERC721Metadata(nftContract).approve(tokenVaultFactory, tokenId);
+        nftContract.approve(address(tokenVaultFactory), tokenId);
         // PartyBid "votes" for a reserve price on Fractional
         // equal to 2x the winning bid
         uint256 _listPrice = RESALE_MULTIPLIER * highestBid;
@@ -576,19 +576,19 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         (uint256 _tokenSupply, uint256 _partyDAOAmount, uint256 _partyHostAmount) = _getTokenInflationAmounts(totalSpent);
         // deploy fractionalized NFT vault
         uint256 vaultNumber =
-            IERC721VaultFactory(tokenVaultFactory).mint(
+            tokenVaultFactory.mint(
                 name,
                 symbol,
-                nftContract,
+                address(nftContract),
                 tokenId,
                 _tokenSupply,
                 _listPrice,
                 0
             );
         // store token vault address to storage
-        tokenVault = IERC721VaultFactory(tokenVaultFactory).vaults(vaultNumber);
+        tokenVault = ITokenVault(tokenVaultFactory.vaults(vaultNumber));
         // transfer curator to null address (burn the curator role)
-        ITokenVault(tokenVault).updateCurator(address(0));
+        tokenVault.updateCurator(address(0));
         // transfer tokens to PartyDAO multisig
         _transferTokens(partyDAOMultisig, _partyDAOAmount);
         // transfer tokens to token recipient
@@ -645,11 +645,11 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // guard against rounding errors;
         // if token amount to send is greater than contract balance,
         // send full contract balance
-        uint256 _partyBidBalance = ITokenVault(tokenVault).balanceOf(address(this));
+        uint256 _partyBidBalance = tokenVault.balanceOf(address(this));
         if (_value > _partyBidBalance) {
             _value = _partyBidBalance;
         }
-        ITokenVault(tokenVault).transfer(_to, _value);
+        tokenVault.transfer(_to, _value);
     }
 
     // ============ Internal: TransferEthOrWeth ============
@@ -674,8 +674,8 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // Try to transfer ETH to the given recipient.
         if (!_attemptETHTransfer(_to, _value)) {
             // If the transfer fails, wrap and send as WETH
-            IWETH(weth).deposit{value: _value}();
-            IWETH(weth).transfer(_to, _value);
+            weth.deposit{value: _value}();
+            weth.transfer(_to, _value);
             // At this point, the recipient can unwrap WETH.
         }
     }

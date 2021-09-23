@@ -259,6 +259,7 @@ async function deployTestContractSetup(
   return {
     nftContract,
     market,
+    marketWrapper,
     partyBid,
     partyDAOMultisig,
     weth,
