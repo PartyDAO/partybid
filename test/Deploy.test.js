@@ -11,7 +11,11 @@ const { PARTY_STATUS, MARKETS } = require('./helpers/constants');
 describe('Deploy', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
-      let partyBid, signer, artist;
+      const splitRecipient = "0x0000000000000000000000000000000000000000";
+      const splitBasisPoints = 0;
+      const reservePrice = 1;
+      const tokenId = 95;
+      let partyBid, partyDAOMultisig, marketWrapper, signer, artist;
 
       before(async () => {
         // GET RANDOM SIGNER & ARTIST
@@ -22,13 +26,24 @@ describe('Deploy', async () => {
           marketName,
           provider,
           artist,
+          splitRecipient,
+          splitBasisPoints,
+          reservePrice,
+          tokenId,
         );
         partyBid = contracts.partyBid;
+        partyDAOMultisig = contracts.partyDAOMultisig;
+        marketWrapper = contracts.marketWrapper;
       });
 
       it('Party Status is Active', async () => {
         const partyStatus = await partyBid.partyStatus();
         expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+      });
+
+      it('Version is 2', async () => {
+        const version = await partyBid.VERSION();
+        expect(version).to.equal(2);
       });
 
       it('Total contributed to party is zero', async () => {
@@ -51,6 +66,16 @@ describe('Deploy', async () => {
           signer.address,
         );
         expect(totalContributed).to.equal(eth(0));
+      });
+
+      it('PartyDAO Multisig is correct', async () => {
+        const multisig = await partyBid.partyDAOMultisig();
+        expect(multisig).to.equal(partyDAOMultisig.address);
+      });
+
+      it('Market Wrapper is correct', async () => {
+        const wrapper = await partyBid.marketWrapper();
+        expect(wrapper).to.equal(marketWrapper.address);
       });
     });
   });

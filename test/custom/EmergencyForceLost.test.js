@@ -28,6 +28,8 @@ describe('Emergency Force Lost', async () => {
                     // get test case information
                     const {
                         auctionReservePrice,
+                        splitRecipient,
+                        splitBasisPoints,
                         contributions,
                         bids,
                         claims,
@@ -57,8 +59,10 @@ describe('Emergency Force Lost', async () => {
                             marketName,
                             provider,
                             signers[0],
-                            tokenId,
+                            splitRecipient,
+                            splitBasisPoints,
                             auctionReservePrice,
+                            tokenId,
                             true,
                         );
                         partyBid = contracts.partyBid;
@@ -170,17 +174,13 @@ describe('Emergency Force Lost', async () => {
                             const after = await getBalances(provider, token, accounts);
 
                             // ETH was transferred from PartyBid to contributor
-                            await expect(after.partyBid.eth).to.equal(
-                                before.partyBid.eth - excessEth,
+                            await expect(after.partyBid.eth.toNumber()).to.equal(
+                                before.partyBid.eth.minus(excessEth).toNumber()
                             );
-                            // TODO: fix -- harhdat gas fee 0 not working
-                            // await expect(after.contributor.eth).to.equal(
-                            //   before.contributor.eth + excessEth,
-                            // );
 
                             // No Tokens were transferred from PartyBid to contributor
-                            await expect(after.partyBid.tokens).to.equal(before.partyBid.tokens);
-                            await expect(after.contributor.tokens).to.equal(before.contributor.tokens);
+                            await expect(after.partyBid.tokens.toNumber()).to.equal(before.partyBid.tokens.toNumber());
+                            await expect(after.contributor.tokens.toNumber()).to.equal(before.contributor.tokens.toNumber());
                         });
 
                         it(`Does not allow a contributor to double-claim`, async () => {

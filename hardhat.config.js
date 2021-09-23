@@ -86,4 +86,8 @@ module.exports = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
     }
   },
+
+  mocha: {
+    timeout: 150000
+  }
 };

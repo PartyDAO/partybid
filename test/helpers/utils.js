@@ -1,5 +1,6 @@
 const { expect } = require('chai');
-const { FOURTY_EIGHT_HOURS_IN_SECONDS, MARKET_NAMES } = require('./constants');
+const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const BigNumber = require('bignumber.js');
 
 function eth(num) {
   return ethers.utils.parseEther(num.toString());
@@ -18,16 +19,12 @@ async function getBalances(provider, token, accounts) {
   for (let account of accounts) {
     const { name, address } = account;
     balances[name] = {};
-    balances[name]['eth'] = parseFloat(
-      weiToEth(await provider.getBalance(address)),
-    );
+    balances[name]['eth'] = new BigNumber(parseFloat(weiToEth(await provider.getBalance(address))));
     let tokenBalance = 0;
     if(token && token.address != ethers.constants.AddressZero) {
-      tokenBalance = parseFloat(
-          weiToEth(await token.balanceOf(address)),
-      );
+      tokenBalance = weiToEth(await token.balanceOf(address));
     }
-    balances[name]['tokens'] = tokenBalance;
+    balances[name]['tokens'] = new BigNumber(parseFloat(tokenBalance));
   }
   return balances;
 }

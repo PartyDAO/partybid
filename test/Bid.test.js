@@ -16,7 +16,7 @@ describe('Bid', async () => {
       testCases.map((testCase, i) => {
         describe(`Case ${i}`, async () => {
           // get test case information
-          const { auctionReservePrice, contributions, bids } = testCase;
+          const { auctionReservePrice, splitRecipient, splitBasisPoints, contributions, bids } = testCase;
           // instantiate test vars
           let partyBid, market, auctionId;
           const signers = provider.getWallets();
@@ -28,8 +28,10 @@ describe('Bid', async () => {
               marketName,
               provider,
               signers[0],
-              tokenId,
+              splitRecipient,
+              splitBasisPoints,
               auctionReservePrice,
+              tokenId,
             );
             partyBid = contracts.partyBid;
             market = contracts.market;

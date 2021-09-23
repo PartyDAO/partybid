@@ -3,6 +3,7 @@
 const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
+const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
 const {
     eth,
@@ -28,6 +29,8 @@ describe('Auction Canceled', async () => {
                     // get test case information
                     const {
                         auctionReservePrice,
+                        splitRecipient,
+                        splitBasisPoints,
                         contributions,
                         claims
                     } = testCase;
@@ -48,8 +51,10 @@ describe('Auction Canceled', async () => {
                             marketName,
                             provider,
                             artistSigner,
-                            tokenId,
+                            splitRecipient,
+                            splitBasisPoints,
                             auctionReservePrice,
+                            tokenId,
                         );
                         partyBid = contracts.partyBid;
                         market = contracts.market;
@@ -119,9 +124,10 @@ describe('Auction Canceled', async () => {
                         const { signerIndex, totalContributed } = claim;
                         const contributor = signers[signerIndex];
                         it(`Allows contributors to claim the total they contributed`, async () => {
-                            const partyBidBalanceBefore = await provider.getBalance(
+                            const partyBidBalanceBeforeRaw = await provider.getBalance(
                                 partyBid.address,
                             );
+                            const partyBidBalanceBefore = new BigNumber(weiToEth(partyBidBalanceBeforeRaw));
 
                             // claim succeeds; event is emitted
                             await expect(partyBid.claim(contributor.address))
@@ -133,13 +139,15 @@ describe('Auction Canceled', async () => {
                                     eth(0),
                                 );
 
-                            const partyBidBalanceAfter = await provider.getBalance(
+                            const partyBidBalanceAfterRaw = await provider.getBalance(
                                 partyBid.address,
                             );
+                            const partyBidBalanceAfter = new BigNumber(weiToEth(partyBidBalanceAfterRaw));
+
 
                             // ETH was transferred from PartyBid to contributor
-                            await expect(weiToEth(partyBidBalanceAfter)).to.equal(
-                                weiToEth(partyBidBalanceBefore) - totalContributed,
+                            await expect(partyBidBalanceAfter.toNumber()).to.equal(
+                                partyBidBalanceBefore.minus(totalContributed).toNumber(),
                             );
                         });
                     }

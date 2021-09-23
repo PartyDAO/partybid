@@ -158,10 +158,12 @@ async function deployTestContractSetup(
   marketName,
   provider,
   artistSigner,
-  tokenId = 95,
-  reservePrice = 1,
+  splitRecipient,
+  splitBasisPoints,
+  reservePrice,
+  tokenId,
   fakeMultisig = false,
-  pauseAuctionHouse = false
+  pauseAuctionHouse = false,
 ) {
   // Deploy WETH
   const weth = await deploy('EtherToken');
@@ -241,6 +243,8 @@ async function deployTestContractSetup(
     nftContract.address,
     tokenId,
     auctionId,
+    splitRecipient,
+    splitBasisPoints,
     'Parrrrti',
     'PRTI',
   );
@@ -255,6 +259,7 @@ async function deployTestContractSetup(
   return {
     nftContract,
     market,
+    marketWrapper,
     partyBid,
     partyDAOMultisig,
     weth,
@@ -265,30 +270,6 @@ async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
   const contract = await Implementation.deploy(...args);
   return contract.deployed();
-}
-
-async function deployPartyBid(
-    partyDAOMultisig,
-    whitelist,
-    market,
-    nftContract,
-    tokenId = 95,
-    auctionId = 1,
-    quorumPercent = 90,
-    tokenName = 'Party',
-    tokenSymbol = 'PARTY',
-) {
-  return deploy('PartyBid', [
-    partyDAOMultisig,
-    whitelist,
-    market,
-    nftContract,
-    tokenId,
-    auctionId,
-    quorumPercent,
-    tokenName,
-    tokenSymbol,
-  ]);
 }
 
 async function getTokenVault(partyBid, signer) {

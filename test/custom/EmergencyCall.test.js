@@ -21,6 +21,8 @@ describe('Emergency Call', async () => {
     const signers = provider.getWallets();
     const tokenId = 100;
     const transferTokenId = 200;
+    const splitRecipient = "0x0000000000000000000000000000000000000000";
+    const splitBasisPoints = 0;
     const reservePrice = 500;
 
     before(async () => {
@@ -29,8 +31,10 @@ describe('Emergency Call', async () => {
             MARKET_NAMES.ZORA,
             provider,
             signers[0],
-            tokenId,
+            splitRecipient,
+            splitBasisPoints,
             reservePrice,
+            tokenId,
             true,
         );
         partyBid = contracts.partyBid;

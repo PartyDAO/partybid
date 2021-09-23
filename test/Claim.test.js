@@ -3,8 +3,9 @@
 const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
+const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
-const { eth, getBalances, bidThroughParty, contribute } = require('./helpers/utils');
+const { eth, weiToEth, getBalances, bidThroughParty, contribute } = require('./helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
@@ -19,7 +20,7 @@ describe('Claim', async () => {
       testCases.map((testCase, i) => {
         describe(`Case ${i}`, async () => {
           // get test case information
-          const { auctionReservePrice, contributions, bids, claims } = testCase;
+          const { auctionReservePrice, splitRecipient, splitBasisPoints, contributions, bids, claims } = testCase;
           // instantiate test vars
           let partyBid, market, auctionId, token;
           const signers = provider.getWallets();
@@ -32,8 +33,10 @@ describe('Claim', async () => {
               marketName,
               provider,
               firstSigner,
-              tokenId,
+              splitRecipient,
+              splitBasisPoints,
               auctionReservePrice,
+              tokenId,
             );
             partyBid = contracts.partyBid;
             market = contracts.market;
@@ -86,6 +89,18 @@ describe('Claim', async () => {
           for (let claim of claims[marketName]) {
             const { signerIndex, tokens, excessEth, totalContributed } = claim;
             const contributor = signers[signerIndex];
+            it('Gives the correct values for getClaimAmounts before claim is called', async () => {
+              const [tokenClaimAmount, ethClaimAmount] = await partyBid.getClaimAmounts(contributor.address);
+              expect(weiToEth(tokenClaimAmount)).to.equal(tokens);
+              expect(weiToEth(ethClaimAmount)).to.equal(excessEth);
+            });
+
+            it('Gives the correct value for totalEthUsedForBid before claim is called', async () => {
+              const totalEthUsed = await partyBid.totalEthUsedForBid(contributor.address);
+              const expectedEthUsed = (new BigNumber(totalContributed)).minus(excessEth);
+              expect(weiToEth(totalEthUsed)).to.equal(expectedEthUsed.toNumber());
+            });
+
             it(`Allows Claim, transfers ETH and tokens to contributors after Finalize`, async () => {
               const accounts = [
                 {
@@ -101,7 +116,7 @@ describe('Claim', async () => {
               const before = await getBalances(provider, token, accounts);
 
               // signer has no PartyBid tokens before claim
-              expect(before.contributor.tokens).to.equal(0);
+              expect(before.contributor.tokens.toNumber()).to.equal(0);
 
               // claim succeeds; event is emitted
               await expect(partyBid.claim(contributor.address))
@@ -116,27 +131,48 @@ describe('Claim', async () => {
               const after = await getBalances(provider, token, accounts);
 
               // ETH was transferred from PartyBid to contributor
-              await expect(after.partyBid.eth).to.equal(
-                before.partyBid.eth - excessEth,
+              await expect(after.partyBid.eth.toNumber()).to.equal(
+                before.partyBid.eth.minus(excessEth).toNumber()
               );
-              // TODO: fix this test (hardhat gasPrice zero not working)
-              // await expect(after.contributor.eth).to.equal(
-              //   before.contributor.eth + excessEth,
-              // );
 
               // Tokens were transferred from PartyBid to contributor
-              await expect(after.partyBid.tokens).to.equal(
-                before.partyBid.tokens - tokens,
+              await expect(after.partyBid.tokens.toNumber()).to.equal(
+                before.partyBid.tokens.minus(tokens).toNumber()
               );
-              await expect(after.contributor.tokens).to.equal(
-                before.contributor.tokens + tokens,
+              await expect(after.contributor.tokens.toNumber()).to.equal(
+                before.contributor.tokens.plus(tokens).toNumber()
               );
+            });
+
+            it('Gives the same values for getClaimAmounts after claim is called', async () => {
+              const [tokenClaimAmount, ethClaimAmount] = await partyBid.getClaimAmounts(contributor.address);
+              expect(weiToEth(tokenClaimAmount)).to.equal(tokens);
+              expect(weiToEth(ethClaimAmount)).to.equal(excessEth);
+            });
+
+            it('Gives the same value for totalEthUsedForBid after claim is called', async () => {
+              const totalEthUsed = await partyBid.totalEthUsedForBid(contributor.address);
+              const expectedEthUsed = (new BigNumber(totalContributed)).minus(excessEth);
+              expect(weiToEth(totalEthUsed)).to.equal(expectedEthUsed.toNumber());
             });
 
             it(`Does not allow a contributor to double-claim`, async () => {
               await expect(partyBid.claim(contributor.address)).to.be.reverted;
             });
           }
+
+          it('Gives zero for getClaimAmounts for non-contributor', async () => {
+            const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
+            const [tokenClaimAmount, ethClaimAmount] = await partyBid.getClaimAmounts(randomAddress);
+            expect(tokenClaimAmount).to.equal(0);
+            expect(ethClaimAmount).to.equal(0);
+          });
+
+          it('Gives the zero for totalEthUsedForBid for non-contributor', async () => {
+            const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
+            const totalEthUsed = await partyBid.totalEthUsedForBid(randomAddress);
+            expect(totalEthUsed).to.equal(0);
+          });
 
           it(`Reverts on Claim for non-contributor`, async () => {
             const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
