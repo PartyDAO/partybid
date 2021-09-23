@@ -487,11 +487,13 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         returns (uint256 _total)
     {
         require(partyStatus != PartyStatus.AUCTION_ACTIVE, "PartyBid::totalEthUsedForBid: party still active; amounts undetermined");
+        // load total amount spent once from storage
+        uint256 _totalSpent = totalSpent;
         // get all of the contributor's contributions
         Contribution[] memory _contributions = contributions[_contributor];
         for (uint256 i = 0; i < _contributions.length; i++) {
             // calculate how much was used from this individual contribution
-            uint256 _amount = _ethUsedForBid(_contributions[i]);
+            uint256 _amount = _ethUsedForBid(_totalSpent, _contributions[i]);
             // if we reach a contribution that was not used,
             // no subsequent contributions will have been used either,
             // so we can stop calculating to save some gas
@@ -606,13 +608,11 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @return the amount of funds from this contribution
      * that were used towards the winning auction bid
      */
-    function _ethUsedForBid(Contribution memory _contribution)
+    function _ethUsedForBid(uint256 _totalSpent, Contribution memory _contribution)
         internal
         view
         returns (uint256)
     {
-        // load total amount spent once from storage
-        uint256 _totalSpent = totalSpent;
         if (
             _contribution.previousTotalContributedToParty +
                 _contribution.amount <=
