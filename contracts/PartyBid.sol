@@ -434,7 +434,7 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     /**
      * @notice The maximum bid that can be submitted
-     * while leaving 5% fee for PartyDAO
+     * while paying the ETH fee to PartyDAO
      * @return _maxBid the maximum bid
      */
     function getMaximumBid() public view returns (uint256 _maxBid) {
