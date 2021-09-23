@@ -23,8 +23,8 @@ contract PartyBidFactory {
         uint256 tokenId,
         address marketWrapper,
         uint256 auctionId,
-        address partyHost,
-        uint256 partyHostBasisPoints,
+        address splitRecipient,
+        uint256 splitBasisPoints,
         string name,
         string symbol
     );
@@ -79,8 +79,8 @@ contract PartyBidFactory {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
-        address _partyHost,
-        uint256 _partyHostBasisPoints,
+        address _splitRecipient,
+        uint256 _splitBasisPoints,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBidProxy) {
@@ -91,8 +91,8 @@ contract PartyBidFactory {
                 _nftContract,
                 _tokenId,
                 _auctionId,
-                _partyHost,
-                _partyHostBasisPoints,
+                _splitRecipient,
+                _splitBasisPoints,
                 _name,
                 _symbol
             );
@@ -113,8 +113,8 @@ contract PartyBidFactory {
             _tokenId,
             _marketWrapper,
             _auctionId,
-            _partyHost,
-            _partyHostBasisPoints,
+            _splitRecipient,
+            _splitBasisPoints,
             _name,
             _symbol
         );

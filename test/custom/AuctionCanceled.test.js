@@ -29,8 +29,8 @@ describe('Auction Canceled', async () => {
                     // get test case information
                     const {
                         auctionReservePrice,
-                        tokenRecipient,
-                        tokenRecipientBasisPoints,
+                        splitRecipient,
+                        splitBasisPoints,
                         contributions,
                         claims
                     } = testCase;
@@ -51,8 +51,8 @@ describe('Auction Canceled', async () => {
                             marketName,
                             provider,
                             artistSigner,
-                            tokenRecipient,
-                            tokenRecipientBasisPoints,
+                            splitRecipient,
+                            splitBasisPoints,
                             auctionReservePrice,
                             tokenId,
                         );

@@ -37,8 +37,8 @@ describe('Maximum First Bid', async () => {
                     const signers = provider.getWallets();
                     const tokenId = 95;
                     const reservePrice = reserve;
-                    const tokenRecipient = "0x0000000000000000000000000000000000000000";
-                    const tokenRecipientBasisPoints = 0;
+                    const splitRecipient = "0x0000000000000000000000000000000000000000";
+                    const splitBasisPoints = 0;
 
                     before(async () => {
                         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -46,8 +46,8 @@ describe('Maximum First Bid', async () => {
                             marketName,
                             provider,
                             signers[0],
-                            tokenRecipient,
-                            tokenRecipientBasisPoints,
+                            splitRecipient,
+                            splitBasisPoints,
                             reservePrice,
                             tokenId,
                         );
@@ -86,8 +86,8 @@ describe('Failed Maximum First Bid', async () => {
                     const signers = provider.getWallets();
                     const tokenId = 95;
                     const reservePrice = reserve + 0.000000000001;
-                    const tokenRecipient = "0x0000000000000000000000000000000000000000";
-                    const tokenRecipientBasisPoints = 0;
+                    const splitRecipient = "0x0000000000000000000000000000000000000000";
+                    const splitBasisPoints = 0;
 
                     before(async () => {
                         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -95,8 +95,8 @@ describe('Failed Maximum First Bid', async () => {
                             marketName,
                             provider,
                             signers[0],
-                            tokenRecipient,
-                            tokenRecipientBasisPoints,
+                            splitRecipient,
+                            splitBasisPoints,
                             reservePrice,
                             tokenId,
                         );
