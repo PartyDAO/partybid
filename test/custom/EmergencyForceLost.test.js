@@ -28,8 +28,8 @@ describe('Emergency Force Lost', async () => {
                     // get test case information
                     const {
                         auctionReservePrice,
-                        tokenRecipient,
-                        tokenRecipientBasisPoints,
+                        splitRecipient,
+                        splitBasisPoints,
                         contributions,
                         bids,
                         claims,
@@ -59,8 +59,8 @@ describe('Emergency Force Lost', async () => {
                             marketName,
                             provider,
                             signers[0],
-                            tokenRecipient,
-                            tokenRecipientBasisPoints,
+                            splitRecipient,
+                            splitBasisPoints,
                             auctionReservePrice,
                             tokenId,
                             true,

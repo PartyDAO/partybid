@@ -21,8 +21,8 @@ describe('Emergency Withdraw ETH', async () => {
     const signers = provider.getWallets();
     const tokenId = 100;
     const reservePrice = 500;
-    const tokenRecipient = "0x0000000000000000000000000000000000000000"
-    const tokenRecipientBasisPoints = 0;
+    const splitRecipient = "0x0000000000000000000000000000000000000000"
+    const splitBasisPoints = 0;
 
     before(async () => {
         // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
@@ -30,8 +30,8 @@ describe('Emergency Withdraw ETH', async () => {
             MARKET_NAMES.ZORA,
             provider,
             signers[0],
-            tokenRecipient,
-            tokenRecipientBasisPoints,
+            splitRecipient,
+            splitBasisPoints,
             reservePrice,
             tokenId,
             true,

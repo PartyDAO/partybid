@@ -11,8 +11,8 @@ const { PARTY_STATUS, MARKETS } = require('./helpers/constants');
 describe('Deploy', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
-      const tokenRecipient = "0x0000000000000000000000000000000000000000";
-      const tokenRecipientBasisPoints = 0;
+      const splitRecipient = "0x0000000000000000000000000000000000000000";
+      const splitBasisPoints = 0;
       const reservePrice = 1;
       const tokenId = 95;
       let partyBid, partyDAOMultisig, marketWrapper, signer, artist;
@@ -26,8 +26,8 @@ describe('Deploy', async () => {
           marketName,
           provider,
           artist,
-          tokenRecipient,
-          tokenRecipientBasisPoints,
+          splitRecipient,
+          splitBasisPoints,
           reservePrice,
           tokenId,
         );
