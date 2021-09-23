@@ -319,11 +319,11 @@ contract PartyBid is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         uint256 _ethFee;
         // if the auction was won,
         if (partyStatus == PartyStatus.AUCTION_WON) {
-            // transfer ETH fee to PartyDAO
+            // calculate PartyDAO fee & record total spent
             _ethFee = _getEthFee(highestBid);
-            _transferETHOrWETH(partyDAOMultisig, _ethFee);
-            // record total spent by auction + PartyDAO fees
             totalSpent = highestBid + _ethFee;
+            // transfer ETH fee to PartyDAO
+            _transferETHOrWETH(partyDAOMultisig, _ethFee);
             // deploy fractionalized NFT vault
             // and mint fractional ERC-20 tokens
             _fractionalizeNFT();
