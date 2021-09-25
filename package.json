@@ -5,6 +5,7 @@
   "main": "",
   "scripts": {
     "test": "npm run compile && hardhat test",
+    "fork-test": "ts-node test/fork/index.ts",
     "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
     "verify": "hardhat --network mainnet verify-contracts",
     "compile": "hardhat compile",
@@ -32,13 +33,15 @@
     "@openzeppelin/contracts-upgradeable2": "npm:@openzeppelin/contracts-upgradeable@^3.4.0",
     "@openzeppelin/contracts2": "npm:@openzeppelin/contracts@^3.2.0",
     "@openzeppelin/hardhat-upgrades": "^1.9.0",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.2",
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "hardhat": "^2.0.8",
+    "hardhat": "^2.6.0",
     "hardhat-gas-reporter": "^1.0.4",
     "ethers": "^5.0.29",
     "chai": "^4.3.0",
