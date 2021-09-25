@@ -1,6 +1,84 @@
 {
   "testCases": [
     {
+      "auctionReservePrice": 4,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 4
+        },
+        {
+          "signerIndex": 1,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 1,
+          "amount": 4
+        }
+      ],
+      "bids": [
+        {
+          "placedByPartyBid": true,
+          "success": true
+        },
+        {
+          "placedByPartyBid": false,
+          "amount": 5,
+          "success": true
+        },
+        {
+          "placedByPartyBid": true,
+          "success": true
+        }
+      ],
+      "finalBid": {
+        "ZORA": 5.25,
+        "FOUNDATION": 5.5
+      },
+      "finalFee": {
+        "ZORA": 0.2625,
+        "FOUNDATION": 0.275
+      },
+      "totalSpent": {
+        "ZORA": 5.5125,
+        "FOUNDATION": 5.775
+      },
+      "claims": {
+        "ZORA": [
+          {
+            "signerIndex": 0,
+            "tokens": 4512.5,
+            "excessEth": 0.4875,
+            "totalContributed": 5
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 1000,
+            "excessEth": 4,
+            "totalContributed": 5
+          }
+        ],
+        "FOUNDATION": [
+          {
+            "signerIndex": 0,
+            "tokens": 4775,
+            "excessEth": 0.225,
+            "totalContributed": 5
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 1000,
+            "excessEth": 4,
+            "totalContributed": 5
+          }
+        ]
+      }
+    },
+    {
       "auctionReservePrice": 1,
       "splitRecipient": "0x0000000000000000000000000000000000000000",
       "splitBasisPoints": 0,
