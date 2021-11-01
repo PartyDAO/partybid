@@ -7,17 +7,14 @@ const { expect } = require('chai');
 const {
     eth,
     contribute,
-    bidThroughParty,
     getBalances,
     emergencyForceLost,
     getTotalContributed,
+    bidThroughParty
 } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
-const {
-    PARTY_STATUS,
-} = require('../helpers/constants');
-const { MARKETS } = require('../helpers/constants');
+const { MARKETS, PARTY_STATUS } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 
 describe('Emergency Force Lost', async () => {
@@ -103,7 +100,7 @@ describe('Emergency Force Lost', async () => {
 
                     it('Is ACTIVE before force lost', async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
                     });
 
                     it('Does not allow non-multisig to force lost', async () => {
@@ -117,7 +114,7 @@ describe('Emergency Force Lost', async () => {
 
                     it('Is LOST after force lost', async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+                        expect(partyStatus).to.equal(PARTY_STATUS.LOST);
                     });
 
                     it('Has zero totalSpent', async () => {

@@ -11,11 +11,7 @@ const {
 } = require('../helpers/utils');
 const { placeBid, externalFinalize } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
-const {
-    PARTY_STATUS,
-    FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('../helpers/constants');
-const { MARKETS } = require('../helpers/constants');
+const { PARTY_STATUS, FOURTY_EIGHT_HOURS_IN_SECONDS, MARKETS } = require('../helpers/constants');
 
 describe('NFT Burned', async () => {
     MARKETS.map((marketName) => {
@@ -90,7 +86,7 @@ describe('NFT Burned', async () => {
 
             it('Is ACTIVE before PartyBid-level Finalize', async () => {
                 const partyStatus = await partyBid.partyStatus();
-                expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
             });
 
             it('Allows PartyBid Finalize after auction-level Finalize & NFT burn', async () => {
@@ -102,7 +98,7 @@ describe('NFT Burned', async () => {
 
             it(`Is LOST after Finalize`, async () => {
                 const partyStatus = await partyBid.partyStatus();
-                expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+                expect(partyStatus).to.equal(PARTY_STATUS.LOST);
             });
 
             it('Has zero totalSpent', async () => {

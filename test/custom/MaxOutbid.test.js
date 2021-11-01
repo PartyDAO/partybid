@@ -9,7 +9,7 @@ const {
     eth,
     weiToEth,
     contribute,
-    bidThroughParty,
+    bidThroughParty
 } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');

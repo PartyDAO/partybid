@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const {verify} = require("./deploy/verify");
 
-task("verify-contracts", "Verifies the core contracts").setAction(verify);
+task("verify", "Verifies the PartyBid contracts").setAction(verify);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig

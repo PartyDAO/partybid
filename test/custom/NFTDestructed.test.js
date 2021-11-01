@@ -11,11 +11,8 @@ const {
 } = require('../helpers/utils');
 const { placeBid, externalFinalize } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
-const {
-    PARTY_STATUS,
-    FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('../helpers/constants');
-const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
+const { PARTY_STATUS,
+    FOURTY_EIGHT_HOURS_IN_SECONDS, MARKETS, MARKET_NAMES } = require('../helpers/constants');
 
 describe('NFT Contract Self-Destructed', async () => {
     // The Nouns NFT contract cannot self-destruct
@@ -100,7 +97,7 @@ describe('NFT Contract Self-Destructed', async () => {
 
             it('Is ACTIVE before PartyBid-level Finalize', async () => {
                 const partyStatus = await partyBid.partyStatus();
-                expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
             });
 
             it('Allows PartyBid Finalize after auction-level Finalize & NFT burn', async () => {
@@ -112,7 +109,7 @@ describe('NFT Contract Self-Destructed', async () => {
 
             it(`Is LOST after Finalize`, async () => {
                 const partyStatus = await partyBid.partyStatus();
-                expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+                expect(partyStatus).to.equal(PARTY_STATUS.LOST);
             });
 
             it('Has zero totalSpent', async () => {

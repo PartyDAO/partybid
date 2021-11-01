@@ -9,7 +9,7 @@ const {
     eth,
     weiToEth,
     contribute,
-    bidThroughParty,
+    bidThroughParty
 } = require('../helpers/utils');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKETS, ETH_FEE_BASIS_POINTS } = require('../helpers/constants');

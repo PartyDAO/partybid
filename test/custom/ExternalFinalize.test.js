@@ -10,18 +10,21 @@ const {
     weiToEth,
     getTotalContributed,
     contribute,
-    bidThroughParty,
+    bidThroughParty
 } = require('../helpers/utils');
 const { placeBid, externalFinalize } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
 const {
+    MARKETS,
     PARTY_STATUS,
     FOURTY_EIGHT_HOURS_IN_SECONDS,
+    TOKEN_FEE_BASIS_POINTS,
+    ETH_FEE_BASIS_POINTS,
+    TOKEN_SCALE
 } = require('../helpers/constants');
-const { MARKETS, TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 
-describe('Finalize', async () => {
+describe('External Finalize', async () => {
     MARKETS.map((marketName) => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {
@@ -117,7 +120,7 @@ describe('Finalize', async () => {
 
                     it('Is ACTIVE before external Finalize', async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
                     });
 
                     it('Accepts external Finalize', async () => {
@@ -132,7 +135,7 @@ describe('Finalize', async () => {
 
                     it('Is ACTIVE before PartyBid-level Finalize', async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
                     });
 
                     it('Allows PartyBid Finalize after auction-level Finalize', async () => {
@@ -143,7 +146,7 @@ describe('Finalize', async () => {
                     });
 
                     it(`Doesn't accept contributions after Finalize`, async () => {
-                        await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+                        await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("Party::contribute: party not active");
                     });
 
                     it(`Doesn't accept bids after Finalize`, async () => {
@@ -153,7 +156,7 @@ describe('Finalize', async () => {
                     if (partyBidWins) {
                         it(`Is WON after Finalize`, async () => {
                             const partyStatus = await partyBid.partyStatus();
-                            expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_WON);
+                            expect(partyStatus).to.equal(PARTY_STATUS.WON);
                         });
 
                         it(`Token Vault Owns the NFT`, async () => {
@@ -208,7 +211,7 @@ describe('Finalize', async () => {
                     } else {
                         it(`Is LOST after Finalize`, async () => {
                             const partyStatus = await partyBid.partyStatus();
-                            expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+                            expect(partyStatus).to.equal(PARTY_STATUS.LOST);
                         });
 
                         it(`Does not own the NFT`, async () => {
