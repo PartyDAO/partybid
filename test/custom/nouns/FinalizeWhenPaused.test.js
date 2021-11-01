@@ -138,7 +138,7 @@ describe('Finalize When Paused', async () => {
       });
 
       it(`Doesn't accept contributions after Finalize`, async () => {
-        await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+        await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("Party::contribute: party not active");
       });
 
       it(`Doesn't accept bids after Finalize`, async () => {

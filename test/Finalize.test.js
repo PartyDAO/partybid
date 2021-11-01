@@ -119,11 +119,11 @@ describe('Finalize', async () => {
           });
 
           it('Doesnt allow getClaimAmounts before Finalize', async () => {
-            await expect(partyBid.getClaimAmounts(signers[0].address)).to.be.revertedWith("PartyBid::getClaimAmounts: party still active; amounts undetermined");
+            await expect(partyBid.getClaimAmounts(signers[0].address)).to.be.revertedWith("Party::getClaimAmounts: party still active; amounts undetermined");
           });
 
           it('Doesnt allow totalEthUsedForBid before Finalize', async () => {
-            await expect(partyBid.totalEthUsedForBid(signers[0].address)).to.be.revertedWith("PartyBid::totalEthUsedForBid: party still active; amounts undetermined");
+            await expect(partyBid.totalEthUsedForBid(signers[0].address)).to.be.revertedWith("Party::totalEthUsed: party still active; amounts undetermined");
           });
 
           it('Does allow Finalize after the auction is over', async () => {
@@ -140,7 +140,7 @@ describe('Finalize', async () => {
           });
 
           it(`Doesn't accept contributions after Finalize`, async () => {
-            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("Party::contribute: party not active");
           });
 
           it(`Doesn't accept bids after Finalize`, async () => {

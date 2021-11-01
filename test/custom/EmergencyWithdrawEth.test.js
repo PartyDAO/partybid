@@ -48,8 +48,8 @@ describe('Emergency Withdraw ETH', async () => {
     });
 
     it('ETH *cannot* be withdrawn by non-multisig', async () => {
-        await expect(emergencyWithdrawEth(partyBid, signers[1], eth(ethAmount))).to.be.revertedWith("PartyBid:: only PartyDAO multisig");
-        await expect(emergencyWithdrawEth(partyBid, signers[2], eth(ethAmount))).to.be.revertedWith("PartyBid:: only PartyDAO multisig");
+        await expect(emergencyWithdrawEth(partyBid, signers[1], eth(ethAmount))).to.be.revertedWith("Party:: only PartyDAO multisig");
+        await expect(emergencyWithdrawEth(partyBid, signers[2], eth(ethAmount))).to.be.revertedWith("Party:: only PartyDAO multisig");
     });
 
     it('ETH *can* be withdrawn by multisig', async () => {

@@ -41,9 +41,9 @@ describe('Deploy', async () => {
         expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
       });
 
-      it('Version is 2', async () => {
+      it('Version is 3', async () => {
         const version = await partyBid.VERSION();
-        expect(version).to.equal(2);
+        expect(version).to.equal(3);
       });
 
       it('Total contributed to party is zero', async () => {

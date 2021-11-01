@@ -71,7 +71,7 @@ describe('Claim', async () => {
           it(`Reverts before Finalize`, async () => {
             await expect(
               partyBid.claim(firstSigner.address),
-            ).to.be.revertedWith('PartyBid::claim: auction not finalized');
+            ).to.be.revertedWith('Party::claim: party not finalized');
           });
 
           it('Allows Finalize', async () => {
@@ -177,7 +177,7 @@ describe('Claim', async () => {
           it(`Reverts on Claim for non-contributor`, async () => {
             const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
             await expect(partyBid.claim(randomAddress)).to.be.revertedWith(
-              'PartyBid::claim: not a contributor',
+              'Party::claim: not a contributor',
             );
           });
         });
