@@ -108,6 +108,17 @@ async function deployNounsToken(tokenId) {
   ]);
 }
 
+async function deployKoansToken(tokenId) {
+  // Deploy the Koans NFT Contract. Note that the Koans
+  // Auction House is responsible for token minting
+  return deploy('KoansToken', [
+    ethers.constants.AddressZero,
+    ethers.constants.AddressZero,
+    ethers.constants.AddressZero,
+    tokenId,
+  ]);
+}
+
 async function deployNounsAndStartAuction(
   nftContract,
   tokenId,
@@ -154,6 +165,71 @@ async function deployNounsAndStartAuction(
   };
 }
 
+async function deployKoansAndStartAuction(
+  nftContract,
+  tokenId,
+  weth,
+  reservePrice,
+  pauseAuctionHouse,
+  offerAddress,
+) {
+  const TIME_BUFFER = 5 * 60;
+  const MIN_INCREMENT_BID_PERCENTAGE = 5;
+
+  // Deploy Sasho token - we never use this but we need it for the AH to settle.
+  const sashoToken = await deploy('SashoToken', []);
+
+  // Deploy Koans Auction House.
+  const koansAuctionHouse = await deploy('KoansAuctionHouse', [
+    nftContract.address,
+    sashoToken.address,
+    weth.address,
+    TIME_BUFFER,
+    eth(reservePrice),
+    MIN_INCREMENT_BID_PERCENTAGE,
+    FOURTY_EIGHT_HOURS_IN_SECONDS,
+    ethers.constants.AddressZero,
+    ethers.constants.AddressZero,
+  ]);
+
+  // Set Koans Auction House as the owner of Sashos.
+  await sashoToken.transferOwnership(koansAuctionHouse.address);
+
+  // Create a mock Offer contract for adding 'winning' offers to the auction queue.
+  const offer = await deploy('MockOffer', [koansAuctionHouse.address]);
+
+  // Set Koans Auction House as minter on Koans NFT contract
+  await nftContract.setMinter(koansAuctionHouse.address);
+
+  // Set the Offer contract on the auction house to the mock offer we deployed.
+  await koansAuctionHouse.setOfferAddress(offer.address);
+
+  for (let i = 0; i < 96; ++i) {
+    await offer.addOffer("mock_uri", ethers.constants.AddressZero);
+  }
+
+  // Deploy Market Wrapper
+  const marketWrapper = await deploy('KoansMarketWrapper', [
+    koansAuctionHouse.address,
+  ]);
+
+  // Start auction
+  await koansAuctionHouse.unpause();
+
+  // If true, pause the auction house after the first Koan is minted
+  if (pauseAuctionHouse) {
+    await koansAuctionHouse.pause();
+  }
+
+  const { koanId } = await koansAuctionHouse.auction();
+
+  return {
+    market: koansAuctionHouse,
+    marketWrapper,
+    auctionId: koanId.toNumber(),
+  };
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
@@ -174,6 +250,9 @@ async function deployTestContractSetup(
   if (marketName == MARKET_NAMES.NOUNS) {
     // for Nouns, deploy custom Nouns NFT contract
     nftContract = await deployNounsToken(tokenId);
+  } else if (marketName == MARKET_NAMES.KOANS) {
+    // for Koans, deploy custom Koans NFT contract.
+    nftContract = await deployKoansToken(tokenId);
   } else {
     // For other markets, deploy the test NFT Contract
     nftContract = await deploy('TestERC721', []);
@@ -201,6 +280,14 @@ async function deployTestContractSetup(
     );
   } else if (marketName == MARKET_NAMES.NOUNS) {
     marketContracts = await deployNounsAndStartAuction(
+      nftContract,
+      tokenId,
+      weth,
+      reservePrice,
+      pauseAuctionHouse,
+    )
+  } else if (marketName == MARKET_NAMES.KOANS) {
+    marketContracts = await deployKoansAndStartAuction(
       nftContract,
       tokenId,
       weth,

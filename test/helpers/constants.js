@@ -9,6 +9,7 @@ const MARKET_NAMES = {
   ZORA: 'ZORA',
   FOUNDATION: 'FOUNDATION',
   NOUNS: 'NOUNS',
+  KOANS: 'KOANS',
 };
 
 // MARKETS is an array of all values in MARKET_NAMES
@@ -18,6 +19,7 @@ const NFT_TYPE_ENUM = {
   ZORA: 0,
   FOUNDATION: 1,
   NOUNS: 2,
+  KOANS: 3,
 };
 
 const PARTY_STATUS = {

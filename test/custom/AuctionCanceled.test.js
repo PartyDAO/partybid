@@ -22,7 +22,7 @@ const { testCases } = require('../testCases.json');
 
 describe('Auction Canceled', async () => {
     // Noun auctions cannot be cancelled
-    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS).map((marketName) => {
+    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS && m !== MARKET_NAMES.KOANS).map((marketName) => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {
                 describe(`Case ${i}`, async () => {

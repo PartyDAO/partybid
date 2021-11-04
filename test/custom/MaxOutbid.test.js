@@ -17,11 +17,12 @@ const { MARKETS, MARKET_NAMES, ETH_FEE_BASIS_POINTS } = require('../helpers/cons
 
 const testCases = [
     {
-        reserve: 500,
+        reserve: 250,
         balance: {
-            [MARKET_NAMES.ZORA]: 538.125,
-            [MARKET_NAMES.FOUNDATION]: 563.75,
-            [MARKET_NAMES.NOUNS]: 538.125,
+            [MARKET_NAMES.ZORA]: 269.0625,
+            [MARKET_NAMES.FOUNDATION]: 281.875,
+            [MARKET_NAMES.NOUNS]: 269.0625,
+            [MARKET_NAMES.KOANS]: 269.0625,
         }
     },
     {
@@ -30,6 +31,7 @@ const testCases = [
             [MARKET_NAMES.ZORA]: 1.07625,
             [MARKET_NAMES.FOUNDATION]: 1.1275,
             [MARKET_NAMES.NOUNS]: 1.07625,
+            [MARKET_NAMES.KOANS]: 1.07625,
         }
     }
 ];
