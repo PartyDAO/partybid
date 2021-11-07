@@ -121,34 +121,25 @@ contract PartyBuy is Party {
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::buy: party not active"
         );
-        // get the contract balance before the call
-        uint256 _balanceBeforeCall = address(this).balance;
+        // check that value is not more than the maximum price set at deploy time
+        require(_value <= maxPrice, "PartyBuy::buy: can't spend over max price");
+        // check that value is not more than
+        // the maximum amount the party can spend while paying ETH fee
+        require(_value <= getMaximumSpend(), "PartyBuy::buy: insuffucient funds to buy token plus fee");
         // execute the calldata on the target contract
         address(_targetContract).call{value: _value}(_calldata);
         // NOTE: we don't are if the call succeeded
         // as long as the NFT is owned by the Party
         require(_getOwner() == address(this), "PartyBuy::buy: failed to buy token");
-        // get the contract balance after the call
-        uint256 _balanceAfterCall = address(this).balance;
-        // the ETH amount spent is transformed to the total token supply,
-        // so it can't be 0 or else the NFT will be burned in the Fractional vault
-        require(_balanceAfterCall < _balanceBeforeCall, "PartyBuy::buy: must spend more than 0 on token");
-        // calculate the ETH amount spent
-        uint256 _amountSpent = _balanceBeforeCall - _balanceAfterCall;
-        // check that amount spent is not more than the maximum price set at deploy time
-        require(_amountSpent <= maxPrice, "PartyBuy::buy: can't spend over max price");
-        // check that amount spent is not more than
-        // the maximum amount the party can spend while paying ETH fee
-        require(_amountSpent <= getMaximumSpend(), "PartyBuy::buy: insuffucient funds to pay fee");
         // set partyStatus to WON
         partyStatus = PartyStatus.WON;
         // record totalSpent,
         // send ETH fees to PartyDAO,
         // fractionalize the Token
         // send Token fees to PartyDAO & split proceeds to split recipient
-        uint256 _ethFee = _closeSuccessfulParty(_amountSpent);
+        uint256 _ethFee = _closeSuccessfulParty(_value);
         // emit Bought event
-        emit Bought(msg.sender, _targetContract, _amountSpent, _ethFee, totalContributedToParty);
+        emit Bought(msg.sender, _targetContract, _value, _ethFee, totalContributedToParty);
     }
 
     // ======== External: Fail =========
