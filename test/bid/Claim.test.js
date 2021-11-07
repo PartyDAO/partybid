@@ -5,16 +5,19 @@ const { provider } = waffle;
 const { expect } = require('chai');
 const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
-const { eth, weiToEth, getBalances, bidThroughParty, contribute } = require('./helpers/utils');
+const { bidThroughParty } = require('./helpers/utils');
+const { eth, weiToEth, getBalances, contribute } = require('../helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
   MARKETS,
-  FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('./helpers/constants');
+const {
+  FOURTY_EIGHT_HOURS_IN_SECONDS,
+} = require('../helpers/constants');
 const { testCases } = require('./testCases.json');
 
-describe('Claim', async () => {
+describe('Bid: Claim', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
       testCases.map((testCase, i) => {

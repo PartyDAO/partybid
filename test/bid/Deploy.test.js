@@ -8,7 +8,7 @@ const { eth } = require('./helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
 const { PARTY_STATUS, MARKETS } = require('./helpers/constants');
 
-describe('Deploy', async () => {
+describe('Bid: Deploy', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
       const splitRecipient = "0x0000000000000000000000000000000000000000";
@@ -38,7 +38,7 @@ describe('Deploy', async () => {
 
       it('Party Status is Active', async () => {
         const partyStatus = await partyBid.partyStatus();
-        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
       });
 
       it('Version is 3', async () => {
@@ -76,6 +76,16 @@ describe('Deploy', async () => {
       it('Market Wrapper is correct', async () => {
         const wrapper = await partyBid.marketWrapper();
         expect(wrapper).to.equal(marketWrapper.address);
+      });
+
+      it('Name is Parrrrti', async () => {
+        const name = await partyBuy.name();
+        expect(name).to.equal("Parrrrti");
+      });
+
+      it('Symbol is PRTI', async () => {
+        const symbol = await partyBuy.symbol();
+        expect(symbol).to.equal("PRTI");
       });
     });
   });

@@ -20,7 +20,7 @@ const {
 const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 
-describe('Auction Canceled', async () => {
+describe('Bid: Auction Canceled', async () => {
     // Noun auctions cannot be cancelled
     MARKETS.filter(m => m !== MARKET_NAMES.NOUNS).map((marketName) => {
         describe(marketName, async () => {
@@ -81,7 +81,7 @@ describe('Auction Canceled', async () => {
 
                     it('Is ACTIVE before auction is canceled', async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
                     });
 
                     it('Allows artist to cancel auction', async () => {
@@ -90,7 +90,7 @@ describe('Auction Canceled', async () => {
 
                     it('Is ACTIVE before PartyBid-level Finalize', async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+                        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
                     });
 
                     it('Allows PartyBid Finalize after auction is canceled', async () => {
@@ -100,7 +100,7 @@ describe('Auction Canceled', async () => {
 
                     it(`Is LOST after Finalize`, async () => {
                         const partyStatus = await partyBid.partyStatus();
-                        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+                        expect(partyStatus).to.equal(PARTY_STATUS.LOST);
                     });
 
                     it(`Does not own the NFT`, async () => {

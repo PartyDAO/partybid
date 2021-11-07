@@ -4,13 +4,14 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth, bidThroughParty, contribute } = require('./helpers/utils');
+const { bidThroughParty } = require('./helpers/utils');
+const { eth, contribute } = require('../helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup } = require('./helpers/deploy');
 const { MARKETS, MARKET_NAMES } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
-describe('Bid', async () => {
+describe('Bid: Bid', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
       testCases.map((testCase, i) => {

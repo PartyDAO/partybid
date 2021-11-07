@@ -6,11 +6,13 @@ const { expect } = require('chai');
 const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
 const {
+    bidThroughParty,
+} = require('../helpers/utils');
+const {
     eth,
     weiToEth,
     contribute,
-    bidThroughParty,
-} = require('../helpers/utils');
+} = require('../../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKETS, MARKET_NAMES, ETH_FEE_BASIS_POINTS } = require('../helpers/constants');
@@ -34,7 +36,7 @@ const testCases = [
     }
 ];
 
-describe('Maximum Outbid', async () => {
+describe('Bid: Maximum Outbid', async () => {
     MARKETS.map((marketName) => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {

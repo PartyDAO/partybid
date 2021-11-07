@@ -13,7 +13,7 @@ const { deployTestContractSetup } = require('./helpers/deploy');
 const { MARKETS } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
-describe('Contribute', async () => {
+describe('Bid: Contribute', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
       testCases.map((testCase, i) => {

@@ -8,11 +8,13 @@ const { eth, getBalances } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, deploy } = require('../helpers/deploy');
 const {
-    MARKETS,
     FOURTY_EIGHT_HOURS_IN_SECONDS,
+} = require('../../helpers/constants');
+const {
+    MARKETS,
 } = require('../helpers/constants');
 
-describe('Transfer WETH', async () => {
+describe('Bid: Transfer WETH', async () => {
     MARKETS.map((marketName) => {
         describe(marketName, async () => {
             // instantiate test vars

@@ -12,7 +12,7 @@ const {
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKET_NAMES } = require('../helpers/constants');
 
-describe('Emergency Withdraw ETH', async () => {
+describe('Bid: Emergency Withdraw ETH', async () => {
     // instantiate test vars
     let partyBid,
         nftContract,

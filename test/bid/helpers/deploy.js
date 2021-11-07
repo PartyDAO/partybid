@@ -1,10 +1,17 @@
 const {
-  eth,
-  approve,
   createReserveAuction,
   createZoraAuction,
 } = require('./utils');
-const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const {
+  eth,
+  approve,
+} = require('../../helpers/utils');
+const {
+  deploy,
+  getTokenVault,
+} = require('../../helpers/deploy');
+const { MARKET_NAMES } = require('./constants');
+const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../../helpers/constants');
 const { upgrades } = require('hardhat');
 
 async function deployFoundationAndStartAuction(
@@ -264,18 +271,6 @@ async function deployTestContractSetup(
     partyDAOMultisig,
     weth,
   };
-}
-
-async function deploy(name, args = []) {
-  const Implementation = await ethers.getContractFactory(name);
-  const contract = await Implementation.deploy(...args);
-  return contract.deployed();
-}
-
-async function getTokenVault(partyBid, signer) {
-  const vaultAddress = await partyBid.tokenVault();
-  const TokenVault = await ethers.getContractFactory('TokenVault');
-  return new ethers.Contract(vaultAddress, TokenVault.interface, signer);
 }
 
 async function getPartyBidContractFromEventLogs(

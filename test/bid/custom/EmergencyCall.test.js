@@ -11,7 +11,7 @@ const {
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKET_NAMES } = require('../helpers/constants');
 
-describe('Emergency Call', async () => {
+describe('Bid: Emergency Call', async () => {
     // instantiate test vars
     let partyBid,
         nftContract,

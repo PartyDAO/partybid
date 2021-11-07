@@ -6,12 +6,14 @@ const { expect } = require('chai');
 const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
 const {
+  bidThroughParty,
+} = require('../../helpers/utils');
+const {
   eth,
   weiToEth,
   getTotalContributed,
   contribute,
-  bidThroughParty,
-} = require('../../helpers/utils');
+} = require('../../../helpers/utils');
 const {
   placeBid,
 } = require('../../helpers/externalTransactions');
@@ -19,11 +21,11 @@ const { deployTestContractSetup, getTokenVault } = require('../../helpers/deploy
 const {
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('../../helpers/constants');
+} = require('../../../helpers/constants');
 const { testCases } = require('../../testCases.json');
 const { MARKET_NAMES, TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE } = require('../../helpers/constants');
 
-describe('Finalize When Paused', async () => {
+describe('Bid: Finalize When Paused', async () => {
   testCases.map((testCase, i) => {
     describe(`Case ${i}`, async () => {
       // get test case information
@@ -121,7 +123,7 @@ describe('Finalize When Paused', async () => {
 
       it('Is ACTIVE before Finalize', async () => {
         const partyStatus = await partyBid.partyStatus();
-        expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+        expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
       });
 
       it('Does allow Finalize after the auction is over', async () => {
@@ -148,7 +150,7 @@ describe('Finalize When Paused', async () => {
       if (partyBidWins) {
         it(`Is WON after Finalize`, async () => {
           const partyStatus = await partyBid.partyStatus();
-          expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_WON);
+          expect(partyStatus).to.equal(PARTY_STATUS.WON);
         });
 
         it(`Token Vault Owns the NFT`, async () => {
@@ -203,7 +205,7 @@ describe('Finalize When Paused', async () => {
       } else {
         it(`Is LOST after Finalize`, async () => {
           const partyStatus = await partyBid.partyStatus();
-          expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+          expect(partyStatus).to.equal(PARTY_STATUS.LOST);
         });
 
         it(`Does not own the NFT`, async () => {
