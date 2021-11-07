@@ -225,23 +225,6 @@ contract PartyBid is Party {
         emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty);
     }
 
-    /**
-     * @notice Calculate the total amount of a contributor's funds
-     * that were used towards the winning bid
-     * @dev always returns 0 until the party has been finalized
-     * @param _contributor the address of the contributor
-     * @return _total the sum of the contributor's funds that were
-     * used towards buying the token
-     * TODO: should we keep this to not remove old ABI function?
-     */
-    function totalEthUsedForBid(address _contributor)
-        external
-        view
-        returns (uint256 _total)
-    {
-        return totalEthUsed(_contributor);
-    }
-
     // ======== Public: Utility Calculations =========
 
     /**

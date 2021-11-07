@@ -427,15 +427,15 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         (uint256 _tokenSupply, uint256 _partyDAOAmount, uint256 _splitRecipientAmount) = _getTokenInflationAmounts(totalSpent);
         // deploy fractionalized NFT vault
         uint256 vaultNumber =
-        tokenVaultFactory.mint(
-            name,
-            symbol,
-            address(nftContract),
-            tokenId,
-            _tokenSupply,
-            _listPrice,
-            0
-        );
+            tokenVaultFactory.mint(
+                name,
+                symbol,
+                address(nftContract),
+                tokenId,
+                _tokenSupply,
+                _listPrice,
+                0
+            );
         // store token vault address to storage
         tokenVault = ITokenVault(tokenVaultFactory.vaults(vaultNumber));
         // transfer curator to null address (burn the curator role)
