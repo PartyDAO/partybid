@@ -7,7 +7,6 @@ async function deployTestContractSetup(
   secondsToTimeout,
   splitRecipient,
   splitBasisPoints,
-  reservePrice,
   tokenId,
   fakeMultisig = false,
 ) {

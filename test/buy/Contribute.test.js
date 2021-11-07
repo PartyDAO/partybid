@@ -10,40 +10,44 @@ const {
   contribute,
 } = require('../helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
-const { MARKETS } = require('./helpers/constants');
-const { testCases } = require('./testCases.json');
+const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../helpers/constants');
+const { testCases } = require('../bid/testCases.json'); // TODO: make own test cases
 
-describe('Bid: Contribute', async () => {
-  MARKETS.map((marketName) => {
-    describe(marketName, async () => {
+describe('Buy: Contribute', async () => {
       testCases.map((testCase, i) => {
         describe(`Case ${i}`, async () => {
           // get test case information
-          let partyBid;
-          const { splitRecipient, splitBasisPoints, auctionReservePrice, contributions } = testCase;
+          let partyBuy, signer, artist;
+          const { splitRecipient, splitBasisPoints, contributions } = testCase;
           const tokenId = 95;
+          const maxPrice = eth(100000000); // todo: add to test case
           const signers = provider.getWallets();
           let expectedTotalContributedToParty = 0;
           const expectedTotalContributed = initExpectedTotalContributed(
             signers,
           );
 
+
           before(async () => {
+            // GET RANDOM SIGNER & ARTIST
+            [signer, artist] = provider.getWallets();
+
             // DEPLOY PARTY BID CONTRACT
             const contracts = await deployTestContractSetup(
-              marketName,
               provider,
-              signers[0],
+              artist,
+              maxPrice,
+              FOURTY_EIGHT_HOURS_IN_SECONDS,
               splitRecipient,
               splitBasisPoints,
-              auctionReservePrice,
               tokenId,
             );
-            partyBid = contracts.partyBid;
+
+            partyBuy = contracts.partyBuy;
           });
 
           it('Does not accept a 0 contribution', async () => {
-            await expect(contribute(partyBid, signers[0], eth(0))).to.be.revertedWith("Party::contribute: must contribute more than 0");
+            await expect(contribute(partyBuy, signers[0], eth(0))).to.be.revertedWith("Party::contribute: must contribute more than 0");
           });
 
           // submit each contribution & check test conditions
@@ -52,7 +56,7 @@ describe('Bid: Contribute', async () => {
             const signer = signers[signerIndex];
 
             it('Starts with the correct contribution amount', async () => {
-              const totalContributed = await partyBid.totalContributed(
+              const totalContributed = await partyBuy.totalContributed(
                 signer.address,
               );
               expect(totalContributed).to.equal(
@@ -61,15 +65,15 @@ describe('Bid: Contribute', async () => {
             });
 
             it('Starts with correct *total* contribution amount', async () => {
-              const totalContributed = await partyBid.totalContributedToParty();
+              const totalContributed = await partyBuy.totalContributedToParty();
               expect(totalContributed).to.equal(
                 eth(expectedTotalContributedToParty),
               );
             });
 
             it('Accepts the contribution', async () => {
-              await expect(contribute(partyBid, signer, eth(amount))).to.emit(
-                partyBid,
+              await expect(contribute(partyBuy, signer, eth(amount))).to.emit(
+                partyBuy,
                 'Contributed',
               );
               // add to local expected variables
@@ -78,7 +82,7 @@ describe('Bid: Contribute', async () => {
             });
 
             it('Records the contribution amount', async () => {
-              const totalContributed = await partyBid.totalContributed(
+              const totalContributed = await partyBuy.totalContributed(
                 signer.address,
               );
               expect(totalContributed).to.equal(
@@ -87,19 +91,19 @@ describe('Bid: Contribute', async () => {
             });
 
             it('Records the *total* contribution amount', async () => {
-              const totalContributed = await partyBid.totalContributedToParty();
+              const totalContributed = await partyBuy.totalContributedToParty();
               expect(totalContributed).to.equal(
                 eth(expectedTotalContributedToParty),
               );
             });
 
             it('PartyBid ETH balance is total contributed to party', async () => {
-              const balance = await provider.getBalance(partyBid.address);
+              const balance = await provider.getBalance(partyBuy.address);
               expect(balance).to.equal(eth(expectedTotalContributedToParty));
             });
+
+            // TODO: add test for max contribution
           }
         });
       });
-    });
-  });
 });

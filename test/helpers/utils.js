@@ -82,6 +82,14 @@ async function emergencyForceLost(partyBidContract, signer) {
   });
 }
 
+function initExpectedTotalContributed(signers) {
+  const expectedTotalContributed = {};
+  signers.map((signer) => {
+    expectedTotalContributed[signer.address] = 0;
+  });
+  return expectedTotalContributed;
+}
+
 module.exports = {
   eth,
   weiToEth,
@@ -93,4 +101,5 @@ module.exports = {
   emergencyWithdrawEth,
   emergencyCall,
   emergencyForceLost,
+  initExpectedTotalContributed
 };

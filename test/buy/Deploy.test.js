@@ -11,7 +11,6 @@ const { PARTY_STATUS, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../helpers/cons
 describe('Buy: Deploy', async () => {
       const splitRecipient = "0x0000000000000000000000000000000000000000";
       const splitBasisPoints = 0;
-      const reservePrice = 1;
       const maxPrice = 10;
       const tokenId = 95;
       let partyBuy, partyDAOMultisig, signer, artist;
@@ -28,7 +27,6 @@ describe('Buy: Deploy', async () => {
           FOURTY_EIGHT_HOURS_IN_SECONDS,
           splitRecipient,
           splitBasisPoints,
-          reservePrice,
           tokenId,
         );
 
