@@ -31,8 +31,8 @@ contract PartyBuy is Party {
 
     // ============ Public Not-Mutated Storage ============
 
-    // the timestamp at which the Party can be canceled
-    uint256 public timeoutAt;
+    // the timestamp at which the Party is no longer active
+    uint256 public expiresAt;
 
     // ============ Public Mutable Storage ============
 
@@ -47,7 +47,7 @@ contract PartyBuy is Party {
     // emitted when the token is successfully bought
     event Bought(address triggeredBy, address targetAddress, uint256 ethPrice, uint256 ethFee, uint256 totalContributed);
 
-    // emitted if the Party fails to buy the token before timeoutAt
+    // emitted if the Party fails to buy the token before expiresAt
     // and someone closes the Party so folks can reclaim ETH
     event Closed();
 
@@ -79,7 +79,7 @@ contract PartyBuy is Party {
         tokenId = _tokenId;
         name = _name;
         symbol = _symbol;
-        timeoutAt = _secondsToTimeout + block.timestamp;
+        expiresAt = _secondsToTimeout + block.timestamp;
         require(_maxPrice > 0, "PartyBuy::initialize: must set price higher than 0");
         maxPrice = _maxPrice;
         // validate that party split won't retain the total token supply
@@ -158,14 +158,14 @@ contract PartyBuy is Party {
       * within the specified period of time, move to FAILED state
       * so users can reclaim their funds.
      * @dev Emits a Closed event upon finishing; reverts otherwise.
-     * callable by anyone after timeoutAt
+     * callable by anyone after expiresAt
      */
     function closeParty() external {
         require(
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::closeParty: party not active"
         );
-        require(timeoutAt <= block.timestamp, "PartyBuy::closeParty: party has not timed out");
+        require(expiresAt <= block.timestamp, "PartyBuy::closeParty: party has not timed out");
         require(_getOwner() != address(this), "PartyBuy::closeParty: contract owns token");
         // set partyStatus to LOST
         partyStatus = PartyStatus.LOST;
