@@ -470,7 +470,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      */
     function _ethUsed(uint256 _totalSpent, Contribution memory _contribution)
         internal
-        view
+        pure
         returns (uint256)
     {
         if (
