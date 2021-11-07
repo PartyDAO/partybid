@@ -48,6 +48,8 @@ async function deployTestContractSetup(
     secondsToTimeout,
     splitRecipient,
     splitBasisPoints,
+    "0x0000000000000000000000000000000000000000", // TODO: load this from test cases?
+    0,
     'Parrrrti',
     'PRTI',
   );

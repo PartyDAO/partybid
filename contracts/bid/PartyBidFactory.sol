@@ -25,6 +25,8 @@ contract PartyBidFactory {
         uint256 auctionId,
         address splitRecipient,
         uint256 splitBasisPoints,
+        address gatedToken,
+        uint256 gatedTokenAmount,
         string name,
         string symbol
     );
@@ -65,6 +67,8 @@ contract PartyBidFactory {
             _logicAuctionId,
             address(0),
             0,
+            address(0),
+            0,
             "PartyBid",
             "BID"
         );
@@ -81,18 +85,22 @@ contract PartyBidFactory {
         uint256 _auctionId,
         address _splitRecipient,
         uint256 _splitBasisPoints,
+        address _gatedToken,
+        uint256 _gatedTokenAmount,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBidProxy) {
         bytes memory _initializationCalldata =
             abi.encodeWithSignature(
-                "initialize(address,address,uint256,uint256,address,uint256,string,string)",
+                "initialize(address,address,uint256,uint256,address,uint256,address,uint256,string,string)",
                 _marketWrapper,
                 _nftContract,
                 _tokenId,
                 _auctionId,
                 _splitRecipient,
                 _splitBasisPoints,
+                _gatedToken,
+                _gatedTokenAmount,
                 _name,
                 _symbol
             );
@@ -115,6 +123,8 @@ contract PartyBidFactory {
             _auctionId,
             _splitRecipient,
             _splitBasisPoints,
+            _gatedToken,
+            _gatedTokenAmount,
             _name,
             _symbol
         );

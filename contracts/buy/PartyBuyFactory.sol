@@ -20,6 +20,8 @@ contract PartyBuyFactory {
         uint256 secondsToTimeout,
         address splitRecipient,
         uint256 splitBasisPoints,
+        address gatedToken,
+        uint256 gatedTokenAmount,
         string name,
         string symbol
     );
@@ -58,6 +60,8 @@ contract PartyBuyFactory {
             1,
             address(0),
             0,
+            address(0),
+            0,
             "PartyBuy",
             "BUY"
         );
@@ -74,18 +78,22 @@ contract PartyBuyFactory {
         uint256 _secondsToTimeout,
         address _splitRecipient,
         uint256 _splitBasisPoints,
+        address _gatedToken,
+        uint256 _gatedTokenAmount,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBuyProxy) {
         bytes memory _initializationCalldata =
             abi.encodeWithSignature(
-            "initialize(address,uint256,uint256,uint256,address,uint256,string,string)",
+            "initialize(address,uint256,uint256,uint256,address,uint256,address,uint256,string,string)",
             _nftContract,
             _tokenId,
             _maxPrice,
             _secondsToTimeout,
             _splitRecipient,
             _splitBasisPoints,
+            _gatedToken,
+            _gatedTokenAmount,
             _name,
             _symbol
         );
@@ -108,6 +116,8 @@ contract PartyBuyFactory {
             _secondsToTimeout,
             _splitRecipient,
             _splitBasisPoints,
+            _gatedToken,
+            _gatedTokenAmount,
             _name,
             _symbol
         );

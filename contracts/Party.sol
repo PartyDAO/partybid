@@ -36,6 +36,9 @@ import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
 import {
 IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import {
+IERC20
+} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IWETH} from "./external/interfaces/IWETH.sol";
 
 contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
@@ -86,6 +89,12 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // percent of the total token supply
     // taken by the splitRecipient
     uint256 public splitBasisPoints;
+    // address of token that users need to hold to contribute
+    // address(0) if party is not token gated
+    IERC20 public gatedToken;
+    // amount of token that users need to hold to contribute
+    // 0 if party is not token gated
+    uint256 public gatedTokenAmount;
     // ERC-20 name and symbol for fractional tokens
     string public name;
     string public symbol;
@@ -151,6 +160,8 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         uint256 _tokenId,
         address _splitRecipient,
         uint256 _splitBasisPoints,
+        address _gatedToken,
+        uint256 _gatedTokenAmount,
         string memory _name,
         string memory _symbol
     ) internal {
@@ -166,6 +177,9 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             splitBasisPoints = _splitBasisPoints;
             splitRecipient = _splitRecipient;
         }
+        // TODO: validate that gatedToken is a contract
+        gatedToken = IERC20(_gatedToken);
+        gatedTokenAmount = _gatedTokenAmount;
         // initialize ReentrancyGuard and ERC721Holder
         __ReentrancyGuard_init();
         __ERC721Holder_init();
@@ -182,6 +196,9 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @dev Emits a Contributed event upon success; callable by anyone
      */
     function _contribute() internal {
+        if (address(gatedToken) != address(0)) {
+            require(gatedToken.balanceOf(msg.sender) >= gatedTokenAmount, "Party::contribute: must hold tokens to contribute");
+        }
         require(
             partyStatus == PartyStatus.ACTIVE,
             "Party::contribute: party not active"
