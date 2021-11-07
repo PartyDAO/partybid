@@ -5,6 +5,7 @@
   "marketWrappers": {
     "foundation": "0x96e5b0519983f2f984324b926e6d28C3A4Eb92A1",
     "zora": "0x11c07cE1315a3b92C9755F90cDF40B04b88c5731",
-    "nouns": "0x9319DAd8736D752C5c72DB229f8e1b280DC80ab1"
+    "nouns": "0x9319DAd8736D752C5c72DB229f8e1b280DC80ab1",
+    "koans": "0xe761685c3E5Af758fc905CfdaC8Ca9f767CF84D7"
   }
 }

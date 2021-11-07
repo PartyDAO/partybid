@@ -142,6 +142,43 @@ async function deployNounsMarketWrapper() {
     console.log(`Nouns Market Wrapper written to ${filename}`);
 }
 
+async function deployKoansMarketWrapper() {
+    // load .env
+    const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
+
+    // load config.json
+    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const {koansAuctionHouse} = config;
+    if (!koansAuctionHouse) {
+        throw new Error("Must populate config with Koans Auction House address");
+    }
+
+    // setup deployer wallet
+    const deployer = getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY);
+
+    // Deploy Nouns Market Wrapper
+    console.log(`Deploy Koans Market Wrapper to ${CHAIN_NAME}`);
+    const koansMarketWrapper = await deploy(deployer,'KoansMarketWrapper', [koansAuctionHouse]);
+    console.log(`Deployed Koans Market Wrapper to ${CHAIN_NAME}: `, koansMarketWrapper.address);
+
+    // get the existing deployed addresses
+    let {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+
+    // update the nouns market wrapper address
+    if (contractAddresses["marketWrappers"]) {
+        contractAddresses["marketWrappers"]["koans"] = koansMarketWrapper.address;
+    } else {
+        contractAddresses["marketWrappers"] = {
+            koans: koansMarketWrapper.address
+        };
+    }
+
+    // write the updated object
+    writeDeployedAddresses(directory, filename, contractAddresses);
+
+    console.log(`Koans Market Wrapper written to ${filename}`);
+}
+
 async function deployPartyBidFactory() {
     // load .env
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
