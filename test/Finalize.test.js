@@ -122,8 +122,8 @@ describe('Finalize', async () => {
             await expect(partyBid.getClaimAmounts(signers[0].address)).to.be.revertedWith("Party::getClaimAmounts: party still active; amounts undetermined");
           });
 
-          it('Doesnt allow totalEthUsedForBid before Finalize', async () => {
-            await expect(partyBid.totalEthUsedForBid(signers[0].address)).to.be.revertedWith("Party::totalEthUsed: party still active; amounts undetermined");
+          it('Doesnt allow totalEthUsed before Finalize', async () => {
+            await expect(partyBid.totalEthUsed(signers[0].address)).to.be.revertedWith("Party::totalEthUsed: party still active; amounts undetermined");
           });
 
           it('Does allow Finalize after the auction is over', async () => {

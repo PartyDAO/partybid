@@ -95,8 +95,8 @@ describe('Claim', async () => {
               expect(weiToEth(ethClaimAmount)).to.equal(excessEth);
             });
 
-            it('Gives the correct value for totalEthUsedForBid before claim is called', async () => {
-              const totalEthUsed = await partyBid.totalEthUsedForBid(contributor.address);
+            it('Gives the correct value for totalEthUsed before claim is called', async () => {
+              const totalEthUsed = await partyBid.totalEthUsed(contributor.address);
               const expectedEthUsed = (new BigNumber(totalContributed)).minus(excessEth);
               expect(weiToEth(totalEthUsed)).to.equal(expectedEthUsed.toNumber());
             });
@@ -150,8 +150,8 @@ describe('Claim', async () => {
               expect(weiToEth(ethClaimAmount)).to.equal(excessEth);
             });
 
-            it('Gives the same value for totalEthUsedForBid after claim is called', async () => {
-              const totalEthUsed = await partyBid.totalEthUsedForBid(contributor.address);
+            it('Gives the same value for totalEthUsed after claim is called', async () => {
+              const totalEthUsed = await partyBid.totalEthUsed(contributor.address);
               const expectedEthUsed = (new BigNumber(totalContributed)).minus(excessEth);
               expect(weiToEth(totalEthUsed)).to.equal(expectedEthUsed.toNumber());
             });
@@ -168,9 +168,9 @@ describe('Claim', async () => {
             expect(ethClaimAmount).to.equal(0);
           });
 
-          it('Gives the zero for totalEthUsedForBid for non-contributor', async () => {
+          it('Gives the zero for totalEthUsed for non-contributor', async () => {
             const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
-            const totalEthUsed = await partyBid.totalEthUsedForBid(randomAddress);
+            const totalEthUsed = await partyBid.totalEthUsed(randomAddress);
             expect(totalEthUsed).to.equal(0);
           });
 
