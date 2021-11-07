@@ -57,7 +57,8 @@
       "finalBid": {
         "ZORA": 1.575,
         "FOUNDATION": 1.65,
-        "NOUNS": 1.575
+        "NOUNS": 1.575,
+        "KOANS": 1.575
       },
       "claims": {
         "ZORA": [
@@ -89,6 +90,20 @@
           }
         ],
         "NOUNS": [
+          {
+            "signerIndex": 0,
+            "tokens": 1500,
+            "excessEth": 1,
+            "totalContributed": 2.5
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 114.375,
+            "excessEth": 2.385625,
+            "totalContributed": 2.5
+          }
+        ],
+        "KOANS": [
           {
             "signerIndex": 0,
             "tokens": 1500,
@@ -144,7 +159,8 @@
       "finalBid": {
         "ZORA": 10.5,
         "FOUNDATION": 11,
-        "NOUNS": 10.5
+        "NOUNS": 10.5,
+        "KOANS": 10.5
       },
       "claims": {
         "ZORA": [
@@ -188,6 +204,20 @@
             "excessEth": 89.2375,
             "totalContributed": 94.5
           }
+        ],
+        "KOANS": [
+          {
+            "signerIndex": 0,
+            "tokens": 5500,
+            "excessEth": 0,
+            "totalContributed": 5.5
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 5262.5,
+            "excessEth": 89.2375,
+            "totalContributed": 94.5
+          }
         ]
       }
     },
@@ -219,7 +249,8 @@
       "finalBid": {
         "ZORA": 0,
         "FOUNDATION": 0,
-        "NOUNS": 0
+        "NOUNS": 0,
+        "KOANS": 0
       },
       "claims": {
         "ZORA": [
@@ -251,6 +282,20 @@
           }
         ],
         "NOUNS": [
+          {
+            "signerIndex": 1,
+            "tokens": 0,
+            "excessEth": 5,
+            "totalContributed": 5
+          },
+          {
+            "signerIndex": 0,
+            "tokens": 0,
+            "excessEth": 5,
+            "totalContributed": 5
+          }
+        ],
+        "KOANS": [
           {
             "signerIndex": 1,
             "tokens": 0,
@@ -298,7 +343,8 @@
       "finalBid": {
         "ZORA": 10.5,
         "FOUNDATION": 11,
-        "NOUNS": 10.5
+        "NOUNS": 10.5,
+        "KOANS": 10.5
       },
       "claims": {
         "ZORA": [
@@ -342,6 +388,20 @@
             "excessEth": 10,
             "totalContributed": 10
           }
+        ],
+        "KOANS": [
+          {
+            "signerIndex": 0,
+            "tokens": 10762.5,
+            "excessEth": 0.5125,
+            "totalContributed": 11.275
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 0,
+            "excessEth": 10,
+            "totalContributed": 10
+          }
         ]
       }
     },
@@ -369,7 +429,8 @@
       "finalBid": {
         "ZORA": 1.05,
         "FOUNDATION": 1.1,
-        "NOUNS": 1.05
+        "NOUNS": 1.05,
+        "KOANS": 1.05
       },
       "claims": {
         "ZORA": [
@@ -389,6 +450,14 @@
           }
         ],
         "NOUNS": [
+          {
+            "signerIndex": 1,
+            "tokens": 1076.25,
+            "excessEth": 0.92375,
+            "totalContributed": 2
+          }
+        ],
+        "KOANS": [
           {
             "signerIndex": 1,
             "tokens": 1076.25,
@@ -438,7 +507,8 @@
       "finalBid": {
         "ZORA": 10.5,
         "FOUNDATION": 11,
-        "NOUNS": 10.5
+        "NOUNS": 10.5,
+        "KOANS": 10.5
       },
       "claims": {
         "ZORA": [
@@ -470,6 +540,20 @@
           }
         ],
         "NOUNS": [
+          {
+            "signerIndex": 0,
+            "tokens": 5500,
+            "excessEth": 0,
+            "totalContributed": 5.5
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 5262.5,
+            "excessEth": 89.2375,
+            "totalContributed": 94.5
+          }
+        ],
+        "KOANS": [
           {
             "signerIndex": 0,
             "tokens": 5500,
@@ -525,7 +609,8 @@
       "finalBid": {
         "ZORA": 10.5,
         "FOUNDATION": 11,
-        "NOUNS": 10.5
+        "NOUNS": 10.5,
+        "KOANS": 10.5
       },
       "claims": {
         "ZORA": [
@@ -569,6 +654,20 @@
             "excessEth": 89.2375,
             "totalContributed": 94.5
           }
+        ],
+        "KOANS": [
+          {
+            "signerIndex": 0,
+            "tokens": 5500,
+            "excessEth": 0,
+            "totalContributed": 5.5
+          },
+          {
+            "signerIndex": 1,
+            "tokens": 5262.5,
+            "excessEth": 89.2375,
+            "totalContributed": 94.5
+          }
         ]
       }
     },
@@ -600,7 +699,8 @@
       "finalBid": {
         "ZORA": 0,
         "FOUNDATION": 0,
-        "NOUNS": 0
+        "NOUNS": 0,
+        "KOANS": 0
       },
       "claims": {
         "ZORA": [
@@ -632,6 +732,20 @@
           }
         ],
         "NOUNS": [
+          {
+            "signerIndex": 1,
+            "tokens": 0,
+            "excessEth": 5,
+            "totalContributed": 5
+          },
+          {
+            "signerIndex": 0,
+            "tokens": 0,
+            "excessEth": 5,
+            "totalContributed": 5
+          }
+        ],
+        "KOANS": [
           {
             "signerIndex": 1,
             "tokens": 0,

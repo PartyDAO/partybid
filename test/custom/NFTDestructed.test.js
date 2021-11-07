@@ -19,7 +19,7 @@ const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 
 describe('NFT Contract Self-Destructed', async () => {
     // The Nouns NFT contract cannot self-destruct
-    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS).map((marketName) => {
+    MARKETS.filter(m => m !== MARKET_NAMES.NOUNS && m !== MARKET_NAMES.KOANS).map((marketName) => {
         describe(marketName, async () => {
             // instantiate test vars
             let partyBid,
