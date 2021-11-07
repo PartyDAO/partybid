@@ -212,14 +212,11 @@ contract PartyBid is Party {
         uint256 _ethFee;
         // if the auction was won,
         if (partyStatus == PartyStatus.WON) {
-            // calculate PartyDAO fee & record total spent
-            _ethFee = _getEthFee(highestBid);
-            totalSpent = highestBid + _ethFee;
-            // transfer ETH fee to PartyDAO
-            _transferETHOrWETH(partyDAOMultisig, _ethFee);
-            // deploy fractionalized NFT vault
-            // and mint fractional ERC-20 tokens
-            _fractionalizeNFT(highestBid);
+            // record totalSpent,
+            // send ETH fees to PartyDAO,
+            // fractionalize the Token
+            // send Token fees to PartyDAO & split proceeds to split recipient
+            _ethFee = _closeSuccessfulParty(highestBid);
         }
         // set the contract status & emit result
         emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty);

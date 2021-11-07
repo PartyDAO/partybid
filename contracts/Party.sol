@@ -355,6 +355,17 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     // ============ Internal ============
 
+    function _closeSuccessfulParty(uint256 _nftCost) internal returns (uint256 _ethFee) {
+        // calculate PartyDAO fee & record total spent
+        _ethFee = _getEthFee(_nftCost);
+        totalSpent = _nftCost + _ethFee;
+        // transfer ETH fee to PartyDAO
+        _transferETHOrWETH(partyDAOMultisig, _ethFee);
+        // deploy fractionalized NFT vault
+        // and mint fractional ERC-20 tokens
+        _fractionalizeNFT(_nftCost);
+    }
+
     /**
      * @notice Calculate ETH fee for PartyDAO
      * NOTE: Remove this fee causes a critical vulnerability
