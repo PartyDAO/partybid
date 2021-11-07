@@ -54,7 +54,7 @@ contract PartyBuyFactory {
         _logicContract.initialize(
             _logicNftContract,
             _logicTokenId,
-            1,
+            100,
             1,
             address(0),
             0,

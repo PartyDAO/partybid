@@ -70,7 +70,7 @@ contract PartyBuy is Party {
         uint256 _splitBasisPoints,
         string memory _name,
         string memory _symbol
-    ) external {
+    ) external initializer {
         // initialize ReentrancyGuard and ERC721Holder
         __ReentrancyGuard_init();
         __ERC721Holder_init();
@@ -80,7 +80,7 @@ contract PartyBuy is Party {
         name = _name;
         symbol = _symbol;
         timeoutAt = _secondsToTimeout + block.timestamp;
-        require(maxPrice > 0, "PartyBuy::initialize: must set price higher than 0");
+        require(_maxPrice > 0, "PartyBuy::initialize: must set price higher than 0");
         maxPrice = _maxPrice;
         // validate that party split won't retain the total token supply
         uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
