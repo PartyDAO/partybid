@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.5;
 
-import {InitializedProxy} from "./InitializedProxy.sol";
+import {NonReceivableInitializedProxy} from "./NonReceivableInitializedProxy.sol";
 import {PartyBuy} from "./PartyBuy.sol";
 
 /**
@@ -91,7 +91,7 @@ contract PartyBuyFactory {
         );
 
         partyBuyProxy = address(
-            new InitializedProxy(
+            new NonReceivableInitializedProxy(
                 logic,
                 _initializationCalldata
             )
