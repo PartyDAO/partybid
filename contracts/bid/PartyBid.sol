@@ -32,16 +32,16 @@ import {
 // ============ External Imports: External Contracts & Contract Interfaces ============
 import {
     IERC721VaultFactory
-} from "./external/interfaces/IERC721VaultFactory.sol";
-import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
+} from "../external/interfaces/IERC721VaultFactory.sol";
+import {ITokenVault} from "../external/interfaces/ITokenVault.sol";
 import {
     IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {IWETH} from "./external/interfaces/IWETH.sol";
+import {IWETH} from "../external/interfaces/IWETH.sol";
 
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./market-wrapper/IMarketWrapper.sol";
-import {Party} from "./Party.sol";
+import {Party} from "../Party.sol";
 
 contract PartyBid is Party {
     // partyStatus Transitions:

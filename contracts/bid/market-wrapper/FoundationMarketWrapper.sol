@@ -2,7 +2,7 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports ============
-import {IFoundationMarket} from "../external/interfaces/IFoundationMarket.sol";
+import {IFoundationMarket} from "../../external/interfaces/IFoundationMarket.sol";
 
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./IMarketWrapper.sol";

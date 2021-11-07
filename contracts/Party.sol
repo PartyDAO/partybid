@@ -38,9 +38,6 @@ IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {IWETH} from "./external/interfaces/IWETH.sol";
 
-// ============ Internal Imports ============
-import {IMarketWrapper} from "./market-wrapper/IMarketWrapper.sol";
-
 contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Enums ============
 

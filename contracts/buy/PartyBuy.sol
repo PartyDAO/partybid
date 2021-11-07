@@ -12,11 +12,11 @@ import {
 ERC721HolderUpgradeable
 } from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
-import {IERC721VaultFactory} from "./external/interfaces/IERC721VaultFactory.sol";
-import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
+import {IERC721VaultFactory} from "../external/interfaces/IERC721VaultFactory.sol";
+import {ITokenVault} from "../external/interfaces/ITokenVault.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {IWETH} from "./external/interfaces/IWETH.sol";
-import {Party} from "./Party.sol";
+import {IWETH} from "../external/interfaces/IWETH.sol";
+import {Party} from "../Party.sol";
 
 contract PartyBuy is Party {
     // partyStatus Transitions:

@@ -7,7 +7,7 @@ import "./OpenZeppelin/utils/Pausable.sol";
 import "./OpenZeppelin/token/ERC721/ERC721.sol";
 import "./OpenZeppelin/token/ERC721/ERC721Holder.sol";
 
-import {InitializedProxy} from "../../InitializedProxy.sol";
+import {InitializedProxy} from "../../bid/InitializedProxy.sol";
 import "./Settings.sol";
 import "./ERC721TokenVault.sol";
 

@@ -2,7 +2,7 @@
 pragma solidity 0.8.5;
 
 // ============ External Imports ============
-import {INounsAuctionHouse} from "../external/interfaces/INounsAuctionHouse.sol";
+import {INounsAuctionHouse} from "../../external/interfaces/INounsAuctionHouse.sol";
 
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./IMarketWrapper.sol";

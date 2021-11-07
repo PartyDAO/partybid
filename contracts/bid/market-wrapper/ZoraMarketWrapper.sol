@@ -3,7 +3,7 @@ pragma solidity 0.8.5;
 
 // ============ External Imports ============
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {IZoraAuctionHouse} from "../external/interfaces/IZoraAuctionHouse.sol";
+import {IZoraAuctionHouse} from "../../external/interfaces/IZoraAuctionHouse.sol";
 
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./IMarketWrapper.sol";
