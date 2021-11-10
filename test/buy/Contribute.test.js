@@ -11,22 +11,20 @@ const {
 } = require('../helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
 const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../helpers/constants');
-const { testCases } = require('../bid/testCases.json'); // TODO: make own test cases
+const { testCases } = require('./testCases.json');
 
 describe('Buy: Contribute', async () => {
       testCases.map((testCase, i) => {
         describe(`Case ${i}`, async () => {
           // get test case information
           let partyBuy, signer, artist;
-          const { splitRecipient, splitBasisPoints, contributions } = testCase;
+          const { splitRecipient, splitBasisPoints, contributions, maxPrice } = testCase;
           const tokenId = 95;
-          const maxPrice = eth(100000000); // todo: add to test case
           const signers = provider.getWallets();
           let expectedTotalContributedToParty = 0;
           const expectedTotalContributed = initExpectedTotalContributed(
             signers,
           );
-
 
           before(async () => {
             // GET RANDOM SIGNER & ARTIST
@@ -36,7 +34,7 @@ describe('Buy: Contribute', async () => {
             const contracts = await deployTestContractSetup(
               provider,
               artist,
-              maxPrice,
+              eth(maxPrice),
               FOURTY_EIGHT_HOURS_IN_SECONDS,
               splitRecipient,
               splitBasisPoints,

@@ -15,16 +15,17 @@ const {
   contribute,
 } = require('../helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
-const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
+const { deployTestContractSetup } = require('./helpers/deploy');
+const { getTokenVault } = require('../helpers/deploy');
 const {
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
   ETH_FEE_BASIS_POINTS,
+  TOKEN_FEE_BASIS_POINTS,
   TOKEN_SCALE,
   RESALE_MULTIPLIER
 } = require('../helpers/constants');
 const { MARKETS } = require('./helpers/constants');
-const { TOKEN_FEE_BASIS_POINTS } = require('../helpers/constants');
 const { testCases } = require('./testCases.json');
 
 describe('Bid: Finalize', async () => {

@@ -103,6 +103,8 @@ contract PartyBuy is Party {
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::buy: party not active"
         );
+        // check that value is not zero (else, token will be burned in TokenVault)
+        require(_value > 0, "PartyBuy::buy: can't spend zero");
         // check that value is not more than the maximum price set at deploy time
         require(_value <= maxPrice, "PartyBuy::buy: can't spend over max price");
         // check that value is not more than

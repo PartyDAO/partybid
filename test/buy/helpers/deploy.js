@@ -1,4 +1,4 @@
-const { deploy } = require('../../helpers/deploy');
+const { deploy, getTokenVault } = require('../../helpers/deploy');
 
 async function deployTestContractSetup(
   provider,
@@ -94,4 +94,5 @@ async function getPartyBuyContractFromEventLogs(
 
 module.exports = {
   deployTestContractSetup,
+  getTokenVault,
 };

@@ -1,0 +1,262 @@
+{
+  "testCases": [
+    {
+      "maxPrice": 5,
+      "splitRecipient": "0x0000000000000000000000000000000000000000",
+      "splitBasisPoints": 0,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 0.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 1
+        },
+        {
+          "signerIndex": 0,
+          "amount": 1
+        },
+        {
+          "signerIndex": 1,
+          "amount": 0.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 1
+        }
+      ],
+      "amountSpent": 1.575,
+      "claims": [
+        {
+          "signerIndex": 0,
+          "tokens": 1500,
+          "excessEth": 1,
+          "totalContributed": 2.5
+        },
+        {
+          "signerIndex": 1,
+          "tokens": 114.375,
+          "excessEth": 2.385625,
+          "totalContributed": 2.5
+        }
+      ]
+    },
+    {
+      "maxPrice": 97.5609756098,
+      "splitRecipient": "0x0000000000000000000000000000000000000000",
+      "splitBasisPoints": 0,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 89
+        }
+      ],
+      "amountSpent": 10.5,
+      "claims": [
+        {
+          "signerIndex": 0,
+          "tokens": 5500,
+          "excessEth": 0,
+          "totalContributed": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "tokens": 5262.5,
+          "excessEth": 89.2375,
+          "totalContributed": 94.5
+        }
+      ]
+    },
+    {
+      "maxPrice": 10,
+      "splitRecipient": "0x0000000000000000000000000000000000000000",
+      "splitBasisPoints": 0,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 5
+        }
+      ],
+      "amountSpent": 0,
+      "claims": [
+        {
+          "signerIndex": 1,
+          "tokens": 0,
+          "excessEth": 5,
+          "totalContributed": 5
+        },
+        {
+          "signerIndex": 0,
+          "tokens": 0,
+          "excessEth": 5,
+          "totalContributed": 5
+        }
+      ]
+    },
+    {
+      "maxPrice": 25,
+      "splitRecipient": "0x0000000000000000000000000000000000000000",
+      "splitBasisPoints": 0,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 11.275
+        },
+        {
+          "signerIndex": 1,
+          "amount": 10
+        }
+      ],
+      "amountSpent": 10.5,
+      "claims": [
+        {
+          "signerIndex": 0,
+          "tokens": 10762.5,
+          "excessEth": 0.5125,
+          "totalContributed": 11.275
+        },
+        {
+          "signerIndex": 1,
+          "tokens": 0,
+          "excessEth": 10,
+          "totalContributed": 10
+        }
+      ]
+    },
+    {
+      "maxPrice": 4,
+      "splitRecipient": "0x0000000000000000000000000000000000000000",
+      "splitBasisPoints": 0,
+      "contributions": [
+        {
+          "signerIndex": 1,
+          "amount": 2
+        }
+      ],
+      "amountSpent": 1.05,
+      "claims": [
+        {
+          "signerIndex": 1,
+          "tokens": 1076.25,
+          "excessEth": 0.92375,
+          "totalContributed": 2
+        }
+      ]
+    },
+    {
+      "maxPrice": 110,
+      "splitRecipient": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "splitBasisPoints": 600,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 89
+        }
+      ],
+      "amountSpent": 10.5,
+      "claims": [
+        {
+          "signerIndex": 0,
+          "tokens": 5500,
+          "excessEth": 0,
+          "totalContributed": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "tokens": 5262.5,
+          "excessEth": 89.2375,
+          "totalContributed": 94.5
+        }
+      ]
+    },
+    {
+      "maxPrice": 1000,
+      "splitRecipient": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "splitBasisPoints": 9749,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 89
+        }
+      ],
+      "amountSpent": 10.5,
+      "claims": [
+        {
+          "signerIndex": 0,
+          "tokens": 5500,
+          "excessEth": 0,
+          "totalContributed": 5.5
+        },
+        {
+          "signerIndex": 1,
+          "tokens": 5262.5,
+          "excessEth": 89.2375,
+          "totalContributed": 94.5
+        }
+      ]
+    },
+    {
+      "maxPrice": 10,
+      "splitRecipient": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "splitBasisPoints": 9749,
+      "contributions": [
+        {
+          "signerIndex": 0,
+          "amount": 5
+        },
+        {
+          "signerIndex": 1,
+          "amount": 5
+        }
+      ],
+      "amountSpent": 0,
+      "claims": [
+        {
+          "signerIndex": 1,
+          "tokens": 0,
+          "excessEth": 5,
+          "totalContributed": 5
+        },
+        {
+          "signerIndex": 0,
+          "tokens": 0,
+          "excessEth": 5,
+          "totalContributed": 5
+        }
+      ]
+    }
+  ]
+}

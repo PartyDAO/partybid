@@ -23,7 +23,7 @@ describe('Buy: Deploy', async () => {
         const contracts = await deployTestContractSetup(
           provider,
           artist,
-          maxPrice,
+          eth(maxPrice),
           FOURTY_EIGHT_HOURS_IN_SECONDS,
           splitRecipient,
           splitBasisPoints,
@@ -52,6 +52,11 @@ describe('Buy: Deploy', async () => {
       it('Total contributed to party is zero', async () => {
         const totalContributedToParty = await partyBuy.totalContributedToParty();
         expect(totalContributedToParty).to.equal(eth(0));
+      });
+
+      it('MaxPrice is set', async () => {
+        const max = await partyBuy.maxPrice();
+        expect(max).to.equal(eth(maxPrice));
       });
 
       it('Total Contributed is zero for random account', async () => {
