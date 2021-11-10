@@ -133,13 +133,13 @@ contract PartyBuy is Party {
      * @dev Emits a Expired event upon finishing; reverts otherwise.
      * callable by anyone after expiresAt
      */
-    function expireParty() external nonReentrant {
+    function expire() external nonReentrant {
         require(
             partyStatus == PartyStatus.ACTIVE,
-            "PartyBuy::expireParty: party not active"
+            "PartyBuy::expire: party not active"
         );
-        require(expiresAt <= block.timestamp, "PartyBuy::expireParty: party has not timed out");
-        require(_getOwner() != address(this), "PartyBuy::expireParty: contract owns token");
+        require(expiresAt <= block.timestamp, "PartyBuy::expire: party has not timed out");
+        require(_getOwner() != address(this), "PartyBuy::expire: contract owns token");
         // set partyStatus to LOST
         partyStatus = PartyStatus.LOST;
         // emit Expired event
