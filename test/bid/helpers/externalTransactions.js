@@ -1,4 +1,4 @@
-const { encodeData } = require('./utils');
+const { encodeData } = require('../../helpers/utils');
 const { MARKET_NAMES } = require('./constants');
 
 async function placeBid(signer, marketContract, auctionId, value, marketName) {

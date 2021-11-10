@@ -1,4 +1,5 @@
 const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../../helpers/constants');
+const { encodeData } = require('../../helpers/utils');
 
 async function bidThroughParty(partyBidContract, signer) {
   const data = encodeData(partyBidContract, 'bid');

@@ -4,9 +4,10 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth } = require('./helpers/utils');
+const { eth } = require('../helpers/utils');
 const { deployTestContractSetup } = require('./helpers/deploy');
-const { PARTY_STATUS, MARKETS } = require('./helpers/constants');
+const { PARTY_STATUS } = require('../helpers/constants');
+const { MARKETS } = require('./helpers/constants');
 
 describe('Bid: Deploy', async () => {
   MARKETS.map((marketName) => {
@@ -79,12 +80,12 @@ describe('Bid: Deploy', async () => {
       });
 
       it('Name is Parrrrti', async () => {
-        const name = await partyBuy.name();
+        const name = await partyBid.name();
         expect(name).to.equal("Parrrrti");
       });
 
       it('Symbol is PRTI', async () => {
-        const symbol = await partyBuy.symbol();
+        const symbol = await partyBid.symbol();
         expect(symbol).to.equal("PRTI");
       });
     });

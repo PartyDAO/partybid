@@ -23,7 +23,8 @@ const {
   TOKEN_SCALE,
   RESALE_MULTIPLIER
 } = require('../helpers/constants');
-const { MARKETS, TOKEN_FEE_BASIS_POINTS } = require('./helpers/constants');
+const { MARKETS } = require('./helpers/constants');
+const { TOKEN_FEE_BASIS_POINTS } = require('../helpers/constants');
 const { testCases } = require('./testCases.json');
 
 describe('Bid: Finalize', async () => {
