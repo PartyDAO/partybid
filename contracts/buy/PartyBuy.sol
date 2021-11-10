@@ -33,9 +33,6 @@ contract PartyBuy is Party {
 
     // the timestamp at which the Party is no longer active
     uint256 public expiresAt;
-
-    // ============ Public Mutable Storage ============
-
     // the maximum price that the party is willing to
     // spend on the token
     // NOTE: the party can spend *UP TO* 102.5% of maxPrice in total,
@@ -45,11 +42,11 @@ contract PartyBuy is Party {
     // ============ Events ============
 
     // emitted when the token is successfully bought
-    event Bought(address triggeredBy, address targetAddress, uint256 ethPrice, uint256 ethFee, uint256 totalContributed);
+    event Bought(address triggeredBy, address targetAddress, uint256 ethSpent, uint256 ethFeePaid, uint256 totalContributed);
 
     // emitted if the Party fails to buy the token before expiresAt
-    // and someone closes the Party so folks can reclaim ETH
-    event Closed();
+    // and someone expires the Party so folks can reclaim ETH
+    event Expired(address triggeredBy);
 
     // ======== Constructor =========
 
@@ -113,7 +110,7 @@ contract PartyBuy is Party {
         require(_value <= getMaximumSpend(), "PartyBuy::buy: insuffucient funds to buy token plus fee");
         // execute the calldata on the target contract
         address(_targetContract).call{value: _value}(_calldata);
-        // NOTE: we don't are if the call succeeded
+        // NOTE: we don't care if the call succeeded
         // as long as the NFT is owned by the Party
         require(_getOwner() == address(this), "PartyBuy::buy: failed to buy token");
         // set partyStatus to WON
@@ -133,20 +130,20 @@ contract PartyBuy is Party {
      * @notice If the token couldn't be successfully bought
       * within the specified period of time, move to FAILED state
       * so users can reclaim their funds.
-     * @dev Emits a Closed event upon finishing; reverts otherwise.
+     * @dev Emits a Expired event upon finishing; reverts otherwise.
      * callable by anyone after expiresAt
      */
-    function closeParty() external {
+    function expireParty() external nonReentrant {
         require(
             partyStatus == PartyStatus.ACTIVE,
-            "PartyBuy::closeParty: party not active"
+            "PartyBuy::expireParty: party not active"
         );
-        require(expiresAt <= block.timestamp, "PartyBuy::closeParty: party has not timed out");
-        require(_getOwner() != address(this), "PartyBuy::closeParty: contract owns token");
+        require(expiresAt <= block.timestamp, "PartyBuy::expireParty: party has not timed out");
+        require(_getOwner() != address(this), "PartyBuy::expireParty: contract owns token");
         // set partyStatus to LOST
         partyStatus = PartyStatus.LOST;
-        // emit Closed event
-        emit Closed();
+        // emit Expired event
+        emit Expired(msg.sender);
     }
 
     // ============ Internal ============
