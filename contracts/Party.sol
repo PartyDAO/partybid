@@ -437,15 +437,15 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     * @return _owner the owner of the NFT
     */
     function _getOwner() internal view returns (address _owner) {
-        (bool success, bytes memory returnData) =
-        address(nftContract).staticcall(
-            abi.encodeWithSignature(
-                "ownerOf(uint256)",
-                tokenId
-            )
+        (bool _success, bytes memory _returnData) =
+            address(nftContract).staticcall(
+                abi.encodeWithSignature(
+                    "ownerOf(uint256)",
+                    tokenId
+                )
         );
-        if (success && returnData.length > 0) {
-            _owner = abi.decode(returnData, (address));
+        if (_success && _returnData.length > 0) {
+            _owner = abi.decode(_returnData, (address));
         }
     }
 
