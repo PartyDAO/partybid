@@ -92,36 +92,20 @@ contract PartyBid is Party {
         string memory _name,
         string memory _symbol
     ) external initializer {
-        // initialize ReentrancyGuard and ERC721Holder
-        __ReentrancyGuard_init();
-        __ERC721Holder_init();
-        // set storage variables
-        marketWrapper = IMarketWrapper(_marketWrapper);
-        nftContract = IERC721Metadata(_nftContract);
-        tokenId = _tokenId;
-        auctionId = _auctionId;
-        name = _name;
-        symbol = _symbol;
-        // validate that party split won't retain the total token supply
-        uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
-        require(_splitBasisPoints < _remainingBasisPoints, "PartyBid::initialize: basis points can't take 100%");
-        // validate that a portion of the token supply is not being burned
-        if (_splitRecipient == address(0)) {
-            require(_splitBasisPoints == 0, "PartyBid::initialize: can't send tokens to burn addr");
-        }
-        splitBasisPoints = _splitBasisPoints;
-        splitRecipient = _splitRecipient;
-        // validate token exists
-        require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // validate auction exists
         require(
-            marketWrapper.auctionIdMatchesToken(
+            IMarketWrapper(_marketWrapper).auctionIdMatchesToken(
                 _auctionId,
                 _nftContract,
                 _tokenId
             ),
             "PartyBid::initialize: auctionId doesn't match token"
         );
+        // initialize & validate shared Party variables
+        __Party_init(_nftContract, _tokenId, _splitRecipient, _splitBasisPoints, _name, _symbol);
+        // set PartyBid-specific state variables
+        marketWrapper = IMarketWrapper(_marketWrapper);
+        auctionId = _auctionId;
     }
 
     // ======== External: Contribute =========

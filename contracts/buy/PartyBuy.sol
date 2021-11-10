@@ -71,28 +71,13 @@ contract PartyBuy is Party {
         string memory _name,
         string memory _symbol
     ) external initializer {
-        // initialize ReentrancyGuard and ERC721Holder
-        __ReentrancyGuard_init();
-        __ERC721Holder_init();
-        // set storage variables
-        nftContract = IERC721Metadata(_nftContract);
-        tokenId = _tokenId;
-        name = _name;
-        symbol = _symbol;
-        expiresAt = _secondsToTimeout + block.timestamp;
+        // validate maxPrice
         require(_maxPrice > 0, "PartyBuy::initialize: must set price higher than 0");
+        // initialize & validate shared Party variables
+        __Party_init(_nftContract, _tokenId, _splitRecipient, _splitBasisPoints, _name, _symbol);
+        // set PartyBuy-specific state variables
+        expiresAt = _secondsToTimeout + block.timestamp;
         maxPrice = _maxPrice;
-        // validate that party split won't retain the total token supply
-        uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
-        require(_splitBasisPoints < _remainingBasisPoints, "PartyBuy::initialize: basis points can't take 100%");
-        // validate that a portion of the token supply is not being burned
-        if (_splitRecipient == address(0)) {
-            require(_splitBasisPoints == 0, "PartyBuy::initialize: can't send tokens to burn addr");
-        }
-        splitBasisPoints = _splitBasisPoints;
-        splitRecipient = _splitRecipient;
-        // validate token exists
-        require(_getOwner() != address(0), "PartyBuy::initialize: NFT getOwner failed");
     }
 
     // ======== External: Contribute =========

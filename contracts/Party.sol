@@ -144,6 +144,36 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         weth = IWETH(_weth);
     }
 
+    // ======== Internal: Initialize =========
+
+    function __Party_init(
+        address _nftContract,
+        uint256 _tokenId,
+        address _splitRecipient,
+        uint256 _splitBasisPoints,
+        string memory _name,
+        string memory _symbol
+    ) internal {
+        // validate token exists (must set nftContract & tokenId before _getOwner)
+        nftContract = IERC721Metadata(_nftContract);
+        tokenId = _tokenId;
+        require(_getOwner() != address(0), "Party::__Party_init: NFT getOwner failed");
+        // if split is non-zero,
+        if (_splitRecipient != address(0) && _splitBasisPoints != 0) {
+            // validate that party split won't retain the total token supply
+            uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
+            require(_splitBasisPoints < _remainingBasisPoints, "Party::__Party_init: basis points can't take 100%");
+            splitBasisPoints = _splitBasisPoints;
+            splitRecipient = _splitRecipient;
+        }
+        // initialize ReentrancyGuard and ERC721Holder
+        __ReentrancyGuard_init();
+        __ERC721Holder_init();
+        // set storage variables
+        name = _name;
+        symbol = _symbol;
+    }
+
     // ======== Internal: Contribute =========
 
     /**
