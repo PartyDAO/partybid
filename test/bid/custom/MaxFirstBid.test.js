@@ -14,7 +14,8 @@ const {
     contribute,
 } = require('../../helpers/utils');
 const { deployTestContractSetup } = require('../helpers/deploy');
-const { MARKETS, ETH_FEE_BASIS_POINTS } = require('../helpers/constants');
+const { MARKETS } = require('../helpers/constants');
+const { ETH_FEE_BASIS_POINTS } = require('../../helpers/constants');
 
 const testCases = [
     {

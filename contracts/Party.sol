@@ -36,7 +36,12 @@ import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
 import {
 IERC721Metadata
 } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import {
+IERC20
+} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IWETH} from "./external/interfaces/IWETH.sol";
+// ============ Internal Imports ============
+import {Structs} from "./Structs.sol";
 
 contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Enums ============
@@ -86,6 +91,12 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // percent of the total token supply
     // taken by the splitRecipient
     uint256 public splitBasisPoints;
+    // address of token that users need to hold to contribute
+    // address(0) if party is not token gated
+    IERC20 public gatedToken;
+    // amount of token that users need to hold to contribute
+    // 0 if party is not token gated
+    uint256 public gatedTokenAmount;
     // ERC-20 name and symbol for fractional tokens
     string public name;
     string public symbol;
@@ -149,8 +160,8 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     function __Party_init(
         address _nftContract,
         uint256 _tokenId,
-        address _splitRecipient,
-        uint256 _splitBasisPoints,
+        Structs.AddressAndAmount calldata _split,
+        Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) internal {
@@ -159,12 +170,19 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         tokenId = _tokenId;
         require(_getOwner() != address(0), "Party::__Party_init: NFT getOwner failed");
         // if split is non-zero,
-        if (_splitRecipient != address(0) && _splitBasisPoints != 0) {
+        if (_split.addr != address(0) && _split.amount != 0) {
             // validate that party split won't retain the total token supply
             uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
-            require(_splitBasisPoints < _remainingBasisPoints, "Party::__Party_init: basis points can't take 100%");
-            splitBasisPoints = _splitBasisPoints;
-            splitRecipient = _splitRecipient;
+            require(_split.amount < _remainingBasisPoints, "Party::__Party_init: basis points can't take 100%");
+            splitBasisPoints = _split.amount;
+            splitRecipient = _split.addr;
+        }
+        // if token gating is non-zero
+        if (_tokenGate.addr != address(0) && _tokenGate.amount != 0) {
+            // call totalSupply to verify that address is ERC-20 token contract
+            IERC20(_tokenGate.addr).totalSupply();
+            gatedToken = IERC20(_tokenGate.addr);
+            gatedTokenAmount = _tokenGate.amount;
         }
         // initialize ReentrancyGuard and ERC721Holder
         __ReentrancyGuard_init();
@@ -182,6 +200,9 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @dev Emits a Contributed event upon success; callable by anyone
      */
     function _contribute() internal {
+        if (address(gatedToken) != address(0)) {
+            require(gatedToken.balanceOf(msg.sender) >= gatedTokenAmount, "Party::contribute: must hold tokens to contribute");
+        }
         require(
             partyStatus == PartyStatus.ACTIVE,
             "Party::contribute: party not active"

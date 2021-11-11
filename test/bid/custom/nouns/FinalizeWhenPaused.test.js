@@ -23,7 +23,8 @@ const {
   FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../../../helpers/constants');
 const { testCases } = require('../../testCases.json');
-const { MARKET_NAMES, TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE } = require('../../helpers/constants');
+const { MARKET_NAMES } = require('../../helpers/constants');
+const { TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE } = require('../../../helpers/constants');
 
 describe('Bid: Finalize When Paused', async () => {
   testCases.map((testCase, i) => {

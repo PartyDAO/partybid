@@ -250,8 +250,8 @@ async function deployTestContractSetup(
     nftContract.address,
     tokenId,
     auctionId,
-    splitRecipient,
-    splitBasisPoints,
+    [splitRecipient, splitBasisPoints],
+    ["0x0000000000000000000000000000000000000000", 0],
     'Parrrrti',
     'PRTI',
   );

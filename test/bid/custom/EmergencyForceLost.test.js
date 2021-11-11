@@ -18,7 +18,7 @@ const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const {
     PARTY_STATUS,
-} = require('../helpers/constants');
+} = require('../../helpers/constants');
 const { MARKETS } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 

@@ -17,6 +17,8 @@ import {ITokenVault} from "../external/interfaces/ITokenVault.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {IWETH} from "../external/interfaces/IWETH.sol";
 import {Party} from "../Party.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Structs} from "../Structs.sol";
 
 contract PartyBuy is Party {
     // partyStatus Transitions:
@@ -63,15 +65,15 @@ contract PartyBuy is Party {
         uint256 _tokenId,
         uint256 _maxPrice,
         uint256 _secondsToTimeout,
-        address _splitRecipient,
-        uint256 _splitBasisPoints,
+        Structs.AddressAndAmount calldata _split,
+        Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) external initializer {
         // validate maxPrice
         require(_maxPrice > 0, "PartyBuy::initialize: must set price higher than 0");
         // initialize & validate shared Party variables
-        __Party_init(_nftContract, _tokenId, _splitRecipient, _splitBasisPoints, _name, _symbol);
+        __Party_init(_nftContract, _tokenId, _split, _tokenGate, _name, _symbol);
         // set PartyBuy-specific state variables
         expiresAt = _secondsToTimeout + block.timestamp;
         maxPrice = _maxPrice;

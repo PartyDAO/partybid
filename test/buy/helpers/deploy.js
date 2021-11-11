@@ -46,8 +46,8 @@ async function deployTestContractSetup(
     tokenId,
     maxPrice,
     secondsToTimeout,
-    splitRecipient,
-    splitBasisPoints,
+    [splitRecipient, splitBasisPoints],
+    ["0x0000000000000000000000000000000000000000", 0],
     'Parrrrti',
     'PRTI',
   );
