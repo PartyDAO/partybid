@@ -15,7 +15,8 @@ const {
 } = require('../../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
-const { MARKETS, MARKET_NAMES, ETH_FEE_BASIS_POINTS } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
+const { ETH_FEE_BASIS_POINTS } = require('../../helpers/constants');
 
 const testCases = [
     {

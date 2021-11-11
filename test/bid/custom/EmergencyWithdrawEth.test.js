@@ -8,7 +8,7 @@ const {
     eth,
     weiToEth,
     emergencyWithdrawEth,
-} = require('../helpers/utils');
+} = require('../../helpers/utils');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKET_NAMES } = require('../helpers/constants');
 

@@ -9,14 +9,14 @@ const {
     eth,
     weiToEth,
     contribute,
-} = require('../helpers/utils');
+} = require('../../helpers/utils');
 const {
     cancelAuction
 } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const {
     PARTY_STATUS,
-} = require('../helpers/constants');
+} = require('../../helpers/constants');
 const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
 const { testCases } = require('../testCases.json');
 

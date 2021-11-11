@@ -8,7 +8,7 @@ const {
     eth,
     contribute,
     getBalances,
-} = require('../helpers/utils');
+} = require('../../helpers/utils');
 const { placeBid, externalFinalize } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
 const {
