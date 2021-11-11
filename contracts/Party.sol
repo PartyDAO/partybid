@@ -177,9 +177,13 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
             splitBasisPoints = _split.amount;
             splitRecipient = _split.addr;
         }
-        // TODO: validate that gatedToken is a contract
-        gatedToken = IERC20(_tokenGate.addr);
-        gatedTokenAmount = _tokenGate.amount;
+        // if token gating is non-zero
+        if (_tokenGate.addr != address(0) && _tokenGate.amount != 0) {
+            // call totalSupply to verify that address is ERC-20 token contract
+            IERC20(_tokenGate.addr).totalSupply();
+            gatedToken = IERC20(_tokenGate.addr);
+            gatedTokenAmount = _tokenGate.amount;
+        }
         // initialize ReentrancyGuard and ERC721Holder
         __ReentrancyGuard_init();
         __ERC721Holder_init();
