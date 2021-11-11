@@ -3,6 +3,7 @@ pragma solidity 0.8.5;
 
 import {InitializedProxy} from "./InitializedProxy.sol";
 import {PartyBid} from "./PartyBid.sol";
+import {Structs} from "../Structs.sol";
 
 /**
  * @title PartyBid Factory
@@ -60,15 +61,15 @@ contract PartyBidFactory {
         // deploy logic contract
         PartyBid _logicContract = new PartyBid(_partyDAOMultisig, _tokenVaultFactory, _weth);
         // initialize logic contract
+        Structs.AddressAndAmount memory _split = Structs.AddressAndAmount(address(0), 0);
+        Structs.AddressAndAmount memory _tokenGate = Structs.AddressAndAmount(address(0), 0);
         _logicContract.initialize(
             _logicMarketWrapper,
             _logicNftContract,
             _logicTokenId,
             _logicAuctionId,
-            address(0),
-            0,
-            address(0),
-            0,
+            _split,
+            _tokenGate,
             "PartyBid",
             "BID"
         );
@@ -83,24 +84,20 @@ contract PartyBidFactory {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
-        address _splitRecipient,
-        uint256 _splitBasisPoints,
-        address _gatedToken,
-        uint256 _gatedTokenAmount,
+        Structs.AddressAndAmount calldata _split,
+        Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBidProxy) {
         bytes memory _initializationCalldata =
-            abi.encodeWithSignature(
-                "initialize(address,address,uint256,uint256,address,uint256,address,uint256,string,string)",
+            abi.encodeWithSelector(
+                PartyBid.initialize.selector,
                 _marketWrapper,
                 _nftContract,
                 _tokenId,
                 _auctionId,
-                _splitRecipient,
-                _splitBasisPoints,
-                _gatedToken,
-                _gatedTokenAmount,
+                _split,
+                _tokenGate,
                 _name,
                 _symbol
             );
@@ -121,10 +118,10 @@ contract PartyBidFactory {
             _tokenId,
             _marketWrapper,
             _auctionId,
-            _splitRecipient,
-            _splitBasisPoints,
-            _gatedToken,
-            _gatedTokenAmount,
+            _split.addr,
+            _split.amount,
+            _tokenGate.addr,
+            _tokenGate.amount,
             _name,
             _symbol
         );

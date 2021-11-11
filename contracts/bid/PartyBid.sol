@@ -45,6 +45,7 @@ IERC20
 // ============ Internal Imports ============
 import {IMarketWrapper} from "./market-wrapper/IMarketWrapper.sol";
 import {Party} from "../Party.sol";
+import {Structs} from "../Structs.sol";
 
 contract PartyBid is Party {
     // partyStatus Transitions:
@@ -90,10 +91,8 @@ contract PartyBid is Party {
         address _nftContract,
         uint256 _tokenId,
         uint256 _auctionId,
-        address _splitRecipient,
-        uint256 _splitBasisPoints,
-        address _gatedToken,
-        uint256 _gatedTokenAmount,
+        Structs.AddressAndAmount calldata _split,
+        Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) external initializer {
@@ -107,7 +106,7 @@ contract PartyBid is Party {
             "PartyBid::initialize: auctionId doesn't match token"
         );
         // initialize & validate shared Party variables
-        __Party_init(_nftContract, _tokenId, _splitRecipient, _splitBasisPoints, _gatedToken, _gatedTokenAmount, _name, _symbol);
+        __Party_init(_nftContract, _tokenId, _split, _tokenGate, _name, _symbol);
         // set PartyBid-specific state variables
         marketWrapper = IMarketWrapper(_marketWrapper);
         auctionId = _auctionId;

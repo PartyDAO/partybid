@@ -3,6 +3,7 @@ pragma solidity 0.8.5;
 
 import {NonReceivableInitializedProxy} from "./NonReceivableInitializedProxy.sol";
 import {PartyBuy} from "./PartyBuy.sol";
+import {Structs} from "../Structs.sol";
 
 /**
  * @title PartyBuy Factory
@@ -53,15 +54,15 @@ contract PartyBuyFactory {
         // deploy logic contract
         PartyBuy _logicContract = new PartyBuy(_partyDAOMultisig, _tokenVaultFactory, _weth);
         // initialize logic contract
+        Structs.AddressAndAmount memory _split = Structs.AddressAndAmount(address(0), 0);
+        Structs.AddressAndAmount memory _tokenGate = Structs.AddressAndAmount(address(0), 0);
         _logicContract.initialize(
             _logicNftContract,
             _logicTokenId,
             100,
             1,
-            address(0),
-            0,
-            address(0),
-            0,
+            _split,
+            _tokenGate,
             "PartyBuy",
             "BUY"
         );
@@ -76,24 +77,20 @@ contract PartyBuyFactory {
         uint256 _tokenId,
         uint256 _maxPrice,
         uint256 _secondsToTimeout,
-        address _splitRecipient,
-        uint256 _splitBasisPoints,
-        address _gatedToken,
-        uint256 _gatedTokenAmount,
+        Structs.AddressAndAmount calldata _split,
+        Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) external returns (address partyBuyProxy) {
         bytes memory _initializationCalldata =
-            abi.encodeWithSignature(
-            "initialize(address,uint256,uint256,uint256,address,uint256,address,uint256,string,string)",
+            abi.encodeWithSelector(
+            PartyBuy.initialize.selector,
             _nftContract,
             _tokenId,
             _maxPrice,
             _secondsToTimeout,
-            _splitRecipient,
-            _splitBasisPoints,
-            _gatedToken,
-            _gatedTokenAmount,
+            _split,
+            _tokenGate,
             _name,
             _symbol
         );
@@ -114,10 +111,10 @@ contract PartyBuyFactory {
             _tokenId,
             _maxPrice,
             _secondsToTimeout,
-            _splitRecipient,
-            _splitBasisPoints,
-            _gatedToken,
-            _gatedTokenAmount,
+            _split.addr,
+            _split.amount,
+            _tokenGate.addr,
+            _tokenGate.amount,
             _name,
             _symbol
         );
