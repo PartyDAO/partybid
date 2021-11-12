@@ -45,6 +45,7 @@ contract PartyBuyFactory {
         address _partyDAOMultisig,
         address _tokenVaultFactory,
         address _weth,
+        address _allowList,
         address _logicNftContract,
         uint256 _logicTokenId
     ) {
@@ -52,7 +53,7 @@ contract PartyBuyFactory {
         tokenVaultFactory = _tokenVaultFactory;
         weth = _weth;
         // deploy logic contract
-        PartyBuy _logicContract = new PartyBuy(_partyDAOMultisig, _tokenVaultFactory, _weth);
+        PartyBuy _logicContract = new PartyBuy(_partyDAOMultisig, _tokenVaultFactory, _weth, _allowList);
         // initialize logic contract
         Structs.AddressAndAmount memory _split = Structs.AddressAndAmount(address(0), 0);
         Structs.AddressAndAmount memory _tokenGate = Structs.AddressAndAmount(address(0), 0);

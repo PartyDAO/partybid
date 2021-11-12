@@ -31,11 +31,14 @@ async function deployTestContractSetup(
     tokenVaultSettings.address,
   ]);
 
+  const allowList = await deploy('AllowList');
+
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
   const factory = await deploy('PartyBuyFactory', [
     partyDAOMultisig.address,
     tokenVaultFactory.address,
     weth.address,
+    allowList.address,
     nftContract.address,
     tokenId,
   ]);
@@ -64,6 +67,7 @@ async function deployTestContractSetup(
     partyBuy,
     partyDAOMultisig,
     weth,
+    allowList,
   };
 }
 

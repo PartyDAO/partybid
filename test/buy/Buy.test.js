@@ -36,8 +36,9 @@ describe('Buy: Buy', async () => {
         amountSpent,
       } = testCase;
       // instantiate test vars
-      let partyBid,
+      let partyBuy,
         nftContract,
+        allowList,
         partyDAOMultisig,
         multisigBalanceBefore,
         tokenVault,
@@ -77,6 +78,7 @@ describe('Buy: Buy', async () => {
         partyBuy = contracts.partyBuy;
         partyDAOMultisig = contracts.partyDAOMultisig;
         nftContract = contracts.nftContract;
+        allowList = contracts.allowList;
 
         multisigBalanceBefore = await provider.getBalance(
           partyDAOMultisig.address,
@@ -114,7 +116,16 @@ describe('Buy: Buy', async () => {
         await expect(partyBuy.buy(eth(0), sellerContract.address, data)).to.be.reverted;
       });
 
-      it('Buys the NFT', async () => {
+      it('Doesnt allow buying before AllowList is set', async () => {
+        // encode data to buy NFT
+        const data = encodeData(sellerContract, 'sell', [eth(amountSpent), tokenId, nftContract.address]);
+        // buy NFT
+        await expect(partyBuy.buy(eth(amountSpent), sellerContract.address, data)).to.be.revertedWith("PartyBuy::buy: targetContract not on AllowList");
+      });
+
+      it('Buys the NFT after AllowList is set', async () => {
+        // set allow list to true
+        await allowList.setAllowed(sellerContract.address, true);
         // encode data to buy NFT
         const data = encodeData(sellerContract, 'sell', [eth(amountSpent), tokenId, nftContract.address]);
         // buy NFT

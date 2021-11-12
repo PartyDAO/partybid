@@ -19,6 +19,7 @@ import {IWETH} from "../external/interfaces/IWETH.sol";
 import {Party} from "../Party.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Structs} from "../Structs.sol";
+import {IAllowList} from "./IAllowList.sol";
 
 contract PartyBuy is Party {
     // partyStatus Transitions:
@@ -30,6 +31,10 @@ contract PartyBuy is Party {
 
     // PartyBuy version 1
     uint16 public constant VERSION = 1;
+
+    // ============ Immutables ============
+
+    IAllowList public immutable allowList;
 
     // ============ Public Not-Mutated Storage ============
 
@@ -55,8 +60,11 @@ contract PartyBuy is Party {
     constructor(
         address _partyDAOMultisig,
         address _tokenVaultFactory,
-        address _weth
-    ) Party(_partyDAOMultisig, _tokenVaultFactory, _weth) {}
+        address _weth,
+        address _allowList
+    ) Party(_partyDAOMultisig, _tokenVaultFactory, _weth) {
+        allowList = IAllowList(_allowList);
+    }
 
     // ======== Initializer =========
 
@@ -105,6 +113,8 @@ contract PartyBuy is Party {
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::buy: party not active"
         );
+        // ensure the target contract is on allow list
+        require(allowList.allowed(_targetContract), "PartyBuy::buy: targetContract not on AllowList");
         // check that value is not zero (else, token will be burned in TokenVault)
         require(_value > 0, "PartyBuy::buy: can't spend zero");
         // check that value is not more than the maximum price set at deploy time
