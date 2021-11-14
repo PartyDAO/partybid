@@ -4,9 +4,11 @@ require('@nomiclabs/hardhat-etherscan');
 require('@openzeppelin/hardhat-upgrades');
 const dotenv = require('dotenv');
 dotenv.config();
-const {verify} = require("./deploy/verify");
+const bid = require("./deploy/bid/verify");
+const buy = require("./deploy/buy/verify");
 
-task("verify-contracts", "Verifies the core contracts").setAction(verify);
+task("verify-bid", "Verifies the PartyBid contracts").setAction(bid.verify);
+task("verify-buy", "Verifies the PartyBuy contracts").setAction(buy.verify);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig

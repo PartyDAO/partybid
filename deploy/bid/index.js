@@ -36,7 +36,7 @@ async function deployZoraMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/bid/configs/${CHAIN_NAME}.json`));
     const {zoraAuctionHouse} = config;
     if (!zoraAuctionHouse) {
         throw new Error("Must populate config with Zora Auction House address");
@@ -73,7 +73,7 @@ async function deployFoundationMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/bid/configs/${CHAIN_NAME}.json`));
     const {foundationMarket} = config;
     if (!foundationMarket) {
         throw new Error("Must populate config with Foundation Market address");
@@ -110,7 +110,7 @@ async function deployNounsMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/bid/configs/${CHAIN_NAME}.json`));
     const {nounsAuctionHouse} = config;
     if (!nounsAuctionHouse) {
         throw new Error("Must populate config with Nouns Auction House address");
@@ -147,7 +147,7 @@ async function deployPartyBidFactory() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/bid/configs/${CHAIN_NAME}.json`));
     const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, logicNftContract, logicTokenId, logicZoraAuctionId} = config;
     if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && logicNftContract && logicTokenId && logicZoraAuctionId)) {
         throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, logicNftContract, logicTokenId, logicZoraAuctionId");
