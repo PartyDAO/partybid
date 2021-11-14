@@ -123,9 +123,10 @@ contract PartyBuy is Party {
         // the maximum amount the party can spend while paying ETH fee
         require(_value <= getMaximumSpend(), "PartyBuy::buy: insuffucient funds to buy token plus fee");
         // execute the calldata on the target contract
-        address(_targetContract).call{value: _value}(_calldata);
-        // NOTE: we don't care if the call succeeded
-        // as long as the NFT is owned by the Party
+        (bool _success, bytes memory _returnData) = address(_targetContract).call{value: _value}(_calldata);
+        // require that the external call succeeded
+        require(_success, string(_returnData));
+        // require that the NFT is owned by the Party
         require(_getOwner() == address(this), "PartyBuy::buy: failed to buy token");
         // set partyStatus to WON
         partyStatus = PartyStatus.WON;
