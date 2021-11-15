@@ -13,7 +13,7 @@ async function verify() {
     }
 
     // load config
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/bid/configs/${CHAIN_NAME}.json`));
     const {
         partyDAOMultisig,
         fractionalArtERC721VaultFactory,
