@@ -49,30 +49,13 @@ contract PartyBidFactory {
     constructor(
         address _partyDAOMultisig,
         address _tokenVaultFactory,
-        address _weth,
-        address _logicMarketWrapper,
-        address _logicNftContract,
-        uint256 _logicTokenId,
-        uint256 _logicAuctionId
+        address _weth
     ) {
         partyDAOMultisig = _partyDAOMultisig;
         tokenVaultFactory = _tokenVaultFactory;
         weth = _weth;
         // deploy logic contract
         PartyBid _logicContract = new PartyBid(_partyDAOMultisig, _tokenVaultFactory, _weth);
-        // initialize logic contract
-        Structs.AddressAndAmount memory _split = Structs.AddressAndAmount(address(0), 0);
-        Structs.AddressAndAmount memory _tokenGate = Structs.AddressAndAmount(address(0), 0);
-        _logicContract.initialize(
-            _logicMarketWrapper,
-            _logicNftContract,
-            _logicTokenId,
-            _logicAuctionId,
-            _split,
-            _tokenGate,
-            "PartyBid",
-            "BID"
-        );
         // store logic contract address
         logic = address(_logicContract);
     }

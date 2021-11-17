@@ -156,7 +156,7 @@ async function deployKoansMarketWrapper() {
     // setup deployer wallet
     const deployer = getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY);
 
-    // Deploy Nouns Market Wrapper
+    // Deploy Koans Market Wrapper
     console.log(`Deploy Koans Market Wrapper to ${CHAIN_NAME}`);
     const koansMarketWrapper = await deploy(deployer,'KoansMarketWrapper', [koansAuctionHouse]);
     console.log(`Deployed Koans Market Wrapper to ${CHAIN_NAME}: `, koansMarketWrapper.address);
@@ -185,15 +185,9 @@ async function deployPartyBidFactory() {
 
     // load config.json
     const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
-    const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, logicNftContract, logicTokenId, logicZoraAuctionId} = config;
-    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && logicNftContract && logicTokenId && logicZoraAuctionId)) {
-        throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, logicNftContract, logicTokenId, logicZoraAuctionId");
-    }
-
-    // get the deployed Zora MarketWrapper
-    const {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
-    if (!contractAddresses["marketWrappers"]["zora"]) {
-        throw new Error("No deployed Zora MarketWrapper for chain");
+    const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth} = config;
+    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth)) {
+        throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth");
     }
 
     // setup deployer wallet
@@ -204,18 +198,17 @@ async function deployPartyBidFactory() {
     const factory = await deploy(deployer,'PartyBidFactory', [
         partyDAOMultisig,
         fractionalArtERC721VaultFactory,
-        weth,
-        contractAddresses["marketWrappers"]["zora"],
-        logicNftContract,
-        logicTokenId,
-        logicZoraAuctionId
+        weth
     ]);
     console.log(`Deployed PartyBid Factory to ${CHAIN_NAME}: `, factory.address);
 
     // Get PartyBidLogic address
     const logic = await factory.logic();
 
-    // update the foundation market wrapper address
+    // get the current deployed addresses
+    const {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+
+    // update the factory & logic addresses
     contractAddresses["partyBidFactory"] = factory.address;
     contractAddresses["partyBidLogic"] = logic;
 

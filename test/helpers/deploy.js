@@ -242,11 +242,7 @@ async function getTokenVault(party, signer) {
     const factory = await deploy('PartyBidFactory', [
       partyDAOMultisig.address,
       tokenVaultFactory.address,
-      weth.address,
-      marketWrapper.address,
-      nftContract.address,
-      tokenId,
-      auctionId
+      weth.address
     ]);
 
     // Deploy PartyBid proxy
@@ -275,6 +271,7 @@ async function getTokenVault(party, signer) {
       partyBid,
       partyDAOMultisig,
       weth,
+      factory
     };
   }
 

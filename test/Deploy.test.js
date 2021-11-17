@@ -15,7 +15,7 @@ describe('Deploy', async () => {
       const splitBasisPoints = 0;
       const reservePrice = 1;
       const tokenId = 95;
-      let partyBid, partyDAOMultisig, marketWrapper, signer, artist;
+      let factory, partyBid, partyDAOMultisig, marketWrapper, signer, artist, nftContract, auctionId;
 
       before(async () => {
         // GET RANDOM SIGNER & ARTIST
@@ -34,6 +34,45 @@ describe('Deploy', async () => {
         partyBid = contracts.partyBid;
         partyDAOMultisig = contracts.partyDAOMultisig;
         marketWrapper = contracts.marketWrapper;
+        factory = contracts.factory;
+        nftContract = contracts.nftContract;
+
+        auctionId = await partyBid.auctionId();
+      });
+
+      it('Cannot initialize logic contract', async () => {
+        // get PartyBid logic contract
+        const logic = await factory.logic();
+        const PartyBid = await ethers.getContractFactory('PartyBid');
+        const partyBidLogic = new ethers.Contract(
+          logic,
+          PartyBid.interface,
+          signer,
+        );
+        // calling initialize from external signer should not be possible
+        expect(partyBidLogic.initialize(
+          marketWrapper.address,
+          nftContract.address,
+          tokenId,
+          auctionId,
+          [splitRecipient, splitBasisPoints],
+          ["0x0000000000000000000000000000000000000000", 0],
+          "PartyBid Logic",
+          "LOGIC"
+      )).to.be.revertedWith("Party::__Party_init: only factory can init");
+      });
+
+      it('Cannot re-initialize Party contract', async () => {
+        expect(partyBid.initialize(
+          marketWrapper.address,
+          nftContract.address,
+          tokenId,
+          auctionId,
+          [splitRecipient, splitBasisPoints],
+          ["0x0000000000000000000000000000000000000000", 0],
+          "PartyBid",
+          "PARTYYYY"
+        )).to.be.revertedWith("Initializable: contract is already initialized");
       });
 
       it('Party Status is Active', async () => {

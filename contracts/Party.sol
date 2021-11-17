@@ -73,6 +73,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     // ============ Immutables ============
 
+    address public immutable partyFactory;
     address public immutable partyDAOMultisig;
     IERC721VaultFactory public immutable tokenVaultFactory;
     IWETH public immutable weth;
@@ -150,6 +151,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         address _tokenVaultFactory,
         address _weth
     ) {
+        partyFactory = msg.sender;
         partyDAOMultisig = _partyDAOMultisig;
         tokenVaultFactory = IERC721VaultFactory(_tokenVaultFactory);
         weth = IWETH(_weth);
@@ -165,6 +167,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         string memory _name,
         string memory _symbol
     ) internal {
+        require(msg.sender == partyFactory, "Party::__Party_init: only factory can init");
         // validate token exists (must set nftContract & tokenId before _getOwner)
         nftContract = IERC721Metadata(_nftContract);
         tokenId = _tokenId;
