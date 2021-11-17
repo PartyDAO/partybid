@@ -1,7 +1,7 @@
 {
   "chain": "rinkeby",
-  "partyBidFactory": "0x6aAD1AF09389e08f6104109CecAfd9458A6498d9",
-  "partyBidLogic": "0x0Be2088e2F4aeA6E05C0656F7453455A56A89388",
+  "partyBidFactory": "0xb88b006b08ad30eA214D3E5A7A523A189Aa83C7E",
+  "partyBidLogic": "0x1F5Fc456c55689e71De171945180d67d0a561Dc2",
   "marketWrappers": {
     "foundation": "0x3183F5AcD2BCD82a4587aA4485DF92Fee3c9bA8b",
     "zora": "0x8bdf23481fcB9e640F14F24030eF7E273D100643",
