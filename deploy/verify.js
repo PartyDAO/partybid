@@ -21,9 +21,8 @@ async function verify() {
         foundationMarket,
         zoraAuctionHouse,
         nounsAuctionHouse,
-        koansAuctionHouse,
     } = config;
-    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && nounsAuctionHouse && koansAuctionHouse)) {
+    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && nounsAuctionHouse)) {
         throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse");
     }
 
