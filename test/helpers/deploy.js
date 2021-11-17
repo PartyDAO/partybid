@@ -176,6 +176,8 @@ async function getTokenVault(party, signer) {
     tokenId,
     fakeMultisig = false,
     pauseAuctionHouse = false,
+    gatedToken = "0x0000000000000000000000000000000000000000",
+    gatedTokenAmount = 0
   ) {
     // Deploy WETH
     const weth = await deploy('EtherToken');
@@ -252,7 +254,7 @@ async function getTokenVault(party, signer) {
       tokenId,
       auctionId,
       [splitRecipient, splitBasisPoints],
-      ["0x0000000000000000000000000000000000000000", 0],
+      [gatedToken, gatedTokenAmount],
       'Parrrrti',
       'PRTI',
     );
