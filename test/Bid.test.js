@@ -35,7 +35,6 @@ describe('Bid', async () => {
               auctionReservePrice,
               tokenId,
             );
-            console.log('here')
             partyBid = contracts.partyBid;
             market = contracts.market;
 
