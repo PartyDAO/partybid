@@ -11,6 +11,8 @@ const { MARKETS, MARKET_NAMES } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
 describe('Bid', async () => {
+  let contracts;
+
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
       testCases.map((testCase, i) => {
@@ -24,7 +26,7 @@ describe('Bid', async () => {
 
           before(async () => {
             // DEPLOY NFT, MARKET, AND PARTY BID CONTRACTS
-            const contracts = await deployTestContractSetup(
+            contracts = await deployTestContractSetup(
               marketName,
               provider,
               signers[0],
@@ -33,6 +35,7 @@ describe('Bid', async () => {
               auctionReservePrice,
               tokenId,
             );
+            console.log('here')
             partyBid = contracts.partyBid;
             market = contracts.market;
 
@@ -76,6 +79,10 @@ describe('Bid', async () => {
                     auctionId,
                     eth(amount),
                     marketName,
+                    {
+                      contractAddress: contracts.nftContract.address,
+                      tokenId: tokenId
+                    }
                   ),
                 ).to.emit(market, eventName);
               });
@@ -88,6 +95,10 @@ describe('Bid', async () => {
                     auctionId,
                     eth(amount),
                     marketName,
+                    {
+                      contractAddress: contracts.nftContract.address,
+                      tokenId: tokenId
+                    }
                   ),
                 ).to.be.reverted;
               });

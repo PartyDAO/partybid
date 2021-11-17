@@ -47,6 +47,10 @@ describe('Transfer WETH', async () => {
                     auctionId,
                     eth(1),
                     marketName,
+                    {
+                        contractAddress: contracts.nftContract.address,
+                        tokenId: 95
+                    }
                 );
 
                 // deploy payable contract and send ETH to it

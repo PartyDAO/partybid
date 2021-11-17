@@ -1,16 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.5;
 
+import {IMarketplaceSettings} from "../superrare/interfaces/IMarketplaceSettings.sol";
+
 interface ISuperRareAuctionHouse {
-    /////////////////////////////////////////////////////////////////////////
-    // Constants
-    /////////////////////////////////////////////////////////////////////////
-
-    // Types of Auctions
-    bytes32 public constant COLDIE_AUCTION = "COLDIE_AUCTION";
-    bytes32 public constant SCHEDULED_AUCTION = "SCHEDULED_AUCTION";
-    bytes32 public constant NO_AUCTION = bytes32(0);
-
     /////////////////////////////////////////////////////////////////////////
     // Structs
     /////////////////////////////////////////////////////////////////////////
@@ -33,9 +26,14 @@ interface ISuperRareAuctionHouse {
     }
 
     /////////////////////////////////////////////////////////////////////////
-    // Relevant Variables
+    // minimumBidIncreasePercentage
     /////////////////////////////////////////////////////////////////////////
-    uint8 public minimumBidIncreasePercentage;
+    function minimumBidIncreasePercentage() external view returns (uint8);
+
+    /////////////////////////////////////////////////////////////////////////
+    // iMarketSettings
+    /////////////////////////////////////////////////////////////////////////
+    function iMarketSettings() external view returns (IMarketplaceSettings);
 
     /////////////////////////////////////////////////////////////////////////
     // bid
@@ -91,15 +89,7 @@ interface ISuperRareAuctionHouse {
     function getAuctionDetails(address _contractAddress, uint256 _tokenId)
         external
         view
-        returns (
-            bytes32,
-            uint256,
-            address,
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        );
+        returns (Auction memory);
 
     /////////////////////////////////////////////////////////////////////////
     // getCurrentBid

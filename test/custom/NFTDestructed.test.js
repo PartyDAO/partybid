@@ -67,6 +67,10 @@ describe('NFT Contract Self-Destructed', async () => {
                     auctionId,
                     eth(reservePrice),
                     marketName,
+                    {
+                        contractAddress: contracts.nftContract.address,
+                        tokenId: tokenId
+                    }
                 );
             });
 
@@ -77,7 +81,16 @@ describe('NFT Contract Self-Destructed', async () => {
                 ]);
                 await provider.send('evm_mine');
 
-                await externalFinalize(signers[2], market, auctionId, marketName)
+                await externalFinalize(
+                    signers[2],
+                    market,
+                    auctionId,
+                    marketName,
+                    {
+                        contractAddress: contracts.nftContract.address,
+                        tokenId: tokenId
+                    }
+                )
             });
 
             it('Can query balanceOf before self-destruct', async () => {

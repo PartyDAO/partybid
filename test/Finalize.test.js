@@ -108,6 +108,10 @@ describe('Finalize', async () => {
                   auctionId,
                   eth(amount),
                   marketName,
+                  {
+                    contractAddress: contracts.nftContract.address,
+                    tokenId: tokenId
+                  }
                 );
               }
             }
