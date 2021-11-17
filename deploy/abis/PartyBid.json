@@ -100,7 +100,7 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum PartyBid.PartyStatus",
+        "internalType": "enum Party.PartyStatus",
         "name": "result",
         "type": "uint8"
       },
@@ -284,6 +284,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "gatedToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gatedTokenAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -314,6 +340,19 @@
       {
         "internalType": "uint256",
         "name": "_maxBid",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMaximumSpend",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxSpend",
         "type": "uint256"
       }
     ],
@@ -356,14 +395,38 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "_splitRecipient",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "addr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Structs.AddressAndAmount",
+        "name": "_split",
+        "type": "tuple"
       },
       {
-        "internalType": "uint256",
-        "name": "_splitBasisPoints",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "addr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Structs.AddressAndAmount",
+        "name": "_tokenGate",
+        "type": "tuple"
       },
       {
         "internalType": "string",
@@ -472,7 +535,7 @@
     "name": "partyStatus",
     "outputs": [
       {
-        "internalType": "enum PartyBid.PartyStatus",
+        "internalType": "enum Party.PartyStatus",
         "name": "",
         "type": "uint8"
       }
@@ -598,7 +661,7 @@
         "type": "address"
       }
     ],
-    "name": "totalEthUsedForBid",
+    "name": "totalEthUsed",
     "outputs": [
       {
         "internalType": "uint256",

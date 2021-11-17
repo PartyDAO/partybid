@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run compile && hardhat test",
     "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
-    "verify": "hardhat --network mainnet verify-contracts",
+    "verify": "hardhat --network rinkeby verify-contracts",
     "compile": "hardhat compile",
     "prettier": "prettier --write './contracts' ./test",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
@@ -40,7 +40,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "hardhat": "^2.0.8",
     "hardhat-gas-reporter": "^1.0.4",
-    "ethers": "^5.0.29",
+    "ethers": "^5.5.0",
     "chai": "^4.3.0",
     "eslint": "^7.20.0",
     "ethereum-waffle": "^3.2.2",

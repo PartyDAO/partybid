@@ -10,15 +10,19 @@ const {
   weiToEth,
   getTotalContributed,
   contribute,
-  bidThroughParty,
+  bidThroughParty
 } = require('./helpers/utils');
 const { placeBid } = require('./helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
+  MARKETS,
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
+  ETH_FEE_BASIS_POINTS,
+  TOKEN_FEE_BASIS_POINTS,
+  TOKEN_SCALE,
+  RESALE_MULTIPLIER
 } = require('./helpers/constants');
-const { MARKETS, TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE, RESALE_MULTIPLIER } = require('./helpers/constants');
 const { testCases } = require('./testCases.json');
 
 describe('Finalize', async () => {
@@ -115,15 +119,15 @@ describe('Finalize', async () => {
 
           it('Is ACTIVE before Finalize', async () => {
             const partyStatus = await partyBid.partyStatus();
-            expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+            expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
           });
 
           it('Doesnt allow getClaimAmounts before Finalize', async () => {
-            await expect(partyBid.getClaimAmounts(signers[0].address)).to.be.revertedWith("PartyBid::getClaimAmounts: party still active; amounts undetermined");
+            await expect(partyBid.getClaimAmounts(signers[0].address)).to.be.revertedWith("Party::getClaimAmounts: party still active; amounts undetermined");
           });
 
-          it('Doesnt allow totalEthUsedForBid before Finalize', async () => {
-            await expect(partyBid.totalEthUsedForBid(signers[0].address)).to.be.revertedWith("PartyBid::totalEthUsedForBid: party still active; amounts undetermined");
+          it('Doesnt allow totalEthUsed before Finalize', async () => {
+            await expect(partyBid.totalEthUsed(signers[0].address)).to.be.revertedWith("Party::totalEthUsed: party still active; amounts undetermined");
           });
 
           it('Does allow Finalize after the auction is over', async () => {
@@ -140,7 +144,7 @@ describe('Finalize', async () => {
           });
 
           it(`Doesn't accept contributions after Finalize`, async () => {
-            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("Party::contribute: party not active");
           });
 
           it(`Doesn't accept bids after Finalize`, async () => {
@@ -150,7 +154,7 @@ describe('Finalize', async () => {
           if (partyBidWins) {
             it(`Is WON after Finalize`, async () => {
               const partyStatus = await partyBid.partyStatus();
-              expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_WON);
+              expect(partyStatus).to.equal(PARTY_STATUS.WON);
             });
 
             it(`Fractional Token Vault Owns the NFT`, async () => {
@@ -217,7 +221,7 @@ describe('Finalize', async () => {
           } else {
             it(`Is LOST after Finalize`, async () => {
               const partyStatus = await partyBid.partyStatus();
-              expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+              expect(partyStatus).to.equal(PARTY_STATUS.LOST);
             });
 
             it(`Does not own the NFT`, async () => {

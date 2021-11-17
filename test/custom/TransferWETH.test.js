@@ -8,8 +8,7 @@ const { eth, getBalances } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, deploy } = require('../helpers/deploy');
 const {
-    MARKETS,
-    FOURTY_EIGHT_HOURS_IN_SECONDS,
+    MARKETS, FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../helpers/constants');
 
 describe('Transfer WETH', async () => {

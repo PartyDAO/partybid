@@ -56,8 +56,8 @@ describe('Emergency Call', async () => {
     });
 
     it('Non-multisig call does revert', async () => {
-        await expect(emergencyCall(partyBid, signers[1], nftContract.address, calldata)).to.be.revertedWith("PartyBid:: only PartyDAO multisig");
-        await expect(emergencyCall(partyBid, signers[2], nftContract.address, calldata)).to.be.revertedWith("PartyBid:: only PartyDAO multisig");
+        await expect(emergencyCall(partyBid, signers[1], nftContract.address, calldata)).to.be.revertedWith("Party:: only PartyDAO multisig");
+        await expect(emergencyCall(partyBid, signers[2], nftContract.address, calldata)).to.be.revertedWith("Party:: only PartyDAO multisig");
     });
 
     it('NFT is in PartyBid after non-multisig call', async () => {

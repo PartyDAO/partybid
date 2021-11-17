@@ -21,20 +21,13 @@ async function verify() {
         foundationMarket,
         zoraAuctionHouse,
         nounsAuctionHouse,
-        koansAuctionHouse,
-        logicNftContract,
-        logicTokenId,
-        logicZoraAuctionId
     } = config;
-    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && nounsAuctionHouse && koansAuctionHouse &&logicNftContract && logicTokenId && logicZoraAuctionId)) {
-        throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse, logicNftContract, logicTokenId, logicZoraAuctionId");
+    if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && foundationMarket && zoraAuctionHouse && nounsAuctionHouse)) {
+        throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, foundationMarket, zoraAuctionHouse");
     }
 
     // load deployed contracts
     const {contractAddresses} = getDeployedAddresses(CHAIN_NAME);
-    if (!contractAddresses["marketWrappers"]["zora"]) {
-        throw new Error("No deployed Zora MarketWrapper for chain");
-    }
     const {partyBidFactory, partyBidLogic, marketWrappers} = contractAddresses;
     const {foundation, zora, nouns, koans} = marketWrappers;
 
@@ -45,11 +38,7 @@ async function verify() {
     await verifyContract(partyBidFactory, [
         partyDAOMultisig,
         fractionalArtERC721VaultFactory,
-        weth,
-        zora,
-        logicNftContract,
-        logicTokenId,
-        logicZoraAuctionId
+        weth
     ]);
 
     // Verify PartyBid Logic

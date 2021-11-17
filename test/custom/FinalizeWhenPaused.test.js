@@ -122,7 +122,7 @@ describe('Finalize When Paused', async () => {
 
           it('Is ACTIVE before Finalize', async () => {
             const partyStatus = await partyBid.partyStatus();
-            expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_ACTIVE);
+            expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
           });
 
           it('Does allow Finalize after the auction is over', async () => {
@@ -139,7 +139,7 @@ describe('Finalize When Paused', async () => {
           });
 
           it(`Doesn't accept contributions after Finalize`, async () => {
-            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("PartyBid::contribute: auction not active");
+            await expect(contribute(partyBid, signers[0], eth(1))).to.be.revertedWith("Party::contribute: party not active");
           });
 
           it(`Doesn't accept bids after Finalize`, async () => {
@@ -149,7 +149,7 @@ describe('Finalize When Paused', async () => {
           if (partyBidWins) {
             it(`Is WON after Finalize`, async () => {
               const partyStatus = await partyBid.partyStatus();
-              expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_WON);
+              expect(partyStatus).to.equal(PARTY_STATUS.WON);
             });
 
             it(`Token Vault Owns the NFT`, async () => {
@@ -204,7 +204,7 @@ describe('Finalize When Paused', async () => {
           } else {
             it(`Is LOST after Finalize`, async () => {
               const partyStatus = await partyBid.partyStatus();
-              expect(partyStatus).to.equal(PARTY_STATUS.AUCTION_LOST);
+              expect(partyStatus).to.equal(PARTY_STATUS.LOST);
             });
 
             it(`Does not own the NFT`, async () => {
