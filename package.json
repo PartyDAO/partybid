@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run compile && hardhat test",
     "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
-    "verify": "hardhat --network rinkeby verify-contracts",
+    "verify": "hardhat --network mainnet verify-contracts",
     "compile": "hardhat compile",
     "prettier": "prettier --write './contracts' ./test",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
