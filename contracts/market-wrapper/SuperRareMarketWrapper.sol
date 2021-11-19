@@ -193,8 +193,8 @@ contract SuperRareMarketWrapper is IMarketWrapper {
         (bool success, bytes memory returnData) = address(auctionHouse).call{
             value: _bidAmount
         }(
-            abi.encodeWithSignature(
-                "bid(address,uint256,uint256)",
+            abi.encodeWithSelector(
+                ISuperRareAuctionHouse.bid.selector,
                 token.contractAddress,
                 token.tokenId,
                 _bidAmount
