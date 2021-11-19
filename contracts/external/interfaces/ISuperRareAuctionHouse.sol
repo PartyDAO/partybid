@@ -9,13 +9,13 @@ interface ISuperRareAuctionHouse {
     /////////////////////////////////////////////////////////////////////////
     // A reserve auction.
     struct Auction {
-        address payable auctionCreator;
+        bytes32 auctionType;
         uint256 creationBlock;
+        address payable auctionCreator;
         uint256 lengthOfAuction;
         uint256 startingBlock;
         uint256 reservePrice;
         uint256 minimumBid;
-        bytes32 auctionType;
     }
 
     // The active bid for a given token, contains the bidder, the marketplace fee at the time of the bid, and the amount of wei placed on the token

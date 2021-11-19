@@ -71,9 +71,10 @@ describe('Bid', async () => {
                   marketName == MARKET_NAMES.FOUNDATION
                     ? 'ReserveAuctionBidPlaced'
                     : 'AuctionBid';
+                const bidder = marketName == MARKET_NAMES.SUPERRARE ? signers[1] : signers[0];
                 await expect(
                   placeBid(
-                    signers[0],
+                    bidder,
                     market,
                     auctionId,
                     eth(amount),

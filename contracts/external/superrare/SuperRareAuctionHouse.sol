@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.3;
 
 import "@openzeppelin/contracts2/token/ERC721/IERC721.sol";
@@ -6,6 +7,8 @@ import "@openzeppelin/contracts2/access/Ownable.sol";
 import "./interfaces/IERC721CreatorRoyalty.sol";
 import "./interfaces/old/IMarketplaceSettings.sol";
 import "./Payments.sol";
+
+import "hardhat/console.sol";
 
 contract SuperRareAuctionHouse is Ownable, Payments {
     using SafeMath for uint256;
@@ -117,7 +120,6 @@ contract SuperRareAuctionHouse is Ownable, Payments {
      * @param _iERC721CreatorRoyalty address to set as iERC721CreatorRoyalty.
      */
     constructor(address _iMarketSettings, address _iERC721CreatorRoyalty)
-        public
     {
         maxLength = 43200; // ~ 7 days == 7 days * 24 hours * 3600s / 14s per block
         auctionLengthExtension = 65; // ~ 15 min == 15 min * 60s / 14s per block

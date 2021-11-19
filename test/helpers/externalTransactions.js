@@ -3,6 +3,7 @@ const { MARKET_NAMES } = require('./constants');
 
 async function placeBid(signer, marketContract, auctionId, value, marketName, token = null) {
     let data;
+    let msgValue = value;
     if (marketName == MARKET_NAMES.ZORA) {
         data = encodeData(marketContract, 'createBid', [auctionId, value]);
     } else if (marketName == MARKET_NAMES.NOUNS) {
@@ -12,6 +13,7 @@ async function placeBid(signer, marketContract, auctionId, value, marketName, to
     } else if (marketName == MARKET_NAMES.KOANS) {
         data = encodeData(marketContract, 'createBid', [auctionId]);
     } else if (marketName == MARKET_NAMES.SUPERRARE) {
+        msgValue = value.mul(103).div(100);
         data = encodeData(marketContract, 'bid', [token.contractAddress, token.tokenId, value]);
     } else {
         throw new Error("Unsupported Market");
@@ -20,7 +22,7 @@ async function placeBid(signer, marketContract, auctionId, value, marketName, to
     return signer.sendTransaction({
         to: marketContract.address,
         data,
-        value,
+        value: msgValue,
     });
 }
 

@@ -3,7 +3,8 @@ const {
   approve,
   createReserveAuction,
   createZoraAuction,
-  createSuperRareColdieAuction
+  createSuperRareColdieAuction,
+  approveForAll
 } = require('./utils');
 const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
 const { upgrades } = require('hardhat');
@@ -186,7 +187,7 @@ async function deploySuperRareAndStartAuction(
     [superRareAuctionHouse.address]
   );
 
-  await approve(artistSigner, nftContract, superRareAuctionHouse.address, tokenId);
+  await approveForAll(artistSigner, nftContract, superRareAuctionHouse.address);
 
   await createSuperRareColdieAuction(
     artistSigner,

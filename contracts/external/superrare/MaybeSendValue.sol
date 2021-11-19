@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.3;
 
 import "./SendValueProxy.sol";
@@ -23,7 +24,7 @@ contract MaybeSendValue {
     {
         // Call sendValue on the proxy contract and forward the mesg.value.
         /* solium-disable-next-line */
-        (bool success, bytes memory _) = address(proxy).call{value: _value}(
+        (bool success, ) = address(proxy).call{value: _value}(
             abi.encodeWithSignature("sendValue(address)", _to)
         );
         return success;

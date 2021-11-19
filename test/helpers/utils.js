@@ -45,6 +45,23 @@ async function approve(signer, tokenContract, to, tokenId) {
   });
 }
 
+async function approveForAll(signer, tokenContract, to) {
+  const data = encodeData(tokenContract, 'setApprovalForAll', [to, true]);
+
+  return signer.sendTransaction({
+    to: tokenContract.address,
+    data,
+  });
+}
+
+async function bidThroughParty(partyBidContract, signer) {
+  const data = encodeData(partyBidContract, 'bid');
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
 
 async function contribute(partyBidContract, contributorSigner, value) {
   const data = encodeData(partyBidContract, 'contribute');
@@ -235,5 +252,6 @@ module.exports = {
   bidThroughParty,
   createReserveAuction,
   createZoraAuction,
-  createSuperRareColdieAuction
+  createSuperRareColdieAuction,
+  approveForAll
 };
