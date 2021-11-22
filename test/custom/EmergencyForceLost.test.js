@@ -93,6 +93,10 @@ describe('Emergency Force Lost', async () => {
                                     auctionId,
                                     eth(amount),
                                     marketName,
+                                    {
+                                        contractAddress: contracts.nftContract.address,
+                                        tokenId: tokenId
+                                    }
                                 );
                             }
                         }

@@ -1,5 +1,5 @@
 const BigNumber = require('bignumber.js');
-const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const { FOURTY_EIGHT_HOURS_IN_SECONDS, MARKET_NAMES, TWENTY_FOUR_HOURS_IN_BLOCKS } = require('./constants');
 
 function eth(num) {
   return ethers.utils.parseEther(num.toString());
@@ -20,7 +20,7 @@ async function getBalances(provider, token, accounts) {
     balances[name] = {};
     balances[name]['eth'] = new BigNumber(parseFloat(weiToEth(await provider.getBalance(address))));
     let tokenBalance = 0;
-    if(token && token.address != ethers.constants.AddressZero) {
+    if (token && token.address != ethers.constants.AddressZero) {
       tokenBalance = weiToEth(await token.balanceOf(address));
     }
     balances[name]['tokens'] = new BigNumber(parseFloat(tokenBalance));
@@ -45,6 +45,23 @@ async function approve(signer, tokenContract, to, tokenId) {
   });
 }
 
+async function approveForAll(signer, tokenContract, to) {
+  const data = encodeData(tokenContract, 'setApprovalForAll', [to, true]);
+
+  return signer.sendTransaction({
+    to: tokenContract.address,
+    data,
+  });
+}
+
+async function bidThroughParty(partyBidContract, signer) {
+  const data = encodeData(partyBidContract, 'bid');
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
 
 async function contribute(partyBidContract, contributorSigner, value) {
   const data = encodeData(partyBidContract, 'contribute');
@@ -144,6 +161,82 @@ async function createZoraAuction(
   });
 }
 
+async function createReserveAuction(
+  artist,
+  marketContract,
+  nftContractAddress,
+  tokenId,
+  reservePrice,
+) {
+  const data = encodeData(marketContract, 'createReserveAuction', [
+    nftContractAddress,
+    tokenId,
+    reservePrice,
+  ]);
+
+  return artist.sendTransaction({
+    to: marketContract.address,
+    data,
+  });
+}
+
+async function createSuperRareColdieAuction(
+  artist,
+  marketContract,
+  nftContractAddress,
+  tokenId,
+  reservePrice,
+  duration = TWENTY_FOUR_HOURS_IN_BLOCKS
+) {
+  const data = encodeData(
+    marketContract,
+    'createColdieAuction',
+    [nftContractAddress, tokenId, reservePrice, duration]
+  );
+
+  return artist.sendTransaction({
+    to: marketContract.address,
+    data,
+  });
+}
+
+function initExpectedTotalContributed(signers) {
+  const expectedTotalContributed = {};
+  signers.map((signer) => {
+    expectedTotalContributed[signer.address] = 0;
+  });
+  return expectedTotalContributed;
+}
+
+// Validate state variables based on ETH amount added to contract
+async function expectRedeemable(
+  provider,
+  partyBid,
+  ethAmountAdded,
+  ethAmountRedeemed,
+) {
+  const redeemableEth = ethAmountAdded - ethAmountRedeemed;
+
+  // eth balance is equal to redeemableEth + excessContributions
+  const excessContributions = await partyBid.excessContributions();
+  const expectedBalance =
+    redeemableEth + parseFloat(weiToEth(excessContributions));
+  const ethBalance = await provider.getBalance(partyBid.address);
+  await expect(ethBalance).to.equal(eth(expectedBalance));
+
+  // redeemableEthBalance is equal to ethAmountAdded
+  const redeemableEthBalance = await partyBid.redeemableEthBalance();
+  await expect(redeemableEthBalance).to.equal(eth(redeemableEth));
+
+  // redeemAmount(tokenAmount) is expected portion
+  const tokenAmount = 100;
+  const totalSupply = await partyBid.totalSupply();
+  const expectedRedeemAmount =
+    redeemableEth * (tokenAmount / parseFloat(weiToEth(totalSupply)));
+  const redeemAmount = await partyBid.redeemAmount(eth(tokenAmount));
+  await expect(redeemAmount).to.equal(eth(expectedRedeemAmount));
+}
+
 module.exports = {
   eth,
   weiToEth,
@@ -158,5 +251,7 @@ module.exports = {
   initExpectedTotalContributed,
   bidThroughParty,
   createReserveAuction,
-  createZoraAuction
+  createZoraAuction,
+  createSuperRareColdieAuction,
+  approveForAll
 };

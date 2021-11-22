@@ -82,7 +82,16 @@ describe('Auction Canceled', async () => {
                     });
 
                     it('Allows artist to cancel auction', async () => {
-                        await expect(cancelAuction(artistSigner, market, auctionId, marketName)).to.not.be.reverted;
+                        await expect(cancelAuction(
+                            artistSigner,
+                            market,
+                            auctionId,
+                            marketName,
+                            {
+                                contractAddress: contracts.nftContract.address,
+                                tokenId: tokenId
+                            }
+                        )).to.not.be.reverted;
                     });
 
                     it('Is ACTIVE before PartyBid-level Finalize', async () => {

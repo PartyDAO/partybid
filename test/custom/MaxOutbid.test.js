@@ -41,7 +41,7 @@ describe('Maximum Outbid', async () => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {
                 // get test case information
-                const {reserve, balance} = testCase;
+                const { reserve, balance } = testCase;
                 describe(`Case ${i}`, async () => {
                     // instantiate test vars
                     let partyBid;
@@ -76,6 +76,10 @@ describe('Maximum Outbid', async () => {
                             auctionId,
                             eth(reservePrice),
                             marketName,
+                            {
+                                contractAddress: contracts.nftContract.address,
+                                tokenId: tokenId
+                            }
                         );
                     });
 
@@ -101,7 +105,7 @@ describe('Failed Maximum Outbid', async () => {
         describe(marketName, async () => {
             testCases.map((testCase, i) => {
                 // get test case information
-                const {reserve, balance} = testCase;
+                const { reserve, balance } = testCase;
                 describe(`Case ${i}`, async () => {
                     // instantiate test vars
                     let partyBid;
@@ -136,6 +140,10 @@ describe('Failed Maximum Outbid', async () => {
                             auctionId,
                             eth(reservePrice),
                             marketName,
+                            {
+                                contractAddress: contracts.nftContract.address,
+                                tokenId: tokenId
+                            }
                         );
                     });
 

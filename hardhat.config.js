@@ -4,7 +4,7 @@ require('@nomiclabs/hardhat-etherscan');
 require('@openzeppelin/hardhat-upgrades');
 const dotenv = require('dotenv');
 dotenv.config();
-const {verify} = require("./deploy/verify");
+const { verify } = require("./deploy/verify");
 
 task("verify-contracts", "Verifies the PartyBid contracts").setAction(verify);
 
@@ -65,6 +65,24 @@ module.exports = {
       },
       {
         version: '0.6.8',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+        },
+      },
+      {
+        version: '0.6.12',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+        },
+      },
+      {
+        version: '0.7.3',
         settings: {
           optimizer: {
             enabled: true,

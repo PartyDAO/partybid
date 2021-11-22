@@ -109,6 +109,10 @@ describe('External Finalize', async () => {
                                     auctionId,
                                     eth(amount),
                                     marketName,
+                                    {
+                                        contractAddress: contracts.nftContract.address,
+                                        tokenId: tokenId
+                                    }
                                 );
                             }
                         }
@@ -130,7 +134,16 @@ describe('External Finalize', async () => {
                         ]);
                         await provider.send('evm_mine');
 
-                        await expect(externalFinalize(signers[2], market, auctionId, marketName)).to.not.be.reverted;
+                        await expect(externalFinalize(
+                            signers[2],
+                            market,
+                            auctionId,
+                            marketName,
+                            {
+                                contractAddress: contracts.nftContract.address,
+                                tokenId: tokenId
+                            }
+                        )).to.not.be.reverted;
                     });
 
                     it('Is ACTIVE before PartyBid-level Finalize', async () => {
