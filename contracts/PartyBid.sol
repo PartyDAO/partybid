@@ -128,11 +128,11 @@ contract PartyBid is Party {
             !marketWrapper.isFinalized(auctionId),
             "PartyBid::bid: auction already finalized"
         );
-        // get the minimum next bid for the auction
-        uint256 _bid = marketWrapper.getMinimumBid(auctionId);
-        // ensure there is enough ETH to place the bid including PartyDAO fee
+        // get the maximum bid while still paying fees
+        uint256 _bid = getMaximumBid();
+        // ensure the bid is big enough to place
         require(
-            _bid <= getMaximumBid(),
+            _bid >= marketWrapper.getMinimumBid(auctionId),
             "PartyBid::bid: insufficient funds to bid"
         );
         // submit bid to Auction contract using delegatecall
