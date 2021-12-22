@@ -83,6 +83,15 @@ async function emergencyForceLost(partyBidContract, signer) {
   });
 }
 
+async function expire(partyBidContract, signer) {
+  const data = encodeData(partyBidContract, 'expire',);
+
+  return signer.sendTransaction({
+    to: partyBidContract.address,
+    data,
+  });
+}
+
 function initExpectedTotalContributed(signers) {
   const expectedTotalContributed = {};
   signers.map((signer) => {
@@ -148,6 +157,7 @@ module.exports = {
   eth,
   weiToEth,
   encodeData,
+  expire,
   getBalances,
   getTotalContributed,
   approve,

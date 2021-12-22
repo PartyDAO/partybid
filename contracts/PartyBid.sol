@@ -40,6 +40,11 @@ contract PartyBid is Party {
     IMarketWrapper public marketWrapper;
     // ID of auction within market contract
     uint256 public auctionId;
+    // the timestamp at which the Party is no longer active.
+    // This is mainly to prevent a party from collecting contributions
+    // but never reaching the reserve price and having contributions
+    // locked up indefinitely 
+    uint256 public expiresAt;
 
     // ============ Public Mutable Storage ============
 
@@ -50,7 +55,7 @@ contract PartyBid is Party {
 
     event Bid(uint256 amount);
 
-    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed);
+    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed, bool expired);
 
     // ======== Constructor =========
 
@@ -70,7 +75,8 @@ contract PartyBid is Party {
         Structs.AddressAndAmount calldata _split,
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint256 _secondsToTimeout
     ) external initializer {
         // validate auction exists
         require(
@@ -86,6 +92,7 @@ contract PartyBid is Party {
         // set PartyBid-specific state variables
         marketWrapper = IMarketWrapper(_marketWrapper);
         auctionId = _auctionId;
+        expiresAt = block.timestamp + _secondsToTimeout;
     }
 
     // ======== External: Contribute =========
@@ -183,7 +190,25 @@ contract PartyBid is Party {
             _ethFee = _closeSuccessfulParty(highestBid);
         }
         // set the contract status & emit result
-        emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty);
+        emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty, false);
+    }
+
+    // ======== External: Expire =========
+    function expire() external nonReentrant {
+        require(
+            partyStatus == PartyStatus.ACTIVE,
+            "PartyBid::expire: auction not active"
+        );
+        require(
+            address(this) !=
+                marketWrapper.getCurrentHighestBidder(
+                    auctionId
+                ),
+            "PartyBid::expire: currently highest bidder"
+        );
+        require(block.timestamp > expiresAt, "PartyBid::expire: expiration time in future");
+        partyStatus = PartyStatus.LOST;
+        emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
     }
 
     // ======== Public: Utility Calculations =========
