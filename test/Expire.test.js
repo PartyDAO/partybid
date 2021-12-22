@@ -15,7 +15,6 @@ const {
 describe('Expire', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
-      // get test case information
       // instantiate test vars
       let partyBid, market, auctionId;
       const signers = provider.getWallets();
@@ -38,7 +37,9 @@ describe('Expire', async () => {
       });
 
       it('Accepts contributions before expiration', async () => {
-        await contribute(partyBid, signers[1], eth(0.5));
+        await expect(contribute(partyBid, signers[1], eth(0.5))).to.emit(
+          'Contributed',
+        );
       });
 
       it("Can't be expired before the time specified", async () => {
@@ -77,7 +78,7 @@ describe('Expire', async () => {
 
       it('Can be expired after the time specified', async () => {
         // Bid the auction up by someone else so we're no longer winning
-        await placeBid(signers[0], market, auctionId, eth(2), marketName)
+        await placeBid(signers[0], market, auctionId, eth(2), marketName);
 
         await expect(expire(partyBid, signers[1])).to.emit(
           partyBid,
