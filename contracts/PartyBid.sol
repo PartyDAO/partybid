@@ -40,7 +40,7 @@ contract PartyBid is Party {
     IMarketWrapper public marketWrapper;
     // ID of auction within market contract
     uint256 public auctionId;
-    // the timestamp at which the Party is no longer active.
+    // the timestamp at which the Party can be expired.
     // This is mainly to prevent a party from collecting contributions
     // but never reaching the reserve price and having contributions
     // locked up indefinitely.  The party can still continue past

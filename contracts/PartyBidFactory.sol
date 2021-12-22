@@ -30,7 +30,7 @@ contract PartyBidFactory {
         uint256 gatedTokenAmount,
         string name,
         string symbol,
-        uint256 duration
+        uint256 durationInSeconds
     );
 
     //======== Immutable storage =========

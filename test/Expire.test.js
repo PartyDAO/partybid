@@ -70,6 +70,7 @@ describe.only('Expire', async () => {
         it("Can't be expired by someone not in the party", async () => {
           // await expect(expire, partyBid, signers[2]).to.be.revertedWith("")
           // Do we care about this? It looks like we don't for 'bid' though this could be more damaging
+          // It also seems like fake security to do this someone could always just contribute .0001E and then do it.
         })
 
         it('Can be expired after the time specified', async () => {
