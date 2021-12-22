@@ -43,7 +43,9 @@ contract PartyBid is Party {
     // the timestamp at which the Party is no longer active.
     // This is mainly to prevent a party from collecting contributions
     // but never reaching the reserve price and having contributions
-    // locked up indefinitely 
+    // locked up indefinitely.  The party can still continue past
+    // this time, but if someone calls `expire()` it will move to
+    // the LOST state.
     uint256 public expiresAt;
 
     // ============ Public Mutable Storage ============
@@ -55,6 +57,12 @@ contract PartyBid is Party {
 
     event Bid(uint256 amount);
 
+    // @notice emitted when a party is won, lost, or expires.
+    // @param result The `WON` or `LOST` final party state.
+    // @param totalSpent The amount of eth actually spent, including the price of the NFT and the fee.
+    // @param fee The eth fee paid to PartyDAO.
+    // @param totalContributed Total eth deposited by all contributors, including eth not used in purchase.
+    // @param expired True if the party expired before reaching a reserve / placing a bid.
     event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed, bool expired);
 
     // ======== Constructor =========
@@ -76,7 +84,7 @@ contract PartyBid is Party {
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol,
-        uint256 _secondsToTimeout
+        uint256 _durationInSeconds
     ) external initializer {
         // validate auction exists
         require(
@@ -92,7 +100,7 @@ contract PartyBid is Party {
         // set PartyBid-specific state variables
         marketWrapper = IMarketWrapper(_marketWrapper);
         auctionId = _auctionId;
-        expiresAt = block.timestamp + _secondsToTimeout;
+        expiresAt = block.timestamp + _durationInSeconds;
     }
 
     // ======== External: Contribute =========
@@ -194,6 +202,11 @@ contract PartyBid is Party {
     }
 
     // ======== External: Expire =========
+
+    /**
+     * @notice Expires an auction, moving it to LOST state and ending the ability to contribute.
+     * @dev Emits a Finalized event upon success; callable by anyone once the expiration date passes.
+     */
     function expire() external nonReentrant {
         require(
             partyStatus == PartyStatus.ACTIVE,

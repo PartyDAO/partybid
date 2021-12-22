@@ -72,7 +72,7 @@ contract PartyBidFactory {
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol,
-        uint256 _secondsToTimeout
+        uint256 _durationInSeconds
     ) external returns (address partyBidProxy) {
         bytes memory _initializationCalldata =
             abi.encodeWithSelector(
@@ -85,7 +85,7 @@ contract PartyBidFactory {
                 _tokenGate,
                 _name,
                 _symbol,
-                _secondsToTimeout
+                _durationInSeconds
             );
 
         partyBidProxy = address(
@@ -110,7 +110,7 @@ contract PartyBidFactory {
             _tokenGate.amount,
             _name,
             _symbol,
-            _secondsToTimeout
+            _durationInSeconds
         );
     }
 }
