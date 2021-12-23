@@ -219,6 +219,10 @@ contract PartyBid is Party {
                 ),
             "PartyBid::expire: currently highest bidder"
         );
+        // In case there's some variation in how contracts define a "high bid"
+        // we fall back to making sure none of the eth contributed is outstanding.
+        // If we ever add any features that can send eth for any other purpose we 
+        // will revisit/remove this.
         require(
             address(this).balance >= totalContributedToParty,
             "PartyBid::expire: Balance is lower than contributions");
