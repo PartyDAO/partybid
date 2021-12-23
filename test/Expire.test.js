@@ -38,7 +38,7 @@ describe('Expire', async () => {
 
       it('Accepts contributions before expiration', async () => {
         await expect(contribute(partyBid, signers[1], eth(0.5))).to.emit(
-          'Contributed',
+          partyBid, 'Contributed',
         );
       });
 
