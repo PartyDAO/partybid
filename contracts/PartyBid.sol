@@ -219,6 +219,9 @@ contract PartyBid is Party {
                 ),
             "PartyBid::expire: currently highest bidder"
         );
+        require(
+            address(this).balance >= totalContributedToParty,
+            "PartyBid::expire: Balance is lower than contributions");
         require(block.timestamp > expiresAt, "PartyBid::expire: expiration time in future");
         partyStatus = PartyStatus.LOST;
         emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
