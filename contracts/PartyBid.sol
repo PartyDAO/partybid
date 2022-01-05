@@ -211,7 +211,10 @@ contract PartyBid is Party {
 
     // ======== External: Expire =========
 
-
+    /**
+     * @notice Determines whether a party can be expired. Any status other than `CanExpire` will
+     * fail the `expire()` call.
+     */
     function canExpire() public view returns (ExpireCapability, string memory) {
         if (partyStatus != PartyStatus.ACTIVE) {
             return (ExpireCapability.PartyInactive, "PartyBid::expire: auction not active");
