@@ -28,6 +28,14 @@ contract PartyBid is Party {
     //   (1) PartyStatus.ACTIVE on deploy
     //   (2) PartyStatus.WON or PartyStatus.LOST on finalize()
 
+    enum ExpireCapability {
+        CanExpire, // The party can be expired
+        BeforeExpiration, // The expiration date is in the future
+        PartyInactive, // The party is inactive, either already expired, won, or lost.
+        CurrentlyWinning // The party is currently winning its auction
+    }
+
+
     // ============ Internal Constants ============
 
     // PartyBid version 3
@@ -203,30 +211,34 @@ contract PartyBid is Party {
 
     // ======== External: Expire =========
 
+
+    function canExpire() public view returns (ExpireCapability, string memory) {
+        if (partyStatus != PartyStatus.ACTIVE) {
+            return (ExpireCapability.PartyInactive, "PartyBid::expire: auction not active");
+        }
+        if (address(this) == marketWrapper.getCurrentHighestBidder(auctionId)) {
+            return (ExpireCapability.CurrentlyWinning, "PartyBid::expire: currently highest bidder");
+        }
+        if (block.timestamp < expiresAt) {
+            return (ExpireCapability.BeforeExpiration, "PartyBid::expire: expiration time in future");
+        }
+        // In case there's some variation in how contracts define a "high bid"
+        // we fall back to making sure none of the eth contributed is outstanding.
+        // If we ever add any features that can send eth for any other purpose we
+        // will revisit/remove this.
+        if (address(this).balance < totalContributedToParty) {
+            return (ExpireCapability.CurrentlyWinning, "PartyBid::expire: currently highest bidder");
+        }
+        return (ExpireCapability.CanExpire, "");
+    }
+
     /**
      * @notice Expires an auction, moving it to LOST state and ending the ability to contribute.
      * @dev Emits a Finalized event upon success; callable by anyone once the expiration date passes.
      */
     function expire() external nonReentrant {
-        require(
-            partyStatus == PartyStatus.ACTIVE,
-            "PartyBid::expire: auction not active"
-        );
-        require(
-            address(this) !=
-                marketWrapper.getCurrentHighestBidder(
-                    auctionId
-                ),
-            "PartyBid::expire: currently highest bidder"
-        );
-        // In case there's some variation in how contracts define a "high bid"
-        // we fall back to making sure none of the eth contributed is outstanding.
-        // If we ever add any features that can send eth for any other purpose we 
-        // will revisit/remove this.
-        require(
-            address(this).balance >= totalContributedToParty,
-            "PartyBid::expire: Balance is lower than contributions");
-        require(block.timestamp > expiresAt, "PartyBid::expire: expiration time in future");
+        (ExpireCapability expireCapability, string memory message) = canExpire();
+        require(expireCapability == ExpireCapability.CanExpire, message);
         partyStatus = PartyStatus.LOST;
         emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
     }
