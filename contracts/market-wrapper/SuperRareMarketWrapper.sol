@@ -21,11 +21,6 @@ contract SuperRareMarketWrapper is IMarketWrapper {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
 
-    // ============ Types of Auctions ============
-    bytes32 public constant COLDIE_AUCTION = "COLDIE_AUCTION";
-    bytes32 public constant SCHEDULED_AUCTION = "SCHEDULED_AUCTION";
-    bytes32 public constant NO_AUCTION = bytes32(0);
-
     // ============ Structs ============
     struct Token {
         address contractAddress;
@@ -36,60 +31,23 @@ contract SuperRareMarketWrapper is IMarketWrapper {
     ISuperRareAuctionHouse internal immutable auctionHouse;
 
     // ============ Public Variables ============
-    uint256 public auctionIdTracker;
+    IMarketWrapper public marketWrapper;
+    // ID of auction within market contract
+    uint256 public auctionId;
+
+    // ============ Public Mutable Storage ============
+
+    // the highest bid submitted by PartyBid
+    uint256 public highestBid;
+
     mapping(uint256 => Token) public auctionIdToToken;
-    mapping(address => mapping(uint256 => uint256)) public tokenToAuctionId;
 
     // ======== Constructor =========
     constructor(address _superRareAuctionHouse) {
         auctionHouse = ISuperRareAuctionHouse(_superRareAuctionHouse);
     }
 
-    // ============ Public Mutable Storage ============
-    Counters.Counter public auctionIdCounter;
-
     // ======== External Functions =========
-
-    /// @notice Registers an auction for a given contract/tokenId if a pending/running auction exists
-    /// @param _contractAddress Address of the asset being auctioned.
-    /// @param _tokenId Token Id of the asset being auctioned.
-    function registerAuction(address _contractAddress, uint256 _tokenId)
-        external
-    {
-        ISuperRareAuctionHouse.Auction memory auction = auctionHouse
-            .getAuctionDetails(_contractAddress, _tokenId);
-
-        IERC721 erc721 = IERC721(_contractAddress);
-
-        require(
-            auction.auctionType != NO_AUCTION,
-            "Must have existing auction"
-        );
-
-        require(
-            auction.startingBlock <= block.number &&
-                (auction.startingBlock == 0 ||
-                    block.number <
-                    auction.startingBlock.add(auction.lengthOfAuction)),
-            "Must have active auction"
-        );
-
-        address nftOwner = erc721.ownerOf(_tokenId);
-
-        require(
-            nftOwner == auction.auctionCreator,
-            "Auction Creator Not Owner"
-        );
-
-        auctionIdToToken[auctionIdCounter.current()] = Token(
-            _contractAddress,
-            _tokenId
-        );
-        tokenToAuctionId[_contractAddress][_tokenId] = auctionIdCounter
-            .current();
-
-        auctionIdCounter.increment();
-    }
 
     /**
      * @notice Determines whether an auction exists/is not finished
@@ -100,34 +58,45 @@ contract SuperRareMarketWrapper is IMarketWrapper {
         uint256 _auctionId,
         address _contractAddress,
         uint256 _tokenId
-    ) external view override returns (bool) {
+    ) external override returns (bool) {
         ISuperRareAuctionHouse.Auction memory auction = auctionHouse
             .getAuctionDetails(_contractAddress, _tokenId);
 
         IERC721 erc721 = IERC721(_contractAddress);
 
         require(
-            auction.auctionType != NO_AUCTION,
-            "bid::Must have existing auction"
+            auction.auctionType != bytes32(0),
+            "auctionIdMatchesToken::Must have existing auction"
         );
 
         require(
-            auction.startingBlock <= block.number,
-            "bid::Must have active auction"
+            auction.startingBlock <= block.number &&
+                (auction.startingBlock == 0 ||
+                    block.number <
+                    auction.startingBlock.add(auction.lengthOfAuction)),
+            "auctionIdMatchesToken::Must have active auction"
         );
 
         address nftOwner = erc721.ownerOf(_tokenId);
 
         require(
             nftOwner == auction.auctionCreator,
-            "Auction Creator Not Owner"
+            "auctionIdMatchesToken::Auction Creator Not Owner"
         );
 
-        Token storage token = auctionIdToToken[_auctionId];
+        Token memory token = auctionIdToToken[_auctionId];
 
-        return
-            token.contractAddress == _contractAddress &&
-            token.tokenId == _tokenId;
+        require(
+            token.tokenId == 0 && token.contractAddress == address(0), 
+            "auctionIdMatchesToken::auction id in use"
+        );
+
+        auctionIdToToken[_auctionId] = Token(
+            _contractAddress,
+            _tokenId
+        );
+
+        return true;
     }
 
     /**
@@ -144,7 +113,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
 
         require(token.tokenId != 0, "Auction doesnt exist");
 
-        (, uint256 currentBid) = auctionHouse.getCurrentBidAmount(
+        (, uint256 currentBid) = auctionHouse.getCurrentBid(
             token.contractAddress,
             token.tokenId
         );
@@ -176,7 +145,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
 
         require(token.tokenId != 0, "Auction doesnt exist");
 
-        (address highestBidder, ) = auctionHouse.getCurrentBidAmount(
+        (address highestBidder, ) = auctionHouse.getCurrentBid(
             token.contractAddress,
             token.tokenId
         );
@@ -217,7 +186,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
         ISuperRareAuctionHouse.Auction memory auction = auctionHouse
             .getAuctionDetails(token.contractAddress, token.tokenId);
 
-        return auction.auctionType == NO_AUCTION;
+        return auction.auctionType == bytes32(0);
     }
 
     /**
@@ -229,7 +198,7 @@ contract SuperRareMarketWrapper is IMarketWrapper {
             .getAuctionDetails(token.contractAddress, token.tokenId);
 
         require(
-            auction.auctionType != NO_AUCTION,
+            auction.auctionType != bytes32(0),
             "finalize::auction doesnt exist"
         );
         require(auction.startingBlock > 0, "finalize::auction hasnt started");

@@ -54,15 +54,6 @@ async function approveForAll(signer, tokenContract, to) {
   });
 }
 
-async function bidThroughParty(partyBidContract, signer) {
-  const data = encodeData(partyBidContract, 'bid');
-
-  return signer.sendTransaction({
-    to: partyBidContract.address,
-    data,
-  });
-}
-
 async function contribute(partyBidContract, contributorSigner, value) {
   const data = encodeData(partyBidContract, 'contribute');
 
@@ -161,25 +152,6 @@ async function createZoraAuction(
   });
 }
 
-async function createReserveAuction(
-  artist,
-  marketContract,
-  nftContractAddress,
-  tokenId,
-  reservePrice,
-) {
-  const data = encodeData(marketContract, 'createReserveAuction', [
-    nftContractAddress,
-    tokenId,
-    reservePrice,
-  ]);
-
-  return artist.sendTransaction({
-    to: marketContract.address,
-    data,
-  });
-}
-
 async function createSuperRareColdieAuction(
   artist,
   marketContract,
@@ -198,14 +170,6 @@ async function createSuperRareColdieAuction(
     to: marketContract.address,
     data,
   });
-}
-
-function initExpectedTotalContributed(signers) {
-  const expectedTotalContributed = {};
-  signers.map((signer) => {
-    expectedTotalContributed[signer.address] = 0;
-  });
-  return expectedTotalContributed;
 }
 
 // Validate state variables based on ETH amount added to contract

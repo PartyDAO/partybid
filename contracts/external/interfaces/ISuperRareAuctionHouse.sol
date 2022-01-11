@@ -101,7 +101,7 @@ interface ISuperRareAuctionHouse {
      * @param _contractAddress address of ERC721 contract.
      * @param _tokenId uint256 id of the token.
      */
-    function getCurrentBidAmount(address _contractAddress, uint256 _tokenId)
+    function getCurrentBid(address _contractAddress, uint256 _tokenId)
         external
         view
         returns (address, uint256);

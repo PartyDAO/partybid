@@ -197,11 +197,6 @@ async function deploySuperRareAndStartAuction(
     eth(reservePrice)
   );
 
-  await marketWrapper.registerAuction(
-    nftContract.address,
-    tokenId
-  );
-
   const auctionId = 0;
 
   return {

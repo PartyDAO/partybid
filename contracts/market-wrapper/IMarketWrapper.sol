@@ -36,7 +36,7 @@ interface IMarketWrapper {
         uint256 auctionId,
         address nftContract,
         uint256 tokenId
-    ) external view returns (bool);
+    ) external returns (bool);
 
     /**
      * @notice Calculate the minimum next bid for this auction.
