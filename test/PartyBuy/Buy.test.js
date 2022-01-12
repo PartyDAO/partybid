@@ -24,7 +24,7 @@ const {
 } = require('./helpers/constants');
 const { testCases } = require('./partyBuyTestCases.json');
 
-describe.only('Buy', async () => {
+describe('Buy', async () => {
   testCases.filter(testCase => testCase["amountSpent"] > 0).map((testCase, i) => {
     describe(`Case ${i}`, async () => {
       // get test case information
