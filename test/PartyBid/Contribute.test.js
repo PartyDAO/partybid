@@ -8,10 +8,10 @@ const {
   eth,
   initExpectedTotalContributed,
   contribute,
-} = require('./helpers/utils');
-const { deployTestContractSetup } = require('./helpers/deploy');
-const { MARKETS } = require('./helpers/constants');
-const { testCases } = require('./testCases.json');
+} = require('../helpers/utils');
+const { deployTestContractSetup } = require('../helpers/deploy');
+const { MARKETS } = require('../helpers/constants');
+const { testCases } = require('../partyBidTestCases.json');
 
 describe('Contribute', async () => {
   MARKETS.map((marketName) => {

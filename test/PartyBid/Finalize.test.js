@@ -11,9 +11,9 @@ const {
   getTotalContributed,
   contribute,
   bidThroughParty
-} = require('./helpers/utils');
-const { placeBid } = require('./helpers/externalTransactions');
-const { deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
+} = require('../helpers/utils');
+const { placeBid } = require('../helpers/externalTransactions');
+const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
 const {
   MARKETS,
   PARTY_STATUS,
@@ -22,8 +22,8 @@ const {
   TOKEN_FEE_BASIS_POINTS,
   TOKEN_SCALE,
   RESALE_MULTIPLIER
-} = require('./helpers/constants');
-const { testCases } = require('./testCases.json');
+} = require('../helpers/constants');
+const { testCases } = require('../partyBidTestCases.json');
 
 describe('Finalize', async () => {
   MARKETS.map((marketName) => {

@@ -4,9 +4,9 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const { eth } = require('./helpers/utils');
-const { deployTestContractSetup } = require('./helpers/deploy');
-const { MARKETS, PARTY_STATUS } = require('./helpers/constants');
+const { eth } = require('../helpers/utils');
+const { deployTestContractSetup } = require('../helpers/deploy');
+const { MARKETS, PARTY_STATUS } = require('../helpers/constants');
 
 describe('Deploy', async () => {
   MARKETS.map((marketName) => {
