@@ -33,7 +33,7 @@ async function deployPartyBuyFactory() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/partybuy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
     console.log("Config", config)
     const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, allowedContracts} = config;
     if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && allowedContracts)) {

@@ -33,7 +33,7 @@ async function deployZoraMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/partybid/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
     const {zoraAuctionHouse} = config;
     if (!zoraAuctionHouse) {
         throw new Error("Must populate config with Zora Auction House address");
