@@ -7,8 +7,8 @@
     "test": "npm run compile && hardhat test",
     "deploy:partybid": "npm run compile && node ./deploy/partybid/index.js && npm run verify",
     "deploy:partybuy": "npm run compile && node ./deploy/partybuy/index.js && npm run verify-partybuy",
-    "verify": "hardhat --network rinkeby verify-contracts",
-    "verify-partybuy": "hardhat --network rinkeby verify-partybuy-contracts",
+    "verify:partybid": "hardhat --network rinkeby verify-partybid-contracts",
+    "verify:partybuy": "hardhat --network rinkeby verify-partybuy-contracts",
     "compile": "hardhat compile",
     "prettier": "prettier --write './contracts' ./test",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
