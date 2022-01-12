@@ -1,0 +1,7 @@
+{
+  "chainName": "rinkeby",
+  "partyDAOMultisig":"0xF7f52Dd34bc21eDA08c0b804C7c1dbc48375820f",
+  "fractionalArtERC721VaultFactory":"0x09EB641BA93CfA6340E944a22bDd2F1C8c745A9f",
+  "weth":"0xc778417E063141139Fce010982780140Aa0cD5Ab",
+  "allowedContracts": ["0x5206e78b21Ce315ce284FB24cf05e0585A93B1d9"]
+}
