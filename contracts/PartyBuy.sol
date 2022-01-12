@@ -10,7 +10,7 @@ Anna Carroll for PartyDAO
 */
 
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.11;
+pragma solidity 0.8.9;
 
 // ============ External Imports: External Contracts & Contract Interfaces ============
 import {Party} from "./Party.sol";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.11;
+pragma solidity 0.8.9;
 
 import {NonReceivableInitializedProxy} from "./NonReceivableInitializedProxy.sol";
 import {PartyBuy} from "./PartyBuy.sol";

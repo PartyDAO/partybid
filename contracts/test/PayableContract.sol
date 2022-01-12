@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.11;
+pragma solidity 0.8.9;
 
 contract PayableContract {
     fallback() external payable {} // solhint-disable-line no-empty-blocks
