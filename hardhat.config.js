@@ -4,9 +4,11 @@ require('@nomiclabs/hardhat-etherscan');
 require('@openzeppelin/hardhat-upgrades');
 const dotenv = require('dotenv');
 dotenv.config();
-const {verify} = require("./deploy/verify");
+const {verify : verifyPartybid} = require("./deploy/partybid/verify");
+const {verify : verifyPartybuy} = require("./deploy/partybuy/verify")
 
-task("verify-contracts", "Verifies the PartyBid contracts").setAction(verify);
+task("verify-partybid-contracts", "Verifies the PartyBid contracts").setAction(verifyPartybid);
+task("verify-partybuy-contracts", "Verifies the PartyBuy contracts").setAction(verifyPartybuy);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -15,16 +17,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.6",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 10000,
-          },
-        },
-      },
-      {
-        version: '0.8.5',
+        version: '0.8.9',
         settings: {
           optimizer: {
             enabled: true,

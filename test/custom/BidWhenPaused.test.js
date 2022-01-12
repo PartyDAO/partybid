@@ -8,7 +8,7 @@ const { eth, bidThroughParty, contribute } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKETS, MARKET_NAMES } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { testCases } = require('../partyBidTestCases.json');
 
 describe('Bid When Paused', async () => {
   MARKETS.filter(m => m == MARKET_NAMES.NOUNS || m == MARKET_NAMES.KOANS).map((marketName) => {

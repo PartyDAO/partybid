@@ -15,7 +15,7 @@ const {
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKETS, PARTY_STATUS } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { testCases } = require('../partyBidTestCases.json');
 
 describe('Emergency Force Lost', async () => {
     MARKETS.map((marketName) => {

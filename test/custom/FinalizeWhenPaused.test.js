@@ -20,7 +20,7 @@ const {
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { testCases } = require('../partyBidTestCases.json');
 const { MARKETS, MARKET_NAMES, TOKEN_FEE_BASIS_POINTS, ETH_FEE_BASIS_POINTS, TOKEN_SCALE } = require('../helpers/constants');
 
 describe('Finalize When Paused', async () => {

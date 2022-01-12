@@ -1,7 +1,7 @@
 const fs = require("fs");
 
-function getDeployedAddresses(CHAIN_NAME) {
-    const directory = "./deploy/deployed-contracts";
+function getDeployedAddresses(type, CHAIN_NAME) {
+    const directory = `./deploy/${type}/deployed-contracts`;
     const filename = `${directory}/${CHAIN_NAME}.json`;
     let contractAddresses;
     try {

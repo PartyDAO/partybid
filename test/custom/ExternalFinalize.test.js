@@ -22,7 +22,7 @@ const {
     ETH_FEE_BASIS_POINTS,
     TOKEN_SCALE
 } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { testCases } = require('../partyBidTestCases.json');
 
 describe('External Finalize', async () => {
     MARKETS.map((marketName) => {
