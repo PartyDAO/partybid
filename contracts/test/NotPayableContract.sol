@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.5;
+pragma solidity 0.8.11;
 
 contract NonPayableContract {
     function contribute(address partyBid, uint256 amount) public {
