@@ -1,7 +1,7 @@
 const {ethers} = require("hardhat");
 const fs = require("fs");
 const dotenv = require('dotenv');
-const {getDeployedAddresses, writeDeployedAddresses} = require("./helpers");
+const {getDeployedAddresses, writeDeployedAddresses} = require("../helpers");
 
 deployPartyBuyFactory()
     .then(() => {
@@ -33,7 +33,7 @@ async function deployPartyBuyFactory() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy-partybuy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/partybuy/configs/${CHAIN_NAME}.json`));
     console.log("Config", config)
     const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, allowedContracts} = config;
     if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && allowedContracts)) {
@@ -41,7 +41,7 @@ async function deployPartyBuyFactory() {
     }
 
     // get the deployed contracts
-    const {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    const {directory, filename, contractAddresses} = getDeployedAddresses('partybuy', CHAIN_NAME);
     // setup deployer wallet
     const deployer = getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY);
 

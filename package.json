@@ -5,8 +5,8 @@
   "main": "",
   "scripts": {
     "test": "npm run compile && hardhat test",
-    "deploy": "npm run compile && node ./deploy/index.js && npm run verify",
-    "deploy-partybuy": "npm run compile && node ./deploy-partybuy/index.js && npm run verify-partybuy",
+    "deploy:partybid": "npm run compile && node ./deploy/partybid/index.js && npm run verify",
+    "deploy:partybuy": "npm run compile && node ./deploy/partybuy/index.js && npm run verify-partybuy",
     "verify": "hardhat --network rinkeby verify-contracts",
     "verify-partybuy": "hardhat --network rinkeby verify-partybuy-contracts",
     "compile": "hardhat compile",

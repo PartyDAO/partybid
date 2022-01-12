@@ -1,7 +1,7 @@
 const {ethers} = require("hardhat");
 const fs = require("fs");
 const dotenv = require('dotenv');
-const {getDeployedAddresses, writeDeployedAddresses} = require("./helpers");
+const {getDeployedAddresses, writeDeployedAddresses} = require("../helpers");
 
 deployPartyBidFactory()
     .then(() => {
@@ -33,7 +33,7 @@ async function deployZoraMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = JSON.parse(fs.readFileSync(`./deploy/partybid/configs/${CHAIN_NAME}.json`));
     const {zoraAuctionHouse} = config;
     if (!zoraAuctionHouse) {
         throw new Error("Must populate config with Zora Auction House address");
@@ -48,7 +48,7 @@ async function deployZoraMarketWrapper() {
     console.log(`Deployed Zora Market Wrapper to ${CHAIN_NAME}: `, zoraMarketWrapper.address);
 
     // get the existing deployed addresses
-    let {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    let {directory, filename, contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
 
     // update the zora market wrapper address
     if (contractAddresses["marketWrappers"]) {
@@ -85,7 +85,7 @@ async function deployFoundationMarketWrapper() {
     console.log(`Deployed Foundation Market Wrapper to ${CHAIN_NAME}: `, foundationMarketWrapper.address);
 
     // get the existing deployed addresses
-    let {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    let {directory, filename, contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
 
     // update the foundation market wrapper address
     if (contractAddresses["marketWrappers"]) {
@@ -122,7 +122,7 @@ async function deployNounsMarketWrapper() {
     console.log(`Deployed Nouns Market Wrapper to ${CHAIN_NAME}: `, nounsMarketWrapper.address);
 
     // get the existing deployed addresses
-    let {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    let {directory, filename, contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
 
     // update the nouns market wrapper address
     if (contractAddresses["marketWrappers"]) {
@@ -159,7 +159,7 @@ async function deployKoansMarketWrapper() {
     console.log(`Deployed Koans Market Wrapper to ${CHAIN_NAME}: `, koansMarketWrapper.address);
 
     // get the existing deployed addresses
-    let {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    let {directory, filename, contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
 
     // update the nouns market wrapper address
     if (contractAddresses["marketWrappers"]) {
@@ -203,7 +203,7 @@ async function deployPartyBidFactory() {
     const logic = await factory.logic();
 
     // get the current deployed addresses
-    const {directory, filename, contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    const {directory, filename, contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
 
     // update the factory & logic addresses
     contractAddresses["partyBidFactory"] = factory.address;
