@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.5;
+pragma solidity 0.8.9;
 
 // ============ External Imports ============
 import {INounsAuctionHouse} from "../external/interfaces/INounsAuctionHouse.sol";

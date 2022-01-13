@@ -10,7 +10,7 @@ const MARKETS = Object.keys(MARKET_NAMES).map(key => MARKET_NAMES[key]);
 const NFT_TYPE_ENUM = {
   ZORA: 0,
   FOUNDATION: 1,
-  NOUNS: 2,
+  // NOUNS: 2,
 };
 
 const FOURTY_EIGHT_HOURS_IN_SECONDS = 48 * 60 * 60;

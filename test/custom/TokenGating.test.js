@@ -16,7 +16,7 @@ const {
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, deploy, getTokenVault } = require('../helpers/deploy');
 const { MARKETS, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { testCases } = require('../partybid/partyBidTestCases.json');
 
 // indexes of test cases with one contribution per signer
 const compatibleTestCases = [2, 3, 4, 7];

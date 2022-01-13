@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.5;
+pragma solidity 0.8.9;
 
 interface ITokenVault {
     /// @notice allow curator to update the curator address

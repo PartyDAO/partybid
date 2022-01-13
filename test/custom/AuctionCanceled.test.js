@@ -15,7 +15,7 @@ const {
 } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKETS, MARKET_NAMES, PARTY_STATUS } = require('../helpers/constants');
-const { testCases } = require('../testCases.json');
+const { testCases } = require('../partybid/partyBidTestCases.json');
 
 describe('Auction Canceled', async () => {
     // Noun auctions cannot be cancelled

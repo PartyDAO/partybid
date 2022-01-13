@@ -74,7 +74,7 @@ Next, add a config file to `deploy/configs/[CHAIN_NAME].json` specifying the add
 Finally, run
 
 ```bash
-npm run deploy
+npm run deploy:partybid
 ```
 
 ## Security Review

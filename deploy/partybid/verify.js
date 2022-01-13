@@ -1,7 +1,7 @@
 const fs = require("fs");
 const dotenv = require('dotenv');
 dotenv.config();
-const {getDeployedAddresses} = require("./helpers");
+const {getDeployedAddresses} = require("../helpers");
 
 async function verify() {
     // load .env
@@ -27,7 +27,7 @@ async function verify() {
     }
 
     // load deployed contracts
-    const {contractAddresses} = getDeployedAddresses(CHAIN_NAME);
+    const {contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
     const {partyBidFactory, partyBidLogic, marketWrappers} = contractAddresses;
     const {foundation, zora, nouns, koans} = marketWrappers;
 
