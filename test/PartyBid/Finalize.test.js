@@ -23,7 +23,7 @@ const {
   TOKEN_SCALE,
   RESALE_MULTIPLIER
 } = require('../helpers/constants');
-const { testCases } = require('../partyBidTestCases.json');
+const { testCases } = require('./partyBidTestCases.json');
 
 describe('Finalize', async () => {
   MARKETS.map((marketName) => {

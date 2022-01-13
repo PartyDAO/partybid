@@ -12,7 +12,7 @@ const {
   MARKETS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('../helpers/constants');
-const { testCases } = require('../partyBidTestCases.json');
+const { testCases } = require('./partyBidTestCases.json');
 
 describe('Claim', async () => {
   MARKETS.map((marketName) => {
