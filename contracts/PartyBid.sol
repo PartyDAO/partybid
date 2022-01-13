@@ -217,7 +217,7 @@ contract PartyBid is Party {
      */
     function canExpire() public view returns (ExpireCapability) {
         if (partyStatus != PartyStatus.ACTIVE) {
-            return ExpireCapability.PartyOver);
+            return ExpireCapability.PartyOver;
         }
         // In case there's some variation in how contracts define a "high bid"
         // we fall back to making sure none of the eth contributed is outstanding.

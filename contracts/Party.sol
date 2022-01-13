@@ -47,14 +47,8 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     //   (1) ACTIVE on deploy
     //   (2) WON if the Party has won the token
     //   (2) LOST if the Party is over & did not win the token
-    enum PartyStatus {ACTIVE, WO
-    
-    enum ExpireCapability {
-        CanExpire, // The party can be expired
-        BeforeExpiration, // The expiration date is in the future
-        PartyInactive, // The party is inactive, either already expired, won, or lost.
-        CurrentlyWinning // The party is currently winning its auction
-    }
+    enum PartyStatus {ACTIVE, WON, LOST}
+
     // ============ Structs ============
 
     struct Contribution {
