@@ -31,7 +31,7 @@ contract PartyBid is Party {
     enum ExpireCapability {
         CanExpire, // The party can be expired
         BeforeExpiration, // The expiration date is in the future
-        PartyInactive, // The party is inactive, either already expired, won, or lost.
+        PartyOver, // The party is inactive, either won, or lost.
         CurrentlyWinning // The party is currently winning its auction
     }
 
@@ -215,24 +215,30 @@ contract PartyBid is Party {
      * @notice Determines whether a party can be expired. Any status other than `CanExpire` will
      * fail the `expire()` call.
      */
-    function canExpire() public view returns (ExpireCapability, string memory) {
+    function canExpire() public view returns (ExpireCapability) {
         if (partyStatus != PartyStatus.ACTIVE) {
-            return (ExpireCapability.PartyInactive, "PartyBid::expire: auction not active");
-        }
-        if (address(this) == marketWrapper.getCurrentHighestBidder(auctionId)) {
-            return (ExpireCapability.CurrentlyWinning, "PartyBid::expire: currently highest bidder");
-        }
-        if (block.timestamp < expiresAt) {
-            return (ExpireCapability.BeforeExpiration, "PartyBid::expire: expiration time in future");
+            return ExpireCapability.PartyOver);
         }
         // In case there's some variation in how contracts define a "high bid"
         // we fall back to making sure none of the eth contributed is outstanding.
         // If we ever add any features that can send eth for any other purpose we
         // will revisit/remove this.
-        if (address(this).balance < totalContributedToParty) {
-            return (ExpireCapability.CurrentlyWinning, "PartyBid::expire: currently highest bidder");
+        if (address(this) == marketWrapper.getCurrentHighestBidder(auctionId) ||
+            address(this).balance < totalContributedToParty) {
+            return ExpireCapability.CurrentlyWinning;
         }
-        return (ExpireCapability.CanExpire, "");
+        if (block.timestamp < expiresAt) {
+            return ExpireCapability.BeforeExpiration;
+        }
+
+        return ExpireCapability.CanExpire;
+    }
+
+    function errorStringForCapability(ExpireCapability capability) internal pure returns (string memory) {
+        if (capability == ExpireCapability.PartyOver) return "PartyBid::expire: auction not active";
+        if (capability == ExpireCapability.CurrentlyWinning) return "PartyBid::expire: currently highest bidder";
+        if (capability == ExpireCapability.BeforeExpiration) return "PartyBid::expire: expiration time in future";
+        return "";
     }
 
     /**
@@ -240,8 +246,8 @@ contract PartyBid is Party {
      * @dev Emits a Finalized event upon success; callable by anyone once the expiration date passes.
      */
     function expire() external nonReentrant {
-        (ExpireCapability expireCapability, string memory message) = canExpire();
-        require(expireCapability == ExpireCapability.CanExpire, message);
+        ExpireCapability expireCapability = canExpire();
+        require(expireCapability == ExpireCapability.CanExpire, errorStringForCapability(expireCapability));
         partyStatus = PartyStatus.LOST;
         emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
     }
