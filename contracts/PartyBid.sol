@@ -35,7 +35,6 @@ contract PartyBid is Party {
         CurrentlyWinning // The party is currently winning its auction
     }
 
-
     // ============ Internal Constants ============
 
     // PartyBid version 3
@@ -71,7 +70,13 @@ contract PartyBid is Party {
     // @param fee The eth fee paid to PartyDAO.
     // @param totalContributed Total eth deposited by all contributors, including eth not used in purchase.
     // @param expired True if the party expired before reaching a reserve / placing a bid.
-    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed, bool expired);
+    event Finalized(
+        PartyStatus result,
+        uint256 totalSpent,
+        uint256 fee,
+        uint256 totalContributed,
+        bool expired
+    );
 
     // ======== Constructor =========
 
@@ -107,7 +112,10 @@ contract PartyBid is Party {
         __Party_init(_nftContract, _split, _tokenGate, _name, _symbol);
         // verify token exists
         tokenId = _tokenId;
-        require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
+        require(
+            _getOwner() != address(0),
+            "PartyBid::initialize: NFT getOwner failed"
+        );
         // set PartyBid-specific state variables
         marketWrapper = IMarketWrapper(_marketWrapper);
         auctionId = _auctionId;
@@ -144,10 +152,7 @@ contract PartyBid is Party {
             "PartyBid::bid: only contributors can bid"
         );
         require(
-            address(this) !=
-                marketWrapper.getCurrentHighestBidder(
-                    auctionId
-                ),
+            address(this) != marketWrapper.getCurrentHighestBidder(auctionId),
             "PartyBid::bid: already highest bidder"
         );
         require(
@@ -162,8 +167,8 @@ contract PartyBid is Party {
             "PartyBid::bid: insufficient funds to bid"
         );
         // submit bid to Auction contract using delegatecall
-        (bool success, bytes memory returnData) =
-            address(marketWrapper).delegatecall(
+        (bool success, bytes memory returnData) = address(marketWrapper)
+            .delegatecall(
                 abi.encodeWithSignature("bid(uint256,uint256)", auctionId, _bid)
             );
         require(
@@ -198,7 +203,9 @@ contract PartyBid is Party {
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
         address _owner = _getOwner();
-        partyStatus = _owner == address(this) ? PartyStatus.WON : PartyStatus.LOST;
+        partyStatus = _owner == address(this)
+            ? PartyStatus.WON
+            : PartyStatus.LOST;
         uint256 _ethFee;
         // if the auction was won,
         if (partyStatus == PartyStatus.WON) {
@@ -209,7 +216,13 @@ contract PartyBid is Party {
             _ethFee = _closeSuccessfulParty(highestBid);
         }
         // set the contract status & emit result
-        emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty, false);
+        emit Finalized(
+            partyStatus,
+            totalSpent,
+            _ethFee,
+            totalContributedToParty,
+            false
+        );
     }
 
     // ======== External: Expire =========
@@ -226,8 +239,10 @@ contract PartyBid is Party {
         // we fall back to making sure none of the eth contributed is outstanding.
         // If we ever add any features that can send eth for any other purpose we
         // will revisit/remove this.
-        if (address(this) == marketWrapper.getCurrentHighestBidder(auctionId) ||
-            address(this).balance < totalContributedToParty) {
+        if (
+            address(this) == marketWrapper.getCurrentHighestBidder(auctionId) ||
+            address(this).balance < totalContributedToParty
+        ) {
             return ExpireCapability.CurrentlyWinning;
         }
         if (block.timestamp < expiresAt) {
@@ -237,10 +252,17 @@ contract PartyBid is Party {
         return ExpireCapability.CanExpire;
     }
 
-    function errorStringForCapability(ExpireCapability capability) internal pure returns (string memory) {
-        if (capability == ExpireCapability.PartyOver) return "PartyBid::expire: auction not active";
-        if (capability == ExpireCapability.CurrentlyWinning) return "PartyBid::expire: currently highest bidder";
-        if (capability == ExpireCapability.BeforeExpiration) return "PartyBid::expire: expiration time in future";
+    function errorStringForCapability(ExpireCapability capability)
+        internal
+        pure
+        returns (string memory)
+    {
+        if (capability == ExpireCapability.PartyOver)
+            return "PartyBid::expire: auction not active";
+        if (capability == ExpireCapability.CurrentlyWinning)
+            return "PartyBid::expire: currently highest bidder";
+        if (capability == ExpireCapability.BeforeExpiration)
+            return "PartyBid::expire: expiration time in future";
         return "";
     }
 
@@ -250,7 +272,10 @@ contract PartyBid is Party {
      */
     function expire() external nonReentrant {
         ExpireCapability expireCapability = canExpire();
-        require(expireCapability == ExpireCapability.CanExpire, errorStringForCapability(expireCapability));
+        require(
+            expireCapability == ExpireCapability.CanExpire,
+            errorStringForCapability(expireCapability)
+        );
         partyStatus = PartyStatus.LOST;
         emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
     }

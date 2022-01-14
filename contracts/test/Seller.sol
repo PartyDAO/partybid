@@ -5,15 +5,33 @@ import {PartyBuy} from "../PartyBuy.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
 contract Seller {
-    function sell(uint256 offer, uint256 tokenId, address nftContract) external payable {
+    function sell(
+        uint256 offer,
+        uint256 tokenId,
+        address nftContract
+    ) external payable {
         require(msg.value == offer, "must send offer amt");
-        IERC721Metadata(nftContract).safeTransferFrom(address(this), msg.sender, tokenId);
+        IERC721Metadata(nftContract).safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
     }
 
-    function sellAndReenter(uint256 offer, uint256 tokenId, address nftContract) external payable {
+    function sellAndReenter(
+        uint256 offer,
+        uint256 tokenId,
+        address nftContract
+    ) external payable {
         require(msg.value == offer, "must send offer amt");
-        IERC721Metadata(nftContract).safeTransferFrom(address(this), msg.sender, tokenId);
-        (bool _success, bytes memory _returnData) = address(msg.sender).call{value: offer}(
+        IERC721Metadata(nftContract).safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
+        (bool _success, bytes memory _returnData) = address(msg.sender).call{
+            value: offer
+        }(
             abi.encodeWithSelector(
                 PartyBuy.buy.selector,
                 offer,
@@ -24,15 +42,24 @@ contract Seller {
                     tokenId,
                     nftContract
                 )
-            ));
+            )
+        );
         require(_success, "re-enter failed");
     }
 
-    function revertSell(uint256 offer, uint256 tokenId, address nftContract) external payable {
+    function revertSell(
+        uint256 offer,
+        uint256 tokenId,
+        address nftContract
+    ) external payable {
         require(false, "muahahaha");
     }
 
-    function fakeSell(uint256 offer, uint256 tokenId, address nftContract) external payable {
+    function fakeSell(
+        uint256 offer,
+        uint256 tokenId,
+        address nftContract
+    ) external payable {
         require(msg.value == offer, "must send offer amt");
     }
 }

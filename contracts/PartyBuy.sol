@@ -45,7 +45,13 @@ contract PartyBuy is Party {
     // ============ Events ============
 
     // emitted when the token is successfully bought
-    event Bought(address triggeredBy, address targetAddress, uint256 ethSpent, uint256 ethFeePaid, uint256 totalContributed);
+    event Bought(
+        address triggeredBy,
+        address targetAddress,
+        uint256 ethSpent,
+        uint256 ethFeePaid,
+        uint256 totalContributed
+    );
 
     // emitted if the Party fails to buy the token before expiresAt
     // and someone expires the Party so folks can reclaim ETH
@@ -75,12 +81,18 @@ contract PartyBuy is Party {
         string memory _symbol
     ) external initializer {
         // validate maxPrice
-        require(_maxPrice > 0, "PartyBuy::initialize: must set price higher than 0");
+        require(
+            _maxPrice > 0,
+            "PartyBuy::initialize: must set price higher than 0"
+        );
         // initialize & validate shared Party variables
         __Party_init(_nftContract, _split, _tokenGate, _name, _symbol);
         // verify token exists
         tokenId = _tokenId;
-        require(_getOwner() != address(0), "PartyBuy::initialize: NFT getOwner failed");
+        require(
+            _getOwner() != address(0),
+            "PartyBuy::initialize: NFT getOwner failed"
+        );
         // set PartyBuy-specific state variables
         expiresAt = block.timestamp + _secondsToTimeout;
         maxPrice = _maxPrice;
@@ -96,7 +108,10 @@ contract PartyBuy is Party {
     function contribute() external payable nonReentrant {
         // require that the new total contributed is not greater than
         // the maximum amount the Party is willing to spend
-        require(totalContributedToParty + msg.value <= getMaximumContributions(), "PartyBuy::contribute: cannot contribute more than max");
+        require(
+            totalContributedToParty + msg.value <= getMaximumContributions(),
+            "PartyBuy::contribute: cannot contribute more than max"
+        );
         // continue with shared _contribute flow
         _contribute();
     }
@@ -107,28 +122,48 @@ contract PartyBuy is Party {
      * @notice Buy the token by calling targetContract with calldata supplying value
      * @dev Emits a Bought event upon success; reverts otherwise. callable by anyone
      */
-    function buy(uint256 _value, address _targetContract, bytes calldata _calldata) external nonReentrant {
+    function buy(
+        uint256 _value,
+        address _targetContract,
+        bytes calldata _calldata
+    ) external nonReentrant {
         require(
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::buy: party not active"
         );
         // ensure the target contract is on allow list
-        require(allowList.allowed(_targetContract), "PartyBuy::buy: targetContract not on AllowList");
+        require(
+            allowList.allowed(_targetContract),
+            "PartyBuy::buy: targetContract not on AllowList"
+        );
         // check that value is not zero (else, token will be burned in TokenVault)
         require(_value > 0, "PartyBuy::buy: can't spend zero");
         // check that value is not more than the maximum price set at deploy time
-        require(_value <= maxPrice, "PartyBuy::buy: can't spend over max price");
+        require(
+            _value <= maxPrice,
+            "PartyBuy::buy: can't spend over max price"
+        );
         // check that value is not more than
         // the maximum amount the party can spend while paying ETH fee
-        require(_value <= getMaximumSpend(), "PartyBuy::buy: insuffucient funds to buy token plus fee");
+        require(
+            _value <= getMaximumSpend(),
+            "PartyBuy::buy: insuffucient funds to buy token plus fee"
+        );
         // require that the NFT is NOT owned by the Party
-        require(_getOwner() != address(this), "PartyBuy::buy: own token before call");
+        require(
+            _getOwner() != address(this),
+            "PartyBuy::buy: own token before call"
+        );
         // execute the calldata on the target contract
-        (bool _success, bytes memory _returnData) = address(_targetContract).call{value: _value}(_calldata);
+        (bool _success, bytes memory _returnData) = address(_targetContract)
+            .call{value: _value}(_calldata);
         // require that the external call succeeded
         require(_success, string(_returnData));
         // require that the NFT is owned by the Party
-        require(_getOwner() == address(this), "PartyBuy::buy: failed to buy token");
+        require(
+            _getOwner() == address(this),
+            "PartyBuy::buy: failed to buy token"
+        );
         // set partyStatus to WON
         partyStatus = PartyStatus.WON;
         // record totalSpent,
@@ -137,15 +172,21 @@ contract PartyBuy is Party {
         // send Token fees to PartyDAO & split proceeds to split recipient
         uint256 _ethFee = _closeSuccessfulParty(_value);
         // emit Bought event
-        emit Bought(msg.sender, _targetContract, _value, _ethFee, totalContributedToParty);
+        emit Bought(
+            msg.sender,
+            _targetContract,
+            _value,
+            _ethFee,
+            totalContributedToParty
+        );
     }
 
     // ======== External: Fail =========
 
     /**
      * @notice If the token couldn't be successfully bought
-      * within the specified period of time, move to FAILED state
-      * so users can reclaim their funds.
+     * within the specified period of time, move to FAILED state
+     * so users can reclaim their funds.
      * @dev Emits a Expired event upon finishing; reverts otherwise.
      * callable by anyone after expiresAt
      */
@@ -154,7 +195,10 @@ contract PartyBuy is Party {
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::expire: party not active"
         );
-        require(expiresAt <= block.timestamp, "PartyBuy::expire: party has not timed out");
+        require(
+            expiresAt <= block.timestamp,
+            "PartyBuy::expire: party has not timed out"
+        );
         // set partyStatus to LOST
         partyStatus = PartyStatus.LOST;
         // emit Expired event
@@ -164,10 +208,14 @@ contract PartyBuy is Party {
     // ============ Internal ============
 
     /**
-    * @notice Get the maximum amount that can be contributed to the Party
-    * @return _maxContributions the maximum amount that can be contributed to the party
-    */
-    function getMaximumContributions() public view returns (uint256 _maxContributions) {
+     * @notice Get the maximum amount that can be contributed to the Party
+     * @return _maxContributions the maximum amount that can be contributed to the party
+     */
+    function getMaximumContributions()
+        public
+        view
+        returns (uint256 _maxContributions)
+    {
         uint256 _price = maxPrice;
         _maxContributions = _price + _getEthFee(_price);
     }

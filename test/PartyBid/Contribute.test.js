@@ -20,13 +20,17 @@ describe('Contribute', async () => {
         describe(`Case ${i}`, async () => {
           // get test case information
           let partyBid;
-          const { splitRecipient, splitBasisPoints, auctionReservePrice, contributions } = testCase;
+          const {
+            splitRecipient,
+            splitBasisPoints,
+            auctionReservePrice,
+            contributions,
+          } = testCase;
           const tokenId = 95;
           const signers = provider.getWallets();
           let expectedTotalContributedToParty = 0;
-          const expectedTotalContributed = initExpectedTotalContributed(
-            signers,
-          );
+          const expectedTotalContributed =
+            initExpectedTotalContributed(signers);
 
           before(async () => {
             // DEPLOY PARTY BID CONTRACT
@@ -43,7 +47,11 @@ describe('Contribute', async () => {
           });
 
           it('Does not accept a 0 contribution', async () => {
-            await expect(contribute(partyBid, signers[0], eth(0))).to.be.revertedWith("Party::contribute: must contribute more than 0");
+            await expect(
+              contribute(partyBid, signers[0], eth(0)),
+            ).to.be.revertedWith(
+              'Party::contribute: must contribute more than 0',
+            );
           });
 
           // submit each contribution & check test conditions

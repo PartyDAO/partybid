@@ -11,11 +11,18 @@ const { MARKETS, PARTY_STATUS } = require('../helpers/constants');
 describe('Deploy', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
-      const splitRecipient = "0x0000000000000000000000000000000000000000";
+      const splitRecipient = '0x0000000000000000000000000000000000000000';
       const splitBasisPoints = 0;
       const reservePrice = 1;
       const tokenId = 95;
-      let factory, partyBid, partyDAOMultisig, marketWrapper, signer, artist, nftContract, auctionId;
+      let factory,
+        partyBid,
+        partyDAOMultisig,
+        marketWrapper,
+        signer,
+        artist,
+        nftContract,
+        auctionId;
 
       before(async () => {
         // GET RANDOM SIGNER & ARTIST
@@ -50,29 +57,33 @@ describe('Deploy', async () => {
           signer,
         );
         // calling initialize from external signer should not be possible
-        expect(partyBidLogic.initialize(
-          marketWrapper.address,
-          nftContract.address,
-          tokenId,
-          auctionId,
-          [splitRecipient, splitBasisPoints],
-          ["0x0000000000000000000000000000000000000000", 0],
-          "PartyBid Logic",
-          "LOGIC"
-      )).to.be.revertedWith("Party::__Party_init: only factory can init");
+        expect(
+          partyBidLogic.initialize(
+            marketWrapper.address,
+            nftContract.address,
+            tokenId,
+            auctionId,
+            [splitRecipient, splitBasisPoints],
+            ['0x0000000000000000000000000000000000000000', 0],
+            'PartyBid Logic',
+            'LOGIC',
+          ),
+        ).to.be.revertedWith('Party::__Party_init: only factory can init');
       });
 
       it('Cannot re-initialize Party contract', async () => {
-        expect(partyBid.initialize(
-          marketWrapper.address,
-          nftContract.address,
-          tokenId,
-          auctionId,
-          [splitRecipient, splitBasisPoints],
-          ["0x0000000000000000000000000000000000000000", 0],
-          "PartyBid",
-          "PARTYYYY"
-        )).to.be.revertedWith("Initializable: contract is already initialized");
+        expect(
+          partyBid.initialize(
+            marketWrapper.address,
+            nftContract.address,
+            tokenId,
+            auctionId,
+            [splitRecipient, splitBasisPoints],
+            ['0x0000000000000000000000000000000000000000', 0],
+            'PartyBid',
+            'PARTYYYY',
+          ),
+        ).to.be.revertedWith('Initializable: contract is already initialized');
       });
 
       it('Party Status is Active', async () => {
@@ -86,7 +97,8 @@ describe('Deploy', async () => {
       });
 
       it('Total contributed to party is zero', async () => {
-        const totalContributedToParty = await partyBid.totalContributedToParty();
+        const totalContributedToParty =
+          await partyBid.totalContributedToParty();
         expect(totalContributedToParty).to.equal(eth(0));
       });
 
@@ -119,12 +131,12 @@ describe('Deploy', async () => {
 
       it('Name is Parrrrti', async () => {
         const name = await partyBid.name();
-        expect(name).to.equal("Parrrrti");
+        expect(name).to.equal('Parrrrti');
       });
 
       it('Symbol is PRTI', async () => {
         const symbol = await partyBid.symbol();
-        expect(symbol).to.equal("PRTI");
+        expect(symbol).to.equal('PRTI');
       });
     });
   });

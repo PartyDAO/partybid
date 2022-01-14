@@ -18,9 +18,11 @@ async function getBalances(provider, token, accounts) {
   for (let account of accounts) {
     const { name, address } = account;
     balances[name] = {};
-    balances[name]['eth'] = new BigNumber(parseFloat(weiToEth(await provider.getBalance(address))));
+    balances[name]['eth'] = new BigNumber(
+      parseFloat(weiToEth(await provider.getBalance(address))),
+    );
     let tokenBalance = 0;
-    if(token && token.address != ethers.constants.AddressZero) {
+    if (token && token.address != ethers.constants.AddressZero) {
       tokenBalance = weiToEth(await token.balanceOf(address));
     }
     balances[name]['tokens'] = new BigNumber(parseFloat(tokenBalance));
@@ -45,7 +47,6 @@ async function approve(signer, tokenContract, to, tokenId) {
   });
 }
 
-
 async function contribute(partyBidContract, contributorSigner, value) {
   const data = encodeData(partyBidContract, 'contribute');
 
@@ -65,8 +66,16 @@ async function emergencyWithdrawEth(partyBidContract, signer, value) {
   });
 }
 
-async function emergencyCall(partyBidContract, signer, contractAddress, calldata) {
-  const data = encodeData(partyBidContract, 'emergencyCall', [contractAddress, calldata]);
+async function emergencyCall(
+  partyBidContract,
+  signer,
+  contractAddress,
+  calldata,
+) {
+  const data = encodeData(partyBidContract, 'emergencyCall', [
+    contractAddress,
+    calldata,
+  ]);
 
   return signer.sendTransaction({
     to: partyBidContract.address,
@@ -75,7 +84,7 @@ async function emergencyCall(partyBidContract, signer, contractAddress, calldata
 }
 
 async function emergencyForceLost(partyBidContract, signer) {
-  const data = encodeData(partyBidContract, 'emergencyForceLost',);
+  const data = encodeData(partyBidContract, 'emergencyForceLost');
 
   return signer.sendTransaction({
     to: partyBidContract.address,
@@ -84,7 +93,7 @@ async function emergencyForceLost(partyBidContract, signer) {
 }
 
 async function expire(partyBidContract, signer) {
-  const data = encodeData(partyBidContract, 'expire',);
+  const data = encodeData(partyBidContract, 'expire');
 
   return signer.sendTransaction({
     to: partyBidContract.address,
@@ -168,5 +177,5 @@ module.exports = {
   initExpectedTotalContributed,
   bidThroughParty,
   createReserveAuction,
-  createZoraAuction
+  createZoraAuction,
 };

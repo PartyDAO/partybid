@@ -35,12 +35,9 @@ contract KoansMarketWrapper is IMarketWrapper {
      * is less than the auction's end time.
      * @return TRUE if the auction exists
      */
-    function auctionExists(uint256 auctionId)
-      public
-      view
-      returns (bool)
-    {
-        (uint256 currentAuctionId, , , uint256 endTime, , , ) = market.auction();
+    function auctionExists(uint256 auctionId) public view returns (bool) {
+        (uint256 currentAuctionId, , , uint256 endTime, , , ) = market
+            .auction();
         return auctionId == currentAuctionId && block.timestamp < endTime;
     }
 
@@ -51,7 +48,7 @@ contract KoansMarketWrapper is IMarketWrapper {
      */
     function auctionIdMatchesToken(
         uint256 auctionId,
-        address /* nftContract */,
+        address, /* nftContract */
         uint256 tokenId
     ) public view override returns (bool) {
         return auctionId == tokenId && auctionExists(auctionId);
@@ -62,10 +59,10 @@ contract KoansMarketWrapper is IMarketWrapper {
      * @return minimum bid amount
      */
     function getMinimumBid(uint256 auctionId)
-      external
-      view
-      override
-      returns (uint256)
+        external
+        view
+        override
+        returns (uint256)
     {
         require(
             auctionExists(auctionId),
@@ -87,10 +84,10 @@ contract KoansMarketWrapper is IMarketWrapper {
      * @return highest bidder
      */
     function getCurrentHighestBidder(uint256 auctionId)
-      external
-      view
-      override
-      returns (address)
+        external
+        view
+        override
+        returns (address)
     {
         require(
             auctionExists(auctionId),
@@ -106,13 +103,9 @@ contract KoansMarketWrapper is IMarketWrapper {
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
         // line 104 of Koans Auction House, createBid() function
-        (bool success, bytes memory returnData) =
-        address(market).call{value: bidAmount}(
-            abi.encodeWithSignature(
-                "createBid(uint256)",
-                auctionId
-            )
-        );
+        (bool success, bytes memory returnData) = address(market).call{
+            value: bidAmount
+        }(abi.encodeWithSignature("createBid(uint256)", auctionId));
         require(success, string(returnData));
     }
 
@@ -121,10 +114,10 @@ contract KoansMarketWrapper is IMarketWrapper {
      * @return TRUE if the auction has been finalized
      */
     function isFinalized(uint256 auctionId)
-      external
-      view
-      override
-      returns (bool)
+        external
+        view
+        override
+        returns (bool)
     {
         (uint256 currentAuctionId, , , , , bool settled, ) = market.auction();
         bool settledNormally = auctionId != currentAuctionId;
@@ -135,7 +128,9 @@ contract KoansMarketWrapper is IMarketWrapper {
     /**
      * @notice Finalize the results of the auction
      */
-    function finalize(uint256 /* auctionId */) external override {
+    function finalize(
+        uint256 /* auctionId */
+    ) external override {
         if (market.paused()) {
             market.settleAuction();
         } else {

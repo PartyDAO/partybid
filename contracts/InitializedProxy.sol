@@ -11,14 +11,12 @@ contract InitializedProxy {
 
     // ======== Constructor =========
 
-    constructor(
-        address _logic,
-        bytes memory _initializationCalldata
-    ) {
+    constructor(address _logic, bytes memory _initializationCalldata) {
         logic = _logic;
         // Delegatecall into the logic contract, supplying initialization calldata
-        (bool _ok, bytes memory returnData) =
-            _logic.delegatecall(_initializationCalldata);
+        (bool _ok, bytes memory returnData) = _logic.delegatecall(
+            _initializationCalldata
+        );
         // Revert if delegatecall to implementation reverts
         require(_ok, string(returnData));
     }
@@ -35,12 +33,12 @@ contract InitializedProxy {
             returndatacopy(ptr, 0, size)
 
             switch result
-                case 0 {
-                    revert(ptr, size)
-                }
-                default {
-                    return(ptr, size)
-                }
+            case 0 {
+                revert(ptr, size)
+            }
+            default {
+                return(ptr, size)
+            }
         }
     }
 

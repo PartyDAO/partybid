@@ -51,7 +51,12 @@ contract PartyBuyFactory {
         tokenVaultFactory = _tokenVaultFactory;
         weth = _weth;
         // deploy logic contract
-        PartyBuy _logicContract = new PartyBuy(_partyDAOMultisig, _tokenVaultFactory, _weth, _allowList);
+        PartyBuy _logicContract = new PartyBuy(
+            _partyDAOMultisig,
+            _tokenVaultFactory,
+            _weth,
+            _allowList
+        );
         // store logic contract address
         logic = address(_logicContract);
     }
@@ -68,8 +73,7 @@ contract PartyBuyFactory {
         string memory _name,
         string memory _symbol
     ) external returns (address partyBuyProxy) {
-        bytes memory _initializationCalldata =
-            abi.encodeWithSelector(
+        bytes memory _initializationCalldata = abi.encodeWithSelector(
             PartyBuy.initialize.selector,
             _nftContract,
             _tokenId,
@@ -82,10 +86,7 @@ contract PartyBuyFactory {
         );
 
         partyBuyProxy = address(
-            new NonReceivableInitializedProxy(
-                logic,
-                _initializationCalldata
-            )
+            new NonReceivableInitializedProxy(logic, _initializationCalldata)
         );
 
         deployedAt[partyBuyProxy] = block.number;

@@ -4,12 +4,7 @@ const { waffle } = require('hardhat');
 const { provider } = waffle;
 const { expect } = require('chai');
 // ============ Internal Imports ============
-const {
-  eth,
-  weiToEth,
-  contribute,
-  encodeData
-} = require('../helpers/utils');
+const { eth, weiToEth, contribute, encodeData } = require('../helpers/utils');
 const { deployTestContractSetup, deploy } = require('./helpers/deploy');
 const {
   PARTY_STATUS,
@@ -29,10 +24,7 @@ describe('Expire', async () => {
         amountSpent,
       } = testCase;
       // instantiate test vars
-      let partyBuy,
-        nftContract,
-        sellerContract,
-        signer;
+      let partyBuy, nftContract, sellerContract, signer;
       const signers = provider.getWallets();
       const tokenId = 95;
 
@@ -61,8 +53,12 @@ describe('Expire', async () => {
         }
 
         // deploy Seller contract & transfer NFT to Seller
-        sellerContract = await deploy("Seller");
-        await nftContract.transferFrom(signer.address, sellerContract.address, tokenId);
+        sellerContract = await deploy('Seller');
+        await nftContract.transferFrom(
+          signer.address,
+          sellerContract.address,
+          tokenId,
+        );
       });
 
       it('Is ACTIVE before Expire', async () => {
@@ -71,16 +67,26 @@ describe('Expire', async () => {
       });
 
       it('Does not allow getClaimAmounts before Expire', async () => {
-        await expect(partyBuy.getClaimAmounts(signers[0].address)).to.be.revertedWith("Party::getClaimAmounts: party still active; amounts undetermined");
+        await expect(
+          partyBuy.getClaimAmounts(signers[0].address),
+        ).to.be.revertedWith(
+          'Party::getClaimAmounts: party still active; amounts undetermined',
+        );
       });
 
       it('Does not allow totalEthUsed before Expire', async () => {
-        await expect(partyBuy.totalEthUsed(signers[0].address)).to.be.revertedWith("Party::totalEthUsed: party still active; amounts undetermined");
+        await expect(
+          partyBuy.totalEthUsed(signers[0].address),
+        ).to.be.revertedWith(
+          'Party::totalEthUsed: party still active; amounts undetermined',
+        );
       });
 
       it('Does not allow Expire before party has timed out', async () => {
         // buy NFT
-        await expect(partyBuy.expire()).to.be.revertedWith("PartyBuy::expire: party has not timed out");
+        await expect(partyBuy.expire()).to.be.revertedWith(
+          'PartyBuy::expire: party has not timed out',
+        );
       });
 
       it('Expires after Party is timed out', async () => {
@@ -94,26 +100,37 @@ describe('Expire', async () => {
       });
 
       it(`Doesn't accept contributions after Expire`, async () => {
-        await expect(contribute(partyBuy, signers[0], eth(0.00001))).to.be.reverted;
+        await expect(contribute(partyBuy, signers[0], eth(0.00001))).to.be
+          .reverted;
       });
 
       it(`Doesn't allow Buy after Expire`, async () => {
         // encode data to buy NFT
-        const data = encodeData(sellerContract, 'sell', [eth(amountSpent), tokenId, nftContract.address]);
+        const data = encodeData(sellerContract, 'sell', [
+          eth(amountSpent),
+          tokenId,
+          nftContract.address,
+        ]);
         // buy NFT
-        await expect(partyBuy.buy(eth(amountSpent), sellerContract.address, data)).to.be.revertedWith("PartyBuy::buy: party not active");
+        await expect(
+          partyBuy.buy(eth(amountSpent), sellerContract.address, data),
+        ).to.be.revertedWith('PartyBuy::buy: party not active');
       });
 
       it(`Doesn't allow Expire after initial Expire`, async () => {
-        await expect(partyBuy.expire()).to.be.revertedWith("PartyBuy::expire: party not active");
+        await expect(partyBuy.expire()).to.be.revertedWith(
+          'PartyBuy::expire: party not active',
+        );
       });
 
       it('Does allow getClaimAmounts before Expire', async () => {
-        await expect(partyBuy.getClaimAmounts(signers[0].address)).to.not.be.reverted;
+        await expect(partyBuy.getClaimAmounts(signers[0].address)).to.not.be
+          .reverted;
       });
 
       it('Does allow totalEthUsed before Expire', async () => {
-        await expect(partyBuy.totalEthUsed(signers[0].address)).to.not.be.reverted;
+        await expect(partyBuy.totalEthUsed(signers[0].address)).to.not.be
+          .reverted;
       });
 
       it(`Is LOST after Expire`, async () => {

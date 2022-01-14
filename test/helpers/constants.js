@@ -5,7 +5,7 @@ const MARKET_NAMES = {
 };
 
 // MARKETS is an array of all values in MARKET_NAMES
-const MARKETS = Object.keys(MARKET_NAMES).map(key => MARKET_NAMES[key]);
+const MARKETS = Object.keys(MARKET_NAMES).map((key) => MARKET_NAMES[key]);
 
 const NFT_TYPE_ENUM = {
   ZORA: 0,
@@ -38,6 +38,5 @@ module.exports = {
   TOKEN_FEE_BASIS_POINTS,
   ETH_FEE_BASIS_POINTS,
   TOKEN_SCALE,
-  RESALE_MULTIPLIER
+  RESALE_MULTIPLIER,
 };
-
