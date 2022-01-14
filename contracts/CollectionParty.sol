@@ -17,7 +17,7 @@ import {Party} from "./Party.sol";
 import {Structs} from "./Structs.sol";
 import {IAllowList} from "./IAllowList.sol";
 
-contract PartyBuy is Party {
+contract CollectionParty is Party {
     // partyStatus Transitions:
     //   (1) PartyStatus.ACTIVE on deploy
     //   (2) PartyStatus.WON after successful buy()
@@ -25,8 +25,9 @@ contract PartyBuy is Party {
 
     // ============ Internal Constants ============
 
-    // PartyBuy version 1
+    // Collection Party version 1
     uint16 public constant VERSION = 1;
+    string public constant PARTY_TYPE = "Collection";
 
     // ============ Immutables ============
 
@@ -37,15 +38,21 @@ contract PartyBuy is Party {
     // the timestamp at which the Party is no longer active
     uint256 public expiresAt;
     // the maximum price that the party is willing to
-    // spend on the token
+    // spend on an item in the collection.
+    // NOTE: to remove the maximum price cap, set maxPrice to 0.
+    // by default, CollectionParties shouldn't need a maxPrice
+    // because the deciders should already be trusted to buy well-priced items.
     // NOTE: the party can accept *UP TO* 102.5% of maxPrice in total,
-    // and will not accept more contributions after this
+    // and will not accept more contributions after this.
     uint256 public maxPrice;
+    // decider => true if this address is a decider
+    mapping(address => bool) public isDecider;
 
     // ============ Events ============
 
-    // emitted when the token is successfully bought
+    // emitted when a token is successfully bought
     event Bought(
+        uint256 tokenId,
         address triggeredBy,
         address targetAddress,
         uint256 ethSpent,
@@ -72,30 +79,29 @@ contract PartyBuy is Party {
 
     function initialize(
         address _nftContract,
-        uint256 _tokenId,
         uint256 _maxPrice,
         uint256 _secondsToTimeout,
+        address[] calldata _deciders,
         Structs.AddressAndAmount calldata _split,
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) external initializer {
-        // validate maxPrice
-        require(
-            _maxPrice > 0,
-            "PartyBuy::initialize: must set price higher than 0"
-        );
         // initialize & validate shared Party variables
         __Party_init(_nftContract, _split, _tokenGate, _name, _symbol);
-        // verify token exists
-        tokenId = _tokenId;
-        require(
-            _getOwner() != address(0),
-            "PartyBuy::initialize: NFT getOwner failed"
-        );
         // set PartyBuy-specific state variables
         expiresAt = block.timestamp + _secondsToTimeout;
         maxPrice = _maxPrice;
+        // attempt to calculate maximum contributions to ensure this value won't overflow later
+        getMaximumContributions();
+        // set deciders list
+        require(
+            _deciders.length > 0,
+            "PartyBuy::initialize: set at least one decider"
+        );
+        for (uint256 i = 0; i < _deciders.length; i++) {
+            isDecider[_deciders[i]] = true;
+        }
     }
 
     // ======== External: Contribute =========
@@ -113,6 +119,7 @@ contract PartyBuy is Party {
             "PartyBuy::contribute: cannot contribute more than max"
         );
         // continue with shared _contribute flow
+        // shared _contribute flow
         _contribute();
     }
 
@@ -123,6 +130,7 @@ contract PartyBuy is Party {
      * @dev Emits a Bought event upon success; reverts otherwise. callable by anyone
      */
     function buy(
+        uint256 _tokenId,
         uint256 _value,
         address _targetContract,
         bytes calldata _calldata
@@ -131,6 +139,8 @@ contract PartyBuy is Party {
             partyStatus == PartyStatus.ACTIVE,
             "PartyBuy::buy: party not active"
         );
+        // ensure the caller is a decider
+        require(isDecider[msg.sender], "PartyBuy::buy: caller not a decider");
         // ensure the target contract is on allow list
         require(
             allowList.allowed(_targetContract),
@@ -140,7 +150,7 @@ contract PartyBuy is Party {
         require(_value > 0, "PartyBuy::buy: can't spend zero");
         // check that value is not more than the maximum price set at deploy time
         require(
-            _value <= maxPrice,
+            maxPrice == 0 || _value <= maxPrice,
             "PartyBuy::buy: can't spend over max price"
         );
         // check that value is not more than
@@ -149,6 +159,8 @@ contract PartyBuy is Party {
             _value <= getMaximumSpend(),
             "PartyBuy::buy: insuffucient funds to buy token plus fee"
         );
+        // set tokenId variable before _getOwner
+        tokenId = _tokenId;
         // require that the NFT is NOT owned by the Party
         require(
             _getOwner() != address(this),
@@ -173,6 +185,7 @@ contract PartyBuy is Party {
         uint256 _ethFee = _closeSuccessfulParty(_value);
         // emit Bought event
         emit Bought(
+            _tokenId,
             msg.sender,
             _targetContract,
             _value,
@@ -217,6 +230,9 @@ contract PartyBuy is Party {
         returns (uint256 _maxContributions)
     {
         uint256 _price = maxPrice;
+        if (_price == 0) {
+            return 2**256 - 1; // max-int
+        }
         _maxContributions = _price + _getEthFee(_price);
     }
 }

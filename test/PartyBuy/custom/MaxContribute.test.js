@@ -9,7 +9,7 @@ const { eth, weiToEth, contribute } = require('../../helpers/utils');
 const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('../helpers/constants');
 
 describe('MaxContribute', async () => {
-  const splitRecipient = "0x0000000000000000000000000000000000000000";
+  const splitRecipient = '0x0000000000000000000000000000000000000000';
   const splitBasisPoints = 0;
   const maxPrice = 100;
   const tokenId = 95;
@@ -47,6 +47,8 @@ describe('MaxContribute', async () => {
   });
 
   it('Does not accept more than the max', async () => {
-    await expect(contribute(partyBuy, signer, eth(0.1))).to.be.revertedWith("PartyBuy::contribute: cannot contribute more than max");
+    await expect(contribute(partyBuy, signer, eth(0.1))).to.be.revertedWith(
+      'PartyBuy::contribute: cannot contribute more than max',
+    );
   });
 });

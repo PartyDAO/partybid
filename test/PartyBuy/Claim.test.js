@@ -5,11 +5,19 @@ const { provider } = waffle;
 const { expect } = require('chai');
 const BigNumber = require('bignumber.js');
 // ============ Internal Imports ============
-const { eth, weiToEth, getBalances, contribute, encodeData } = require('../helpers/utils');
-const { deploy, deployTestContractSetup, getTokenVault } = require('./helpers/deploy');
 const {
-  FOURTY_EIGHT_HOURS_IN_SECONDS,
-} = require('./helpers/constants');
+  eth,
+  weiToEth,
+  getBalances,
+  contribute,
+  encodeData,
+} = require('../helpers/utils');
+const {
+  deploy,
+  deployTestContractSetup,
+  getTokenVault,
+} = require('./helpers/deploy');
+const { FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./helpers/constants');
 const { testCases } = require('./partyBuyTestCases.json');
 
 describe('Claim', async () => {
@@ -22,7 +30,7 @@ describe('Claim', async () => {
         splitBasisPoints,
         contributions,
         amountSpent,
-        claims
+        claims,
       } = testCase;
       // instantiate test vars
       let partyBuy,
@@ -63,12 +71,18 @@ describe('Claim', async () => {
         }
 
         // deploy Seller contract & transfer NFT to Seller
-        sellerContract = await deploy("Seller");
-        await nftContract.transferFrom(signer.address, sellerContract.address, tokenId);
+        sellerContract = await deploy('Seller');
+        await nftContract.transferFrom(
+          signer.address,
+          sellerContract.address,
+          tokenId,
+        );
       });
 
       it(`Reverts before Buy or Expire`, async () => {
-        await expect(partyBuy.claim(firstSigner.address)).to.be.revertedWith('Party::claim: party not finalized');
+        await expect(partyBuy.claim(firstSigner.address)).to.be.revertedWith(
+          'Party::claim: party not finalized',
+        );
       });
 
       if (amountSpent > 0) {
@@ -76,9 +90,15 @@ describe('Claim', async () => {
           // set allow list to true
           await allowList.setAllowed(sellerContract.address, true);
           // encode data to buy NFT
-          const data = encodeData(sellerContract, 'sell', [eth(amountSpent), tokenId, nftContract.address]);
+          const data = encodeData(sellerContract, 'sell', [
+            eth(amountSpent),
+            tokenId,
+            nftContract.address,
+          ]);
           // buy NFT
-          await expect(partyBuy.buy(eth(amountSpent), sellerContract.address, data)).to.emit(partyBuy, 'Bought');
+          await expect(
+            partyBuy.buy(eth(amountSpent), sellerContract.address, data),
+          ).to.emit(partyBuy, 'Bought');
           // query token vault
           tokenVault = await getTokenVault(partyBuy, signers[0]);
         });
@@ -98,14 +118,17 @@ describe('Claim', async () => {
         const { signerIndex, tokens, excessEth, totalContributed } = claim;
         const contributor = signers[signerIndex];
         it('Gives the correct values for getClaimAmounts before claim is called', async () => {
-          const [tokenClaimAmount, ethClaimAmount] = await partyBuy.getClaimAmounts(contributor.address);
+          const [tokenClaimAmount, ethClaimAmount] =
+            await partyBuy.getClaimAmounts(contributor.address);
           expect(weiToEth(tokenClaimAmount)).to.equal(tokens);
           expect(weiToEth(ethClaimAmount)).to.equal(excessEth);
         });
 
         it('Gives the correct value for totalEthUsed before claim is called', async () => {
           const totalEthUsed = await partyBuy.totalEthUsed(contributor.address);
-          const expectedEthUsed = (new BigNumber(totalContributed)).minus(excessEth);
+          const expectedEthUsed = new BigNumber(totalContributed).minus(
+            excessEth,
+          );
           expect(weiToEth(totalEthUsed)).to.equal(expectedEthUsed.toNumber());
         });
 
@@ -140,27 +163,30 @@ describe('Claim', async () => {
 
           // ETH was transferred from PartyBuy to contributor
           await expect(after.partyBuy.eth.toNumber()).to.equal(
-            before.partyBuy.eth.minus(excessEth).toNumber()
+            before.partyBuy.eth.minus(excessEth).toNumber(),
           );
 
           // Tokens were transferred from Party to contributor
           await expect(after.partyBuy.tokens.toNumber()).to.equal(
-            before.partyBuy.tokens.minus(tokens).toNumber()
+            before.partyBuy.tokens.minus(tokens).toNumber(),
           );
           await expect(after.contributor.tokens.toNumber()).to.equal(
-            before.contributor.tokens.plus(tokens).toNumber()
+            before.contributor.tokens.plus(tokens).toNumber(),
           );
         });
 
         it('Gives the same values for getClaimAmounts after claim is called', async () => {
-          const [tokenClaimAmount, ethClaimAmount] = await partyBuy.getClaimAmounts(contributor.address);
+          const [tokenClaimAmount, ethClaimAmount] =
+            await partyBuy.getClaimAmounts(contributor.address);
           expect(weiToEth(tokenClaimAmount)).to.equal(tokens);
           expect(weiToEth(ethClaimAmount)).to.equal(excessEth);
         });
 
         it('Gives the same value for totalEthUsed after claim is called', async () => {
           const totalEthUsed = await partyBuy.totalEthUsed(contributor.address);
-          const expectedEthUsed = (new BigNumber(totalContributed)).minus(excessEth);
+          const expectedEthUsed = new BigNumber(totalContributed).minus(
+            excessEth,
+          );
           expect(weiToEth(totalEthUsed)).to.equal(expectedEthUsed.toNumber());
         });
 
@@ -171,7 +197,8 @@ describe('Claim', async () => {
 
       it('Gives zero for getClaimAmounts for non-contributor', async () => {
         const randomAddress = '0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6';
-        const [tokenClaimAmount, ethClaimAmount] = await partyBuy.getClaimAmounts(randomAddress);
+        const [tokenClaimAmount, ethClaimAmount] =
+          await partyBuy.getClaimAmounts(randomAddress);
         expect(tokenClaimAmount).to.equal(0);
         expect(ethClaimAmount).to.equal(0);
       });

@@ -19,24 +19,14 @@ pragma solidity 0.8.9;
 // NOTE: we inherit from OpenZeppelin upgradeable contracts
 // because of the proxy structure used for cheaper deploys
 // (the proxies are NOT actually upgradeable)
-import {
-ReentrancyGuardUpgradeable
-} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {
-ERC721HolderUpgradeable
-} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ERC721HolderUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 // ============ External Imports: External Contracts & Contract Interfaces ============
-import {
-IERC721VaultFactory
-} from "./external/interfaces/IERC721VaultFactory.sol";
+import {IERC721VaultFactory} from "./external/interfaces/IERC721VaultFactory.sol";
 import {ITokenVault} from "./external/interfaces/ITokenVault.sol";
 import {IWETH} from "./external/interfaces/IWETH.sol";
-import {
-IERC721Metadata
-} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {
-IERC20
-} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // ============ Internal Imports ============
 import {Structs} from "./Structs.sol";
 
@@ -44,10 +34,14 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Enums ============
 
     // State Transitions:
-    //   (1) ACTIVE on deploy
-    //   (2) WON if the Party has won the token
+    //   (0) ACTIVE on deploy
+    //   (1) WON if the Party has won the token
     //   (2) LOST if the Party is over & did not win the token
-    enum PartyStatus {ACTIVE, WON, LOST}
+    enum PartyStatus {
+        ACTIVE,
+        WON,
+        LOST
+    }
 
     // ============ Structs ============
 
@@ -158,22 +152,23 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     function __Party_init(
         address _nftContract,
-        uint256 _tokenId,
         Structs.AddressAndAmount calldata _split,
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) internal {
-        require(msg.sender == partyFactory, "Party::__Party_init: only factory can init");
-        // validate token exists (must set nftContract & tokenId before _getOwner)
-        nftContract = IERC721Metadata(_nftContract);
-        tokenId = _tokenId;
-        require(_getOwner() != address(0), "Party::__Party_init: NFT getOwner failed");
+        require(
+            msg.sender == partyFactory,
+            "Party::__Party_init: only factory can init"
+        );
         // if split is non-zero,
         if (_split.addr != address(0) && _split.amount != 0) {
             // validate that party split won't retain the total token supply
             uint256 _remainingBasisPoints = 10000 - TOKEN_FEE_BASIS_POINTS;
-            require(_split.amount < _remainingBasisPoints, "Party::__Party_init: basis points can't take 100%");
+            require(
+                _split.amount < _remainingBasisPoints,
+                "Party::__Party_init: basis points can't take 100%"
+            );
             splitBasisPoints = _split.amount;
             splitRecipient = _split.addr;
         }
@@ -188,6 +183,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         __ReentrancyGuard_init();
         __ERC721Holder_init();
         // set storage variables
+        nftContract = IERC721Metadata(_nftContract);
         name = _name;
         symbol = _symbol;
     }
@@ -208,20 +204,24 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         uint256 _amount = msg.value;
         // if token gated, require that contributor has balance of gated tokens
         if (address(gatedToken) != address(0)) {
-            require(gatedToken.balanceOf(_contributor) >= gatedTokenAmount, "Party::contribute: must hold tokens to contribute");
+            require(
+                gatedToken.balanceOf(_contributor) >= gatedTokenAmount,
+                "Party::contribute: must hold tokens to contribute"
+            );
         }
         require(_amount > 0, "Party::contribute: must contribute more than 0");
         // get the current contract balance
         uint256 _previousTotalContributedToParty = totalContributedToParty;
         // add contribution to contributor's array of contributions
-        Contribution memory _contribution =
-            Contribution({
-                amount: _amount,
-                previousTotalContributedToParty: _previousTotalContributedToParty
-            });
+        Contribution memory _contribution = Contribution({
+            amount: _amount,
+            previousTotalContributedToParty: _previousTotalContributedToParty
+        });
         contributions[_contributor].push(_contribution);
         // add to contributor's total contribution
-        totalContributed[_contributor] = totalContributed[_contributor] + _amount;
+        totalContributed[_contributor] =
+            totalContributed[_contributor] +
+            _amount;
         // add to party's total contribution & emit event
         totalContributedToParty = _previousTotalContributedToParty + _amount;
         emit Contributed(
@@ -262,8 +262,9 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // calculate the amount of fractional NFT tokens owed to the user
         // based on how much ETH they contributed towards the party,
         // and the amount of excess ETH owed to the user
-        (uint256 _tokenAmount, uint256 _ethAmount) =
-        getClaimAmounts(_contributor);
+        (uint256 _tokenAmount, uint256 _ethAmount) = getClaimAmounts(
+            _contributor
+        );
         // transfer tokens to contributor for their portion of ETH used
         _transferTokens(_contributor, _tokenAmount);
         // if there is excess ETH, send it back to the contributor
@@ -283,10 +284,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * PartyDAO can use emergencyWithdrawEth to withdraw
      * ETH stuck in the contract
      */
-    function emergencyWithdrawEth(uint256 _value)
-        external
-        onlyPartyDAO
-    {
+    function emergencyWithdrawEth(uint256 _value) external onlyPartyDAO {
         _transferETHOrWETH(partyDAOMultisig, _value);
     }
 
@@ -309,10 +307,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * PartyDAO can force the Party to finalize with status LOST
      * (e.g. if finalize is not callable)
      */
-    function emergencyForceLost()
-        external
-        onlyPartyDAO
-    {
+    function emergencyForceLost() external onlyPartyDAO {
         // set partyStatus to LOST
         partyStatus = PartyStatus.LOST;
     }
@@ -336,7 +331,9 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
      * @return _maxSpend the maximum spend
      */
     function getMaximumSpend() public view returns (uint256 _maxSpend) {
-        _maxSpend = (totalContributedToParty * 10000) / (10000 + ETH_FEE_BASIS_POINTS);
+        _maxSpend =
+            (totalContributedToParty * 10000) /
+            (10000 + ETH_FEE_BASIS_POINTS);
     }
 
     /**
@@ -353,7 +350,10 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         view
         returns (uint256 _tokenAmount, uint256 _ethAmount)
     {
-        require(partyStatus != PartyStatus.ACTIVE, "Party::getClaimAmounts: party still active; amounts undetermined");
+        require(
+            partyStatus != PartyStatus.ACTIVE,
+            "Party::getClaimAmounts: party still active; amounts undetermined"
+        );
         uint256 _totalContributed = totalContributed[_contributor];
         if (partyStatus == PartyStatus.WON) {
             // calculate the amount of this contributor's ETH
@@ -384,7 +384,10 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         view
         returns (uint256 _total)
     {
-        require(partyStatus != PartyStatus.ACTIVE, "Party::totalEthUsed: party still active; amounts undetermined");
+        require(
+            partyStatus != PartyStatus.ACTIVE,
+            "Party::totalEthUsed: party still active; amounts undetermined"
+        );
         // load total amount spent once from storage
         uint256 _totalSpent = totalSpent;
         // get all of the contributor's contributions
@@ -402,7 +405,10 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     // ============ Internal ============
 
-    function _closeSuccessfulParty(uint256 _nftCost) internal returns (uint256 _ethFee) {
+    function _closeSuccessfulParty(uint256 _nftCost)
+        internal
+        returns (uint256 _ethFee)
+    {
         // calculate PartyDAO fee & record total spent
         _ethFee = _getEthFee(_nftCost);
         totalSpent = _nftCost + _ethFee;
@@ -435,12 +441,19 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     function _getTokenInflationAmounts(uint256 _amountSpent)
         internal
         view
-        returns (uint256 _totalSupply, uint256 _partyDAOAmount, uint256 _splitRecipientAmount)
+        returns (
+            uint256 _totalSupply,
+            uint256 _partyDAOAmount,
+            uint256 _splitRecipientAmount
+        )
     {
         // the token supply will be inflated to provide a portion of the
         // total supply for PartyDAO, and a portion for the splitRecipient
-        uint256 inflationBasisPoints = TOKEN_FEE_BASIS_POINTS + splitBasisPoints;
-        _totalSupply = valueToTokens((_amountSpent * 10000) / (10000 - inflationBasisPoints));
+        uint256 inflationBasisPoints = TOKEN_FEE_BASIS_POINTS +
+            splitBasisPoints;
+        _totalSupply = valueToTokens(
+            (_amountSpent * 10000) / (10000 - inflationBasisPoints)
+        );
         // PartyDAO receives TOKEN_FEE_BASIS_POINTS of the total supply
         _partyDAOAmount = (_totalSupply * TOKEN_FEE_BASIS_POINTS) / 10000;
         // splitRecipient receives splitBasisPoints of the total supply
@@ -448,22 +461,17 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     }
 
     /**
-    * @notice Query the NFT contract to get the token owner
-    * @dev nftContract must implement the ERC-721 token standard exactly:
-    * function ownerOf(uint256 _tokenId) external view returns (address);
-    * See https://eips.ethereum.org/EIPS/eip-721
-    * @dev Returns address(0) if NFT token or NFT contract
-    * no longer exists (token burned or contract self-destructed)
-    * @return _owner the owner of the NFT
-    */
+     * @notice Query the NFT contract to get the token owner
+     * @dev nftContract must implement the ERC-721 token standard exactly:
+     * function ownerOf(uint256 _tokenId) external view returns (address);
+     * See https://eips.ethereum.org/EIPS/eip-721
+     * @dev Returns address(0) if NFT token or NFT contract
+     * no longer exists (token burned or contract self-destructed)
+     * @return _owner the owner of the NFT
+     */
     function _getOwner() internal view returns (address _owner) {
-        (bool _success, bytes memory _returnData) =
-            address(nftContract).staticcall(
-                abi.encodeWithSignature(
-                    "ownerOf(uint256)",
-                    tokenId
-                )
-        );
+        (bool _success, bytes memory _returnData) = address(nftContract)
+            .staticcall(abi.encodeWithSignature("ownerOf(uint256)", tokenId));
         if (_success && _returnData.length > 0) {
             _owner = abi.decode(_returnData, (address));
         }
@@ -482,18 +490,21 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         // users receive tokens at a rate of 1:TOKEN_SCALE for each ETH they contributed that was ultimately spent
         // partyDAO receives a percentage of the total token supply equivalent to TOKEN_FEE_BASIS_POINTS
         // splitRecipient receives a percentage of the total token supply equivalent to splitBasisPoints
-        (uint256 _tokenSupply, uint256 _partyDAOAmount, uint256 _splitRecipientAmount) = _getTokenInflationAmounts(totalSpent);
+        (
+            uint256 _tokenSupply,
+            uint256 _partyDAOAmount,
+            uint256 _splitRecipientAmount
+        ) = _getTokenInflationAmounts(totalSpent);
         // deploy fractionalized NFT vault
-        uint256 vaultNumber =
-            tokenVaultFactory.mint(
-                name,
-                symbol,
-                address(nftContract),
-                tokenId,
-                _tokenSupply,
-                _listPrice,
-                0
-            );
+        uint256 vaultNumber = tokenVaultFactory.mint(
+            name,
+            symbol,
+            address(nftContract),
+            tokenId,
+            _tokenSupply,
+            _listPrice,
+            0
+        );
         // store token vault address to storage
         tokenVault = ITokenVault(tokenVaultFactory.vaults(vaultNumber));
         // transfer curator to null address (burn the curator role)
@@ -522,7 +533,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     {
         if (
             _contribution.previousTotalContributedToParty +
-            _contribution.amount <=
+                _contribution.amount <=
             _totalSpent
         ) {
             // contribution was fully used
@@ -540,10 +551,10 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Internal: TransferTokens ============
 
     /**
-    * @notice Transfer tokens to a recipient
-    * @param _to recipient of tokens
-    * @param _value amount of tokens
-    */
+     * @notice Transfer tokens to a recipient
+     * @param _to recipient of tokens
+     * @param _value amount of tokens
+     */
     function _transferTokens(address _to, uint256 _value) internal {
         // skip if attempting to send 0 tokens
         if (_value == 0) {

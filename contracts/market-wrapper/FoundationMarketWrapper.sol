@@ -32,14 +32,10 @@ contract FoundationMarketWrapper is IMarketWrapper {
      * for this token on the market
      * @return TRUE if the auction exists
      */
-    function auctionExists(uint256 auctionId)
-        public
-        view
-        returns (bool)
-    {
+    function auctionExists(uint256 auctionId) public view returns (bool) {
         // line 219 of NFTMarketReserveAuction, logic within placeBid() function (not exposed publicly)
-        IFoundationMarket.ReserveAuction memory _auction =
-            market.getReserveAuction(auctionId);
+        IFoundationMarket.ReserveAuction memory _auction = market
+            .getReserveAuction(auctionId);
         return _auction.amount != 0;
     }
 
@@ -67,8 +63,8 @@ contract FoundationMarketWrapper is IMarketWrapper {
         returns (address)
     {
         // line 279 of NFTMarketReserveAuction, getMinBidAmount() function
-        IFoundationMarket.ReserveAuction memory _auction =
-            market.getReserveAuction(auctionId);
+        IFoundationMarket.ReserveAuction memory _auction = market
+            .getReserveAuction(auctionId);
         return _auction.bidder;
     }
 
@@ -91,10 +87,9 @@ contract FoundationMarketWrapper is IMarketWrapper {
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
         // line 217 of NFTMarketReserveAuction, placeBid() function
-        (bool success, bytes memory returnData) =
-            address(market).call{value: bidAmount}(
-                abi.encodeWithSignature("placeBid(uint256)", auctionId)
-            );
+        (bool success, bytes memory returnData) = address(market).call{
+            value: bidAmount
+        }(abi.encodeWithSignature("placeBid(uint256)", auctionId));
         require(success, string(returnData));
     }
 

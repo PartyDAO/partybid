@@ -38,11 +38,7 @@ contract ZoraMarketWrapper is IMarketWrapper {
      * for this token on the market
      * @return TRUE if the auction exists
      */
-    function auctionExists(uint256 auctionId)
-        public
-        view
-        returns (bool)
-    {
+    function auctionExists(uint256 auctionId) public view returns (bool) {
         // line 375 of Zora Auction House, _exists() function (not exposed publicly)
         IZoraAuctionHouse.Auction memory _auction = market.auctions(auctionId);
         return _auction.tokenOwner != address(0);
@@ -82,7 +78,10 @@ contract ZoraMarketWrapper is IMarketWrapper {
             return _auction.reservePrice;
         } else {
             // if there ARE bids, the minimum bid is the current bid plus the increment buffer
-            return _auction.amount.add(_auction.amount.mul(minBidIncrementPercentage).div(100));
+            return
+                _auction.amount.add(
+                    _auction.amount.mul(minBidIncrementPercentage).div(100)
+                );
         }
     }
 
@@ -106,14 +105,15 @@ contract ZoraMarketWrapper is IMarketWrapper {
      */
     function bid(uint256 auctionId, uint256 bidAmount) external override {
         // line 153 of Zora Auction House, createBid() function
-        (bool success, bytes memory returnData) =
-            address(market).call{value: bidAmount}(
-                abi.encodeWithSignature(
-                    "createBid(uint256,uint256)",
-                    auctionId,
-                    bidAmount
-                )
-            );
+        (bool success, bytes memory returnData) = address(market).call{
+            value: bidAmount
+        }(
+            abi.encodeWithSignature(
+                "createBid(uint256,uint256)",
+                auctionId,
+                bidAmount
+            )
+        );
         require(success, string(returnData));
     }
 

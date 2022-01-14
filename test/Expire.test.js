@@ -38,7 +38,8 @@ describe('Expire', async () => {
 
       it('Accepts contributions before expiration', async () => {
         await expect(contribute(partyBid, signers[1], eth(0.5))).to.emit(
-          partyBid, 'Contributed',
+          partyBid,
+          'Contributed',
         );
       });
 
@@ -74,10 +75,9 @@ describe('Expire', async () => {
         // Bid the auction up by someone else so we're no longer winning
         await placeBid(signers[0], market, auctionId, eth(2), marketName);
 
-        await expect(expire(partyBid, signers[1])).to.emit(
-          partyBid,
-          'Finalized',
-        ).withArgs(2, 0, 0, eth(1.1), true)
+        await expect(expire(partyBid, signers[1]))
+          .to.emit(partyBid, 'Finalized')
+          .withArgs(2, 0, 0, eth(1.1), true);
       });
 
       it("Can't accept contributions after expiration", async () => {
