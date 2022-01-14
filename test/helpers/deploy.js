@@ -257,6 +257,7 @@ async function getTokenVault(party, signer) {
       [gatedToken, gatedTokenAmount],
       'Parrrrti',
       'PRTI',
+      1000 // allow expiration 1000 seconds from now
     );
 
     // Get PartyBid ethers contract

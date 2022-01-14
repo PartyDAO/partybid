@@ -29,7 +29,8 @@ contract PartyBidFactory {
         address gatedToken,
         uint256 gatedTokenAmount,
         string name,
-        string symbol
+        string symbol,
+        uint256 durationInSeconds
     );
 
     //======== Immutable storage =========
@@ -70,7 +71,8 @@ contract PartyBidFactory {
         Structs.AddressAndAmount calldata _split,
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint256 _durationInSeconds
     ) external returns (address partyBidProxy) {
         bytes memory _initializationCalldata =
             abi.encodeWithSelector(
@@ -82,7 +84,8 @@ contract PartyBidFactory {
                 _split,
                 _tokenGate,
                 _name,
-                _symbol
+                _symbol,
+                _durationInSeconds
             );
 
         partyBidProxy = address(
@@ -106,7 +109,8 @@ contract PartyBidFactory {
             _tokenGate.addr,
             _tokenGate.amount,
             _name,
-            _symbol
+            _symbol,
+            _durationInSeconds
         );
     }
 }

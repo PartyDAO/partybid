@@ -28,6 +28,14 @@ contract PartyBid is Party {
     //   (1) PartyStatus.ACTIVE on deploy
     //   (2) PartyStatus.WON or PartyStatus.LOST on finalize()
 
+    enum ExpireCapability {
+        CanExpire, // The party can be expired
+        BeforeExpiration, // The expiration date is in the future
+        PartyOver, // The party is inactive, either won, or lost.
+        CurrentlyWinning // The party is currently winning its auction
+    }
+
+
     // ============ Internal Constants ============
 
     // PartyBid version 3
@@ -40,6 +48,13 @@ contract PartyBid is Party {
     IMarketWrapper public marketWrapper;
     // ID of auction within market contract
     uint256 public auctionId;
+    // the timestamp at which the Party can be expired.
+    // This is mainly to prevent a party from collecting contributions
+    // but never reaching the reserve price and having contributions
+    // locked up indefinitely.  The party can still continue past
+    // this time, but if someone calls `expire()` it will move to
+    // the LOST state.
+    uint256 public expiresAt;
 
     // ============ Public Mutable Storage ============
 
@@ -50,7 +65,13 @@ contract PartyBid is Party {
 
     event Bid(uint256 amount);
 
-    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed);
+    // @notice emitted when a party is won, lost, or expires.
+    // @param result The `WON` or `LOST` final party state.
+    // @param totalSpent The amount of eth actually spent, including the price of the NFT and the fee.
+    // @param fee The eth fee paid to PartyDAO.
+    // @param totalContributed Total eth deposited by all contributors, including eth not used in purchase.
+    // @param expired True if the party expired before reaching a reserve / placing a bid.
+    event Finalized(PartyStatus result, uint256 totalSpent, uint256 fee, uint256 totalContributed, bool expired);
 
     // ======== Constructor =========
 
@@ -70,7 +91,8 @@ contract PartyBid is Party {
         Structs.AddressAndAmount calldata _split,
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint256 _durationInSeconds
     ) external initializer {
         // validate auction exists
         require(
@@ -86,6 +108,7 @@ contract PartyBid is Party {
         // set PartyBid-specific state variables
         marketWrapper = IMarketWrapper(_marketWrapper);
         auctionId = _auctionId;
+        expiresAt = block.timestamp + _durationInSeconds;
     }
 
     // ======== External: Contribute =========
@@ -183,7 +206,50 @@ contract PartyBid is Party {
             _ethFee = _closeSuccessfulParty(highestBid);
         }
         // set the contract status & emit result
-        emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty);
+        emit Finalized(partyStatus, totalSpent, _ethFee, totalContributedToParty, false);
+    }
+
+    // ======== External: Expire =========
+
+    /**
+     * @notice Determines whether a party can be expired. Any status other than `CanExpire` will
+     * fail the `expire()` call.
+     */
+    function canExpire() public view returns (ExpireCapability) {
+        if (partyStatus != PartyStatus.ACTIVE) {
+            return ExpireCapability.PartyOver;
+        }
+        // In case there's some variation in how contracts define a "high bid"
+        // we fall back to making sure none of the eth contributed is outstanding.
+        // If we ever add any features that can send eth for any other purpose we
+        // will revisit/remove this.
+        if (address(this) == marketWrapper.getCurrentHighestBidder(auctionId) ||
+            address(this).balance < totalContributedToParty) {
+            return ExpireCapability.CurrentlyWinning;
+        }
+        if (block.timestamp < expiresAt) {
+            return ExpireCapability.BeforeExpiration;
+        }
+
+        return ExpireCapability.CanExpire;
+    }
+
+    function errorStringForCapability(ExpireCapability capability) internal pure returns (string memory) {
+        if (capability == ExpireCapability.PartyOver) return "PartyBid::expire: auction not active";
+        if (capability == ExpireCapability.CurrentlyWinning) return "PartyBid::expire: currently highest bidder";
+        if (capability == ExpireCapability.BeforeExpiration) return "PartyBid::expire: expiration time in future";
+        return "";
+    }
+
+    /**
+     * @notice Expires an auction, moving it to LOST state and ending the ability to contribute.
+     * @dev Emits a Finalized event upon success; callable by anyone once the expiration date passes.
+     */
+    function expire() external nonReentrant {
+        ExpireCapability expireCapability = canExpire();
+        require(expireCapability == ExpireCapability.CanExpire, errorStringForCapability(expireCapability));
+        partyStatus = PartyStatus.LOST;
+        emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
     }
 
     // ======== Public: Utility Calculations =========
