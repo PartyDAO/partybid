@@ -1,4 +1,33 @@
 const fs = require("fs");
+const dotenv = require("dotenv");
+const ethers = require("ethers");
+
+function loadEnv() {
+    dotenv.config();
+    const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = process.env;
+    if (!(CHAIN_NAME && RPC_ENDPOINT && DEPLOYER_PRIVATE_KEY)) {
+        throw new Error("Must populate all values in .env - see .env.example for full list");
+    }
+    return {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY};
+}
+
+function getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY) {
+    const provider = new ethers.providers.JsonRpcProvider(RPC_ENDPOINT);
+    const deployer = new ethers.Wallet(`0x${DEPLOYER_PRIVATE_KEY}`, provider);
+    return deployer;
+}
+
+async function deploy(wallet, name, args = []) {
+    const Implementation = await ethers.getContractFactory(name, wallet);
+    const contract = await Implementation.deploy(...args);
+    return contract.deployed();
+}
+
+function loadConfig(CHAIN_NAME) {
+    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    console.log("Config", config);
+    return config;
+}
 
 function getDeployedAddresses(type, CHAIN_NAME) {
     const directory = `./deploy/${type}/deployed-contracts`;
@@ -23,7 +52,35 @@ function writeDeployedAddresses(directory, filename, addresses) {
     );
 }
 
+/*
+ * Given one contract verification input,
+ * attempt to verify the contracts' source code on Etherscan
+ * */
+async function verifyContract(address, constructorArguments) {
+    const {CHAIN_NAME} = loadEnv();
+    if (!(CHAIN_NAME) ) {
+        throw new Error("Must add chain name to .env");
+    } else if(hre.network.name != CHAIN_NAME) {
+        throw new Error(`CHAIN_NAME in .env file is "${CHAIN_NAME}" but hardhat --network in package.json is "${hre.network.name}; change them to match"`)
+    }
+    try {
+        await hre.run('verify:verify', {
+            network: CHAIN_NAME,
+            address,
+            constructorArguments,
+        });
+    } catch (e) {
+        console.error(e);
+    }
+    console.log('\n\n'); // add space after each attempt
+}
+
 module.exports = {
+    loadEnv,
+    getDeployer,
+    deploy,
+    loadConfig,
+    verifyContract,
     getDeployedAddresses,
     writeDeployedAddresses
 };

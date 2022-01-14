@@ -104,7 +104,10 @@ contract PartyBid is Party {
             "PartyBid::initialize: auctionId doesn't match token"
         );
         // initialize & validate shared Party variables
-        __Party_init(_nftContract, _tokenId, _split, _tokenGate, _name, _symbol);
+        __Party_init(_nftContract, _split, _tokenGate, _name, _symbol);
+        // verify token exists
+        tokenId = _tokenId;
+        require(_getOwner() != address(0), "PartyBid::initialize: NFT getOwner failed");
         // set PartyBid-specific state variables
         marketWrapper = IMarketWrapper(_marketWrapper);
         auctionId = _auctionId;

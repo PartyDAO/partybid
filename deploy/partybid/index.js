@@ -1,7 +1,4 @@
-const {ethers} = require("hardhat");
-const fs = require("fs");
-const dotenv = require('dotenv');
-const {getDeployedAddresses, writeDeployedAddresses} = require("../helpers");
+const {loadEnv, getDeployer, deploy, getDeployedAddresses, writeDeployedAddresses, loadConfig } = require("../helpers");
 
 deployPartyBidFactory()
     .then(() => {
@@ -13,27 +10,12 @@ deployPartyBidFactory()
         process.exit(1);
     });
 
-function loadEnv() {
-    dotenv.config();
-    const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = process.env;
-    if (!(CHAIN_NAME && RPC_ENDPOINT && DEPLOYER_PRIVATE_KEY)) {
-        throw new Error("Must populate all values in .env - see .env.example for full list");
-    }
-    return {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY};
-}
-
-function getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY) {
-    const provider = new ethers.providers.JsonRpcProvider(RPC_ENDPOINT);
-    const deployer = new ethers.Wallet(`0x${DEPLOYER_PRIVATE_KEY}`, provider);
-    return deployer;
-}
-
 async function deployZoraMarketWrapper() {
     // load .env
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = loadConfig(CHAIN_NAME);
     const {zoraAuctionHouse} = config;
     if (!zoraAuctionHouse) {
         throw new Error("Must populate config with Zora Auction House address");
@@ -70,7 +52,7 @@ async function deployFoundationMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = loadConfig(CHAIN_NAME);
     const {foundationMarket} = config;
     if (!foundationMarket) {
         throw new Error("Must populate config with Foundation Market address");
@@ -107,7 +89,7 @@ async function deployNounsMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = loadConfig(CHAIN_NAME);
     const {nounsAuctionHouse} = config;
     if (!nounsAuctionHouse) {
         throw new Error("Must populate config with Nouns Auction House address");
@@ -144,7 +126,7 @@ async function deployKoansMarketWrapper() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = loadConfig(CHAIN_NAME);
     const {koansAuctionHouse} = config;
     if (!koansAuctionHouse) {
         throw new Error("Must populate config with Koans Auction House address");
@@ -181,7 +163,7 @@ async function deployPartyBidFactory() {
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
 
     // load config.json
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
+    const config = loadConfig(CHAIN_NAME);
     const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth} = config;
     if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth)) {
         throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth");
@@ -221,10 +203,4 @@ async function deployChain() {
     await deployFoundationMarketWrapper();
     await deployNounsMarketWrapper();
     await deployPartyBidFactory();
-}
-
-async function deploy(wallet, name, args = []) {
-    const Implementation = await ethers.getContractFactory(name, wallet);
-    const contract = await Implementation.deploy(...args);
-    return contract.deployed();
 }

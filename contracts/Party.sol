@@ -44,8 +44,8 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
     // ============ Enums ============
 
     // State Transitions:
-    //   (1) ACTIVE on deploy
-    //   (2) WON if the Party has won the token
+    //   (0) ACTIVE on deploy
+    //   (1) WON if the Party has won the token
     //   (2) LOST if the Party is over & did not win the token
     enum PartyStatus {ACTIVE, WON, LOST}
 
@@ -158,17 +158,12 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
 
     function __Party_init(
         address _nftContract,
-        uint256 _tokenId,
         Structs.AddressAndAmount calldata _split,
         Structs.AddressAndAmount calldata _tokenGate,
         string memory _name,
         string memory _symbol
     ) internal {
         require(msg.sender == partyFactory, "Party::__Party_init: only factory can init");
-        // validate token exists (must set nftContract & tokenId before _getOwner)
-        nftContract = IERC721Metadata(_nftContract);
-        tokenId = _tokenId;
-        require(_getOwner() != address(0), "Party::__Party_init: NFT getOwner failed");
         // if split is non-zero,
         if (_split.addr != address(0) && _split.amount != 0) {
             // validate that party split won't retain the total token supply
@@ -188,6 +183,7 @@ contract Party is ReentrancyGuardUpgradeable, ERC721HolderUpgradeable {
         __ReentrancyGuard_init();
         __ERC721Holder_init();
         // set storage variables
+        nftContract = IERC721Metadata(_nftContract);
         name = _name;
         symbol = _symbol;
     }

@@ -6,9 +6,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 const {verify : verifyPartybid} = require("./deploy/partybid/verify");
 const {verify : verifyPartybuy} = require("./deploy/partybuy/verify")
+const {verify : verifyCollection} = require("./deploy/collection-party/verify")
 
 task("verify-partybid-contracts", "Verifies the PartyBid contracts").setAction(verifyPartybid);
 task("verify-partybuy-contracts", "Verifies the PartyBuy contracts").setAction(verifyPartybuy);
+task("verify-collection-contracts", "Verifies the CollectionParty contracts").setAction(verifyCollection);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
