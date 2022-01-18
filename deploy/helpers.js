@@ -1,6 +1,5 @@
 const fs = require("fs");
 const dotenv = require("dotenv");
-const ethers = require("ethers");
 
 function loadEnv() {
     dotenv.config();
@@ -11,22 +10,8 @@ function loadEnv() {
     return {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY};
 }
 
-function getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY) {
-    const provider = new ethers.providers.JsonRpcProvider(RPC_ENDPOINT);
-    const deployer = new ethers.Wallet(`0x${DEPLOYER_PRIVATE_KEY}`, provider);
-    return deployer;
-}
-
-async function deploy(wallet, name, args = []) {
-    const Implementation = await ethers.getContractFactory(name, wallet);
-    const contract = await Implementation.deploy(...args);
-    return contract.deployed();
-}
-
 function loadConfig(CHAIN_NAME) {
-    const config = JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
-    console.log("Config", config);
-    return config;
+    return JSON.parse(fs.readFileSync(`./deploy/configs/${CHAIN_NAME}.json`));
 }
 
 function getDeployedAddresses(type, CHAIN_NAME) {
@@ -77,8 +62,6 @@ async function verifyContract(address, constructorArguments) {
 
 module.exports = {
     loadEnv,
-    getDeployer,
-    deploy,
     loadConfig,
     verifyContract,
     getDeployedAddresses,
