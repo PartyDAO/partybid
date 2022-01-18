@@ -18,9 +18,9 @@ contract PartyBidFactory {
     //======== Events ========
 
     event PartyBidDeployed(
-        address partyBidProxy,
-        address creator,
-        address nftContract,
+        address indexed partyBidProxy,
+        address indexed creator,
+        address indexed nftContract,
         uint256 tokenId,
         address marketWrapper,
         uint256 auctionId,

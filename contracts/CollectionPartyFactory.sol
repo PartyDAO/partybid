@@ -13,9 +13,9 @@ contract CollectionPartyFactory {
     //======== Events ========
 
     event CollectionPartyDeployed(
-        address partyProxy,
-        address creator,
-        address nftContract,
+        address indexed partyProxy,
+        address indexed creator,
+        address indexed nftContract,
         uint256 maxPrice,
         uint256 secondsToTimeout,
         address[] deciders,
