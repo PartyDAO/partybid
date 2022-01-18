@@ -1,4 +1,5 @@
-const {loadConfig, loadEnv, getDeployer, deploy, getDeployedAddresses, writeDeployedAddresses} = require("../helpers");
+const {loadConfig, loadEnv, getDeployedAddresses, writeDeployedAddresses} = require("../helpers");
+const { getDeployer, deploy } = require("../ethersHelpers");
 
 deployCollectionPartyFactory()
   .then(() => {
