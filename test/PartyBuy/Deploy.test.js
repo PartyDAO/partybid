@@ -11,7 +11,7 @@ const {
   FOURTY_EIGHT_HOURS_IN_SECONDS,
 } = require('./helpers/constants');
 
-describe('Deploy', async () => {
+describe('Deploy PartyBuy', async () => {
   const splitRecipient = '0x0000000000000000000000000000000000000000';
   const splitBasisPoints = 0;
   const maxPrice = 10;
