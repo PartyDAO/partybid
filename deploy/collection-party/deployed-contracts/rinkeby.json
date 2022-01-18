@@ -1,6 +1,6 @@
 {
   "chain": "rinkeby",
   "allowList": "0x7E288372F2B3DC6F75834720642C36BE58C8Fa11",
-  "collectionPartyFactory": "0x61f6A964F1C02DA9de1828bEc78928Ef18dB584C",
-  "collectionPartyLogic": "0xFbc4E0965841eA6f644f04b09DE9731E8935B138"
+  "collectionPartyFactory": "0x97C72BeF1a28F05d0CCbde3fF1Fb6d8a81Cc20Df",
+  "collectionPartyLogic": "0x0B9A88D84e12d0a106cD0C1EE9e046066dD9e38D"
 }
