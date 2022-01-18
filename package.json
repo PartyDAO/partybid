@@ -5,10 +5,12 @@
   "main": "",
   "scripts": {
     "test": "npm run compile && hardhat test",
-    "deploy:partybid": "npm run compile && node ./deploy/partybid/index.js && npm run verify:partybid",
-    "deploy:partybuy": "npm run compile && node ./deploy/partybuy/index.js && npm run verify:partybuy",
-    "verify:partybid": "hardhat --network rinkeby verify-partybid-contracts",
-    "verify:partybuy": "hardhat --network rinkeby verify-partybuy-contracts",
+    "deploy:bid": "npm run compile && node ./deploy/partybid/index.js && npm run verify:bid",
+    "deploy:buy": "npm run compile && node ./deploy/partybuy/index.js && npm run verify:buy",
+    "deploy:collection": "npm run compile && node ./deploy/collection-party/index.js && npm run verify:collection",
+    "verify:bid": "hardhat --network rinkeby verify-partybid-contracts",
+    "verify:buy": "hardhat --network rinkeby verify-partybuy-contracts",
+    "verify:collection": "hardhat --network rinkeby verify-collection-contracts",
     "compile": "hardhat compile",
     "prettier": "prettier --write './contracts' ./test",
     "lint": "solhint 'contracts/*.sol' && solhint 'contracts/**/*.sol' && eslint test/"
