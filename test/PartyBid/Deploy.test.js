@@ -83,6 +83,7 @@ describe('Deploy PartyBid', async () => {
             ['0x0000000000000000000000000000000000000000', 0],
             'PartyBid',
             'PARTYYYY',
+            6000
           ),
         ).to.be.revertedWith('Initializable: contract is already initialized');
       });
