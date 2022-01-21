@@ -17,17 +17,16 @@ async function deployCollectionPartyFactory() {
 
   // load config.json
   const config = loadConfig(CHAIN_NAME);
-  const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth, allowedContracts} = config;
-  if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth && allowedContracts)) {
+  const {partyDAOMultisig, fractionalArtERC721VaultFactory, weth} = config;
+  if (!(partyDAOMultisig && fractionalArtERC721VaultFactory && weth)) {
     throw new Error("Must populate config with partyDAOMultisig, fractionalArtERC721VaultFactory, weth, logicNftContract, logicTokenId");
   }
 
   // get the deployed contracts
   const {directory, filename, contractAddresses} = getDeployedAddresses("collection-party", CHAIN_NAME);
+  const {allowList} = contractAddresses;
   // setup deployer wallet
   const deployer = getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY);
-
-  const {allowList} = contractAddresses;
 
   // Deploy Factory
   console.log(`Deploy CollectionParty Factory to ${CHAIN_NAME}`);
