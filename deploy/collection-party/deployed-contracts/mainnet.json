@@ -1,0 +1,6 @@
+{
+  "chain": "mainnet",
+  "allowList": "0xF3380293Ef7f7b71c7c2656A5bEe926fa71338ed",
+  "collectionPartyFactory": "0xd084d7849d4EBE564A2a41e085b2a74f6DDe5300",
+  "collectionPartyLogic": "0x0C696f63A8Cfd4b456f725f1174f1D5B48D1e876"
+}
