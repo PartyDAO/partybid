@@ -8,7 +8,7 @@ const { eth } = require('../helpers/utils');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKETS, PARTY_STATUS } = require('../helpers/constants');
 
-describe('Deploy', async () => {
+describe('Deploy PartyBid', async () => {
   MARKETS.map((marketName) => {
     describe(marketName, async () => {
       const splitRecipient = '0x0000000000000000000000000000000000000000';
@@ -67,6 +67,7 @@ describe('Deploy', async () => {
             ['0x0000000000000000000000000000000000000000', 0],
             'PartyBid Logic',
             'LOGIC',
+            6000
           ),
         ).to.be.revertedWith('Party::__Party_init: only factory can init');
       });
@@ -82,6 +83,7 @@ describe('Deploy', async () => {
             ['0x0000000000000000000000000000000000000000', 0],
             'PartyBid',
             'PARTYYYY',
+            6000
           ),
         ).to.be.revertedWith('Initializable: contract is already initialized');
       });
