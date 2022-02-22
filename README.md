@@ -13,7 +13,9 @@ To keep up with PartyDAO, follow [@prtyDAO](https://twitter.com/prtyDAO) on Twit
 - Anyone can contribute ETH to the PartyBid while the auction is still live
 - Anyone who has contributed to the PartyBid can trigger a bid on the targeted NFT auction
 - After the auction closes, if the PartyBid won the NFT, the token is fractionalized; all contributors whose funds were used to win the auction are rewarded with ERC-20 tokens representing a fractionalized share of the NFT. Tokens are fractionalized using [fractional.art contracts](https://github.com/fractional-company/contracts)
-- If a PartyBid wins the NFT, a 2.5 ETH fee and 2.5% of the fractional token supply is transferred to the PartyDAO multisig.
+- If a PartyBid wins the NFT, PartyBid charges a total fee of 5%:
+  - 2.5% of the ETH used in the purchase
+  - 2.5% of the fractional token supply is transferred to the PartyDAO multisig
 
 ## Functions
 
