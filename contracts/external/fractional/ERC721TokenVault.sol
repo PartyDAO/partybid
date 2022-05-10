@@ -14,6 +14,8 @@ import {
 ERC20Upgradeable
 } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
+import "hardhat/console.sol";
+
 contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     using Address for address;
 
@@ -104,6 +106,12 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     /// @notice An event emitted when someone cashes in ERC20 tokens for ETH from an ERC721 token sale
     event Cash(address indexed owner, uint256 shares);
 
+    event UpdateAuctionLength(uint256 length);
+
+    event UpdateCuratorFee(uint256 fee);
+
+    event FeeClaimed(uint256 fee);
+
     constructor(address _settings) {
         settings = _settings;
     }
@@ -115,17 +123,14 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
         // set storage variables
         token = _token;
         id = _id;
-        reserveTotal = _listPrice * _supply;
-        auctionLength = 7 days;
+        auctionLength = 3 days;
         curator = _curator;
         fee = _fee;
         lastClaimed = block.timestamp;
-        votingTokens = _listPrice == 0 ? 0 : _supply;
-
         auctionState = State.inactive;
+        userPrices[_curator] = _listPrice;
 
         _mint(_curator, _supply);
-        userPrices[_curator] = _listPrice;
     }
 
     /// --------------------------------
@@ -159,7 +164,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
         votingTokens -= weight;
         reserveTotal -= weight * old;
-
+        
         userPrices[_user] = 0;
 
         emit PriceUpdate(_user, 0);
@@ -184,17 +189,20 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
         require(_length >= ISettings(settings).minAuctionLength() && _length <= ISettings(settings).maxAuctionLength(), "update:invalid auction length");
 
         auctionLength = _length;
+        emit UpdateAuctionLength(_length);
     }
 
     /// @notice allow the curator to change their fee
     /// @param _fee the new fee
     function updateFee(uint256 _fee) external {
         require(msg.sender == curator, "update:not curator");
+        require(_fee < fee, "update:can't raise");
         require(_fee <= ISettings(settings).maxCuratorFee(), "update:cannot increase fee this high");
 
         _claimFees();
 
         fee = _fee;
+        emit UpdateCuratorFee(fee);
     }
 
     /// @notice external function to claim fees for the curator and governance
@@ -207,7 +215,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
         require(auctionState != State.ended, "claim:cannot claim after auction ends");
 
         // get how much in fees the curator would make in a year
-        uint256 currentAnnualFee = fee * totalSupply() / 1000;
+        uint256 currentAnnualFee = fee * totalSupply() / 1000; 
         // get how much that is per second;
         uint256 feePerSecond = currentAnnualFee / 31536000;
         // get how many seconds they are eligible to claim
@@ -218,14 +226,20 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
         // now lets do the same for governance
         address govAddress = ISettings(settings).feeReceiver();
         uint256 govFee = ISettings(settings).governanceFee();
-        currentAnnualFee = govFee * totalSupply() / 1000;
+        currentAnnualFee = govFee * totalSupply() / 1000; 
         feePerSecond = currentAnnualFee / 31536000;
         uint256 govMint = sinceLastClaim * feePerSecond;
 
         lastClaimed = block.timestamp;
 
-        _mint(curator, curatorMint);
-        _mint(govAddress, govMint);
+        if (curator != address(0)) {
+            _mint(curator, curatorMint);
+            emit FeeClaimed(curatorMint);
+        }
+        if (govAddress != address(0)) {
+            _mint(govAddress, govMint);
+            emit FeeClaimed(govMint);
+        }
     }
 
     /// --------------------------------
@@ -259,12 +273,12 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
             votingTokens += weight;
             reserveTotal += weight * _new;
-        }
+        } 
         // they no longer want to vote
         else if (_new == 0) {
             votingTokens -= weight;
             reserveTotal -= weight * old;
-        }
+        } 
         // they are updating their vote
         else {
             uint256 averageReserve = (reserveTotal - (old * weight)) / (votingTokens - weight);
@@ -287,7 +301,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     /// @param _to the ERC20 token receiver
     /// @param _amount the ERC20 token amount
     function _beforeTokenTransfer(address _from, address _to, uint256 _amount) internal virtual override {
-        if (_from != address(0) && auctionState == State.inactive) {
+        if (auctionState == State.inactive) {
             uint256 fromPrice = userPrices[_from];
             uint256 toPrice = userPrices[_to];
 
@@ -314,10 +328,11 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     /// @notice kick off an auction. Must send reservePrice in ETH
     function start() external payable {
+        console.log("start: %s sent from %s", msg.value, msg.sender);
         require(auctionState == State.inactive, "start:no auction starts");
         require(msg.value >= reservePrice(), "start:too low bid");
         require(votingTokens * 1000 >= ISettings(settings).minVotePercentage() * totalSupply(), "start:not enough voters");
-
+        
         auctionEnd = block.timestamp + auctionLength;
         auctionState = State.live;
 
@@ -329,6 +344,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     /// @notice an external function to bid on purchasing the vaults NFT. The msg.value is the bid amount
     function bid() external payable {
+        console.log("bid: %s sent from %s", msg.value, msg.sender);
         require(auctionState == State.live, "bid:auction is not live");
         uint256 increase = ISettings(settings).minBidIncrease() + 1000;
         require(msg.value * 1000 >= livePrice * increase, "bid:too low bid");
@@ -339,7 +355,7 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
             auctionEnd += 15 minutes;
         }
 
-        _sendWETH(winning, livePrice);
+        _sendETHOrWETH(winning, livePrice);
 
         livePrice = msg.value;
         winning = payable(msg.sender);
@@ -366,10 +382,10 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     function redeem() external {
         require(auctionState == State.inactive, "redeem:no redeeming");
         _burn(msg.sender, totalSupply());
-
+        
         // transfer erc721 to redeemer
         IERC721(token).transferFrom(address(this), msg.sender, id);
-
+        
         auctionState = State.redeemed;
 
         emit Redeem(msg.sender);
@@ -388,21 +404,32 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
         emit Cash(msg.sender, share);
     }
 
-    /// @dev internal helper function to send ETH and WETH on failure
-    function _sendWETH(address who, uint256 amount) internal {
-        IWETH(weth).deposit{value: amount}();
-        IWETH(weth).transfer(who, IWETH(weth).balanceOf(address(this)));
+    // Will attempt to transfer ETH, but will transfer WETH instead if it fails.
+    function _sendETHOrWETH(address to, uint256 value) internal {
+        // Try to transfer ETH to the given recipient.
+        if (!_attemptETHTransfer(to, value)) {
+            // If the transfer fails, wrap and send as WETH, so that
+            // the auction is not impeded and the recipient still
+            // can claim ETH via the WETH contract (similar to escrow).
+            IWETH(weth).deposit{value: value}();
+            IWETH(weth).transfer(to, value);
+            // At this point, the recipient can unwrap WETH.
+        }
     }
 
-    /// @dev internal helper function to send ETH and WETH on failure
-    function _sendETHOrWETH(address who, uint256 amount) internal {
-        // contracts get bet WETH because they can be mean
-        if (who.isContract()) {
-            IWETH(weth).deposit{value: amount}();
-            IWETH(weth).transfer(who, IWETH(weth).balanceOf(address(this)));
-        } else {
-            payable(who).transfer(amount);
-        }
+    // Sending ETH is not guaranteed complete, and the method used here will return false if
+    // it fails. For example, a contract can block ETH transfer, or might use
+    // an excessive amount of gas, thereby griefing a new bidder.
+    // We should limit the gas used in transfers, and handle failure cases.
+    function _attemptETHTransfer(address to, uint256 value)
+        internal
+        returns (bool)
+    {
+        // Here increase the gas limit a reasonable amount above the default, and try
+        // to send ETH to the recipient.
+        // NOTE: This might allow the recipient to attempt a limited reentrancy attack.
+        (bool success, ) = to.call{value: value, gas: 30000}("");
+        return success;
     }
 
 }
