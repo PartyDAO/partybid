@@ -5,7 +5,7 @@ const {
   createZoraAuction,
 } = require('./utils');
 const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
-const { upgrades } = require('hardhat');
+const { upgrades, ethers } = require('hardhat');
 
 async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
@@ -101,6 +101,49 @@ async function deployZoraAndStartAuction(
   };
 }
 
+async function deployFractionalAndStartAuction(
+  artistSigner,
+  nftContract,
+  tokenId,
+  reservePrice,
+  tokenVaultFactory,
+) {
+  // Deploy Market Wrapper
+  const marketWrapper = await deploy('FractionalMarketWrapper', [
+    tokenVaultFactory.address,
+  ]);
+
+  // Approve NFT to Vault Factory
+  await approve(artistSigner, nftContract, tokenVaultFactory.address, tokenId);
+
+  // create a Fractional vault
+  await tokenVaultFactory.connect(artistSigner).mint(
+    "partiiii",
+    "parti",
+    nftContract.address,
+    tokenId,
+    100, // totalSupply of erc20
+    eth(reservePrice),
+    0, // fee for curator
+  );
+
+  // fractional's auctionIds are a counter, so we take last one
+  const auctionId = await tokenVaultFactory.vaultCount() - 1;
+  const marketAddress = await tokenVaultFactory.vaults(auctionId);
+  const marketContract = await ethers.getContractAt('TokenVault', marketAddress);
+
+  await marketContract.connect(artistSigner).updateAuctionLength(FOURTY_EIGHT_HOURS_IN_SECONDS);
+  //await marketContract.connect(artistSigner).updateUserPrice(eth(reservePrice));
+  console.log("Deploy.js:137: marketContract %s, marketAddress %s, vaultFactory %s, auctionId %s", 
+    marketContract.address, marketAddress, tokenVaultFactory.address, auctionId
+  );
+  return {
+    market: marketContract,
+    marketWrapper,
+    auctionId
+  };
+}
+
 async function deployNounsToken(tokenId) {
   // Deploy the Nouns mock NFT descriptor
   const nounsDescriptor = await deploy('NounsMockDescriptor', []);
@@ -184,6 +227,14 @@ async function deployTestContractSetup(
   // Deploy WETH
   const weth = await deploy('EtherToken');
 
+  // Deploy Fractional since it's needed to test FractionalMarketWrapper
+  const tokenVaultSettings = await deploy('Settings');
+  const tokenVaultFactory = await deploy('ERC721VaultFactory', [
+    tokenVaultSettings.address,
+  ]);
+  // Min auction length is 72h but we use 48h for testing.
+  await tokenVaultSettings.setMinAuctionLength(FOURTY_EIGHT_HOURS_IN_SECONDS);
+
   // Nouns uses a custom ERC721 contract. Note that the Nouns
   // Auction House is responsible for token minting
   let nftContract;
@@ -223,12 +274,21 @@ async function deployTestContractSetup(
       reservePrice,
       pauseAuctionHouse,
     );
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    marketContracts = await deployFractionalAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      reservePrice,
+      tokenVaultFactory,
+    );
   } else {
     throw new Error('Unsupported market type');
   }
 
   const { market, marketWrapper, auctionId } = marketContracts;
-
+  console.log("Deploy:289: market %s, marketWrapper %s, auctionId %s",
+    market.address, marketWrapper.address, auctionId);
   // Deploy PartyDAO multisig
   let partyDAOMultisig;
   if (!fakeMultisig) {
@@ -236,11 +296,6 @@ async function deployTestContractSetup(
   } else {
     partyDAOMultisig = artistSigner;
   }
-
-  const tokenVaultSettings = await deploy('Settings');
-  const tokenVaultFactory = await deploy('ERC721VaultFactory', [
-    tokenVaultSettings.address,
-  ]);
 
   // Deploy PartyBid Factory (including PartyBid Logic + Reseller Whitelist)
   const factory = await deploy('PartyBidFactory', [

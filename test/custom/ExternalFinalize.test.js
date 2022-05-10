@@ -93,7 +93,9 @@ describe('External Finalize', async () => {
             multisigBalanceBefore = await provider.getBalance(
               partyDAOMultisig.address,
             );
-
+            console.log("ExternalFinalizeTest: market %s, partyBid %s, nftContract %s, auctionId %s, vs vaultFactoryAddr %s",
+              market.address, partyBid.address, nftContract.address, auctionId, await partyBid.tokenVaultFactory()
+            );
             // submit contributions before bidding begins
             for (let contribution of contributions) {
               const { signerIndex, amount } = contribution;
@@ -104,6 +106,9 @@ describe('External Finalize', async () => {
             // submit the valid bids in order
             for (let bid of bids) {
               const { placedByPartyBid, amount, success } = bid;
+              console.log("About to place a bid of value %s by %s that should %s",
+                amount, placedByPartyBid, success ? "succeed" : "fail"
+              )
               if (success && placedByPartyBid) {
                 const { signerIndex } = contributions[0];
                 await bidThroughParty(partyBid, signers[signerIndex]);

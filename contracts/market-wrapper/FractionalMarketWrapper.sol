@@ -5,10 +5,11 @@ import {IMarketWrapper} from "./IMarketWrapper.sol";
 import {TokenVault} from "../external/fractional/ERC721TokenVault.sol";
 import {ERC721VaultFactory} from "../external/fractional/ERC721VaultFactory.sol";
 import {Settings} from "../external/fractional/Settings.sol";
+import "hardhat/console.sol";
 
 contract FractionalMarketWrapper is IMarketWrapper {
-    ERC721VaultFactory public vaultFactory;
-    Settings public settings;
+    ERC721VaultFactory public immutable vaultFactory;
+    Settings public immutable settings;
 
     constructor(
         address _vaultFactory
@@ -64,15 +65,23 @@ contract FractionalMarketWrapper is IMarketWrapper {
     }
 
     function bid(uint256 auctionId, uint256 bidAmount) external {
+        //console.log("bid: entered with auctionId %s, bidAmount %s", auctionId, bidAmount);
+        console.log("bid: entered with auctionId, bidAmount, msg.value");
+        console.log(auctionId, bidAmount);
         TokenVault auction = TokenVault(vaultFactory.vaults(auctionId));
         TokenVault.State auctionState = auction.auctionState();
-
+        //console.log("bid: auction %s, state %s", auction, auctionState);
+        console.log("bid: auction, state");
+        console.log(address(auction), uint(auctionState));
         if (auctionState == TokenVault.State.inactive) {
             auction.start{value: bidAmount}();
+            console.log("bid: started");
         } else if (auctionState == TokenVault.State.live) {
             auction.bid{value: bidAmount}();
+            console.log("bid: bid");
+        } else {
+            console.log("bid: auction is not live");
         }
-
     }
 
     function isFinalized(uint256 auctionId) external view returns (bool) {
