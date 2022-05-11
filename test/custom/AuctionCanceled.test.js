@@ -14,7 +14,7 @@ const { testCases } = require('../partybid/partyBidTestCases.json');
 describe('Auction Canceled', async () => {
   // Noun auctions cannot be cancelled
   MARKETS.filter(
-    (m) => m !== MARKET_NAMES.NOUNS && m !== MARKET_NAMES.KOANS,
+    (m) => m !== MARKET_NAMES.NOUNS && m !== MARKET_NAMES.KOANS && m !== MARKET_NAMES.FRACTIONAL,
   ).map((marketName) => {
     describe(marketName, async () => {
       testCases.map((testCase, i) => {

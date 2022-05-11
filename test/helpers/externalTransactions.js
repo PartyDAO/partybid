@@ -9,6 +9,10 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
     data = encodeData(marketContract, 'createBid', [auctionId]);
   } else if (marketName == MARKET_NAMES.FOUNDATION) {
     data = encodeData(marketContract, 'placeBid', [auctionId]);
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    const state = await marketContract.auctionState()
+    const method = state == 0 ? 'start' : 'bid'
+    data = encodeData(marketContract, method)
   } else if (marketName == MARKET_NAMES.KOANS) {
     data = encodeData(marketContract, 'createBid', [auctionId]);
   } else {
@@ -30,6 +34,8 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
     data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
   } else if (marketName == MARKET_NAMES.FOUNDATION) {
     data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    data = encodeData(marketContract, 'end', )
   } else if (marketName == MARKET_NAMES.KOANS) {
     data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
   } else {

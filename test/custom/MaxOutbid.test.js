@@ -27,6 +27,7 @@ const testCases = [
       [MARKET_NAMES.FOUNDATION]: 281.875,
       [MARKET_NAMES.NOUNS]: 269.0625,
       [MARKET_NAMES.KOANS]: 269.0625,
+      [MARKET_NAMES.FRACTIONAL]: 269.0625,
     },
   },
   {
@@ -36,6 +37,7 @@ const testCases = [
       [MARKET_NAMES.FOUNDATION]: 1.1275,
       [MARKET_NAMES.NOUNS]: 1.07625,
       [MARKET_NAMES.KOANS]: 1.07625,
+      [MARKET_NAMES.FRACTIONAL]: 1.07625,
     },
   },
 ];

@@ -51,8 +51,10 @@ describe('Bid', async () => {
               await contribute(partyBid, signer, eth(amount));
             }
           });
+          
+          for (let i = 0; i < bids.length; i++) {
+            let bid = bids[i];
 
-          for (let bid of bids) {
             const { placedByPartyBid, amount, success } = bid;
             if (placedByPartyBid && success) {
               it('Allows PartyBid to bid', async () => {
@@ -79,7 +81,9 @@ describe('Bid', async () => {
                 const eventName =
                   marketName == MARKET_NAMES.FOUNDATION
                     ? 'ReserveAuctionBidPlaced'
-                    : 'AuctionBid';
+                    : marketName == MARKET_NAMES.FRACTIONAL
+                      ? i == 0 ? 'Start' : 'Bid' // Fractional uses `Start` for first bid
+                      : 'AuctionBid';
                 await expect(
                   placeBid(
                     signers[0],
