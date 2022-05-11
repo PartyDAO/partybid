@@ -9,12 +9,14 @@ const {
   contribute,
   getBalances,
   emergencyForceLost,
+  emergencyCall,
   getTotalContributed,
   bidThroughParty,
+  encodeData,
 } = require('../helpers/utils');
 const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup } = require('../helpers/deploy');
-const { MARKETS, PARTY_STATUS } = require('../helpers/constants');
+const { MARKETS, MARKET_NAMES, PARTY_STATUS } = require('../helpers/constants');
 const { testCases } = require('../partybid/partyBidTestCases.json');
 
 describe('Emergency Force Lost', async () => {
@@ -35,6 +37,7 @@ describe('Emergency Force Lost', async () => {
           let partyBid,
             market,
             nftContract,
+            weth,
             partyDAOMultisig,
             auctionId,
             multisigBalanceBefore,
@@ -66,6 +69,7 @@ describe('Emergency Force Lost', async () => {
             market = contracts.market;
             partyDAOMultisig = contracts.partyDAOMultisig;
             nftContract = contracts.nftContract;
+            weth = contracts.weth;
 
             auctionId = await partyBid.auctionId();
 
@@ -115,6 +119,24 @@ describe('Emergency Force Lost', async () => {
               .reverted;
           });
 
+          if(marketName == MARKET_NAMES.FRACTIONAL) {
+            // @dev If the Party is not won, there will be some wETH balance
+            // left for Party to claim, since Fractional only sends wETH
+            // when another entity out bids the party. Calling `finalize` or `expire`
+            // will move the wETH balance to the Party's ETH balance, so intervention by
+            // multisig is not required for PartyBid version 4.
+            it('Does allow multisig to force wETH withdraw', async () => {
+              const wethBalance = await weth.balanceOf(partyBid.address);
+              const withdrawData = encodeData(weth, "withdraw", [wethBalance]);
+              await expect(emergencyCall(
+                partyBid, 
+                signers[0], 
+                weth.address, 
+                withdrawData
+                )).to.not.be.reverted;
+            });
+          }
+
           it('Is LOST after force lost', async () => {
             const partyStatus = await partyBid.partyStatus();
             expect(partyStatus).to.equal(PARTY_STATUS.LOST);
@@ -129,9 +151,17 @@ describe('Emergency Force Lost', async () => {
             const partyBidBalanceAfter = await provider.getBalance(
               partyBid.address,
             );
+
+            let ethAndWethBalance = partyBidBalanceAfter;
+
+            // @dev If another bidder outbids Party's bid, Fractional sends back wETH.
+            if(marketName == MARKET_NAMES.FRACTIONAL) {
+              const wethBalance = await weth.balanceOf(partyBid.address);
+              ethAndWethBalance = ethAndWethBalance.add(wethBalance);
+            }
             const totalContributedToParty =
               await partyBid.totalContributedToParty();
-            expect(partyBidBalanceAfter).to.equal(totalContributedToParty);
+            expect(ethAndWethBalance).to.equal(totalContributedToParty);
           });
 
           it(`Did not transfer fee to multisig`, async () => {

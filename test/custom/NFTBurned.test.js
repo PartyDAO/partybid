@@ -13,7 +13,9 @@ const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
 const {
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
+  EIGHT_DAYS_IN_SECONDS,
   MARKETS,
+  MARKET_NAMES,
 } = require('../helpers/constants');
 
 describe('NFT Burned', async () => {
@@ -71,8 +73,9 @@ describe('NFT Burned', async () => {
 
       it('Accepts external Finalize', async () => {
         // increase time on-chain so that auction can be finalized
+        const timeIncreaseAmount = marketName == MARKET_NAMES.FRACTIONAL ? EIGHT_DAYS_IN_SECONDS : FOURTY_EIGHT_HOURS_IN_SECONDS;
         await provider.send('evm_increaseTime', [
-          FOURTY_EIGHT_HOURS_IN_SECONDS,
+          timeIncreaseAmount,
         ]);
         await provider.send('evm_mine');
 

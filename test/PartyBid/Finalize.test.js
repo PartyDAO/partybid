@@ -16,8 +16,10 @@ const { placeBid } = require('../helpers/externalTransactions');
 const { deployTestContractSetup, getTokenVault } = require('../helpers/deploy');
 const {
   MARKETS,
+  MARKET_NAMES,
   PARTY_STATUS,
   FOURTY_EIGHT_HOURS_IN_SECONDS,
+  EIGHT_DAYS_IN_SECONDS,
   ETH_FEE_BASIS_POINTS,
   TOKEN_FEE_BASIS_POINTS,
   TOKEN_SCALE,
@@ -44,6 +46,7 @@ describe('Finalize', async () => {
             market,
             nftContract,
             partyDAOMultisig,
+            weth,
             auctionId,
             multisigBalanceBefore,
             token;
@@ -83,6 +86,7 @@ describe('Finalize', async () => {
             market = contracts.market;
             partyDAOMultisig = contracts.partyDAOMultisig;
             nftContract = contracts.nftContract;
+            weth = contracts.weth;
 
             auctionId = await partyBid.auctionId();
 
@@ -142,8 +146,9 @@ describe('Finalize', async () => {
 
           it('Does allow Finalize after the auction is over', async () => {
             // increase time on-chain so that auction can be finalized
+            const timeIncreaseAmount = marketName == MARKET_NAMES.FRACTIONAL ? EIGHT_DAYS_IN_SECONDS : FOURTY_EIGHT_HOURS_IN_SECONDS;
             await provider.send('evm_increaseTime', [
-              FOURTY_EIGHT_HOURS_IN_SECONDS,
+              timeIncreaseAmount,
             ]);
             await provider.send('evm_mine');
 
@@ -252,7 +257,16 @@ describe('Finalize', async () => {
               const expectedEthBalance =
                 totalContributed.minus(expectedTotalSpent);
               const ethBalance = await provider.getBalance(partyBid.address);
-              expect(weiToEth(ethBalance)).to.equal(
+              
+              let ethAndWethBalance = ethBalance;
+
+              // @dev If another bidder outbids Party's bid, Fractional sends back WETH.
+              if(marketName == MARKET_NAMES.FRACTIONAL) {
+                const wethBalance = await weth.balanceOf(partyBid.address);
+                ethAndWethBalance = ethAndWethBalance.add(wethBalance);
+              }
+              
+              expect(weiToEth(ethAndWethBalance)).to.equal(
                 expectedEthBalance.toNumber(),
               );
             });

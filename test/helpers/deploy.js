@@ -4,11 +4,17 @@ const {
   createReserveAuction,
   createZoraAuction,
 } = require('./utils');
-const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS } = require('./constants');
+const { MARKET_NAMES, FOURTY_EIGHT_HOURS_IN_SECONDS, WETH_ADDRESS } = require('./constants');
 const { upgrades } = require('hardhat');
 
 async function deploy(name, args = []) {
   const Implementation = await ethers.getContractFactory(name);
+  const contract = await Implementation.deploy(...args);
+  return contract.deployed();
+}
+
+async function deployWithSigner(name, signer, args = []) {
+  const Implementation = await ethers.getContractFactory(name, signer);
   const contract = await Implementation.deploy(...args);
   return contract.deployed();
 }
@@ -168,6 +174,48 @@ async function deployNounsAndStartAuction(
   };
 }
 
+async function deployFractionalAndStartAuction(  
+  artistSigner,
+  nftContract,
+  tokenId,
+  weth,
+  reservePrice,
+) {
+
+  const fractionalSettings = await deploy("Settings");
+  const fractionalValutFactory = await deployWithSigner(
+    "ERC721VaultFactory", 
+    artistSigner, 
+    [ fractionalSettings.address ]
+  );
+
+  const marketWrapper = await deploy("FractionalMarketWrapper", [
+    fractionalValutFactory.address,
+    weth.address
+  ]);
+
+  // Approve NFT Transfer to fractionalValutFactory
+  await approve(artistSigner, nftContract, fractionalValutFactory.address, tokenId);
+
+  await fractionalValutFactory.mint(
+    "FractionalTokenName",
+    "FractionalTokenSymbol",
+    nftContract.address,
+    tokenId,
+    100,
+    eth(reservePrice),
+    0
+  );
+
+  const auctionId = 0;
+
+  return {
+    market: fractionalValutFactory,
+    marketWrapper,
+    auctionId,
+  }
+}
+
 async function deployTestContractSetup(
   marketName,
   provider,
@@ -181,8 +229,19 @@ async function deployTestContractSetup(
   gatedToken = '0x0000000000000000000000000000000000000000',
   gatedTokenAmount = 0,
 ) {
-  // Deploy WETH
-  const weth = await deploy('EtherToken');
+  // Deploy wETH and hardcode wETH's address for Fractional
+  let weth;
+  weth = await deploy('EtherToken');
+  if (marketName == MARKET_NAMES.FRACTIONAL) {
+    const code = await provider.send("eth_getCode", [
+      weth.address
+    ])
+    await provider.send("hardhat_setCode", [
+      WETH_ADDRESS,
+      code,
+    ]);
+    weth = await ethers.getContractAt('contracts/external/fractional/Interfaces/IWETH.sol:IWETH', WETH_ADDRESS);
+  }
 
   // Nouns uses a custom ERC721 contract. Note that the Nouns
   // Auction House is responsible for token minting
@@ -222,6 +281,14 @@ async function deployTestContractSetup(
       weth,
       reservePrice,
       pauseAuctionHouse,
+    );
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    marketContracts = await deployFractionalAndStartAuction(
+      artistSigner,
+      nftContract,
+      tokenId,
+      weth,
+      reservePrice,
     );
   } else {
     throw new Error('Unsupported market type');

@@ -11,6 +11,27 @@ async function placeBid(signer, marketContract, auctionId, value, marketName) {
     data = encodeData(marketContract, 'placeBid', [auctionId]);
   } else if (marketName == MARKET_NAMES.KOANS) {
     data = encodeData(marketContract, 'createBid', [auctionId]);
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    const fractionalTokenVaultAddress = await marketContract.vaults(auctionId);
+    const logic = await ethers.getContractFactory('TokenVault');
+    const fractionalTokenVault = new ethers.Contract(fractionalTokenVaultAddress, logic.interface, signer);
+    const tokenState = await fractionalTokenVault.auctionState();
+    let funcName;
+    if (tokenState == 0) {
+      funcName = 'start';
+    } else if (tokenState == 1) {
+      funcName = 'bid';
+    } else {
+      throw new Error('Fractional Token is either ended or redeemed.')
+    }
+    data = encodeData(fractionalTokenVault, funcName, []);
+
+    return signer.sendTransaction({
+      to: fractionalTokenVault.address,
+      data,
+      value,
+      gasLimit: 900000 /* hardhat test cannot estimate gas */,
+    });
   } else {
     throw new Error('Unsupported Market');
   }
@@ -32,6 +53,16 @@ async function externalFinalize(signer, marketContract, auctionId, marketName) {
     data = encodeData(marketContract, 'finalizeReserveAuction', [auctionId]);
   } else if (marketName == MARKET_NAMES.KOANS) {
     data = encodeData(marketContract, 'settleCurrentAndCreateNewAuction', []);
+  } else if (marketName == MARKET_NAMES.FRACTIONAL) {
+    const fractionalTokenVaultAddress = await marketContract.vaults(auctionId);
+    const logic = await ethers.getContractFactory('TokenVault');
+    const fractionalTokenVault = new ethers.Contract(fractionalTokenVaultAddress, logic.interface, signer);
+    data = encodeData(fractionalTokenVault, 'end', []);
+
+    return signer.sendTransaction({
+      to: fractionalTokenVault.address,
+      data,
+    });
   } else {
     throw new Error('Unsupported Market');
   }

@@ -91,9 +91,9 @@ describe('Deploy', async () => {
         expect(partyStatus).to.equal(PARTY_STATUS.ACTIVE);
       });
 
-      it('Version is 3', async () => {
+      it('Version is 4', async () => {
         const version = await partyBid.VERSION();
-        expect(version).to.equal(3);
+        expect(version).to.equal(4);
       });
 
       it('Total contributed to party is zero', async () => {
