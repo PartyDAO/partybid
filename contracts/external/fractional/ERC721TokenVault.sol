@@ -328,7 +328,6 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     /// @notice kick off an auction. Must send reservePrice in ETH
     function start() external payable {
-        console.log("start: %s sent from %s", msg.value, msg.sender);
         require(auctionState == State.inactive, "start:no auction starts");
         require(msg.value >= reservePrice(), "start:too low bid");
         require(votingTokens * 1000 >= ISettings(settings).minVotePercentage() * totalSupply(), "start:not enough voters");
@@ -344,7 +343,6 @@ contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     /// @notice an external function to bid on purchasing the vaults NFT. The msg.value is the bid amount
     function bid() external payable {
-        console.log("bid: %s sent from %s", msg.value, msg.sender);
         require(auctionState == State.live, "bid:auction is not live");
         uint256 increase = ISettings(settings).minBidIncrease() + 1000;
         require(msg.value * 1000 >= livePrice * increase, "bid:too low bid");

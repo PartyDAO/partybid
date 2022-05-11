@@ -134,9 +134,9 @@ async function deployFractionalAndStartAuction(
 
   await marketContract.connect(artistSigner).updateAuctionLength(FOURTY_EIGHT_HOURS_IN_SECONDS);
   //await marketContract.connect(artistSigner).updateUserPrice(eth(reservePrice));
-  console.log("Deploy.js:137: marketContract %s, marketAddress %s, vaultFactory %s, auctionId %s", 
+  /* console.log("Deploy.js:137: marketContract %s, marketAddress %s, vaultFactory %s, auctionId %s", 
     marketContract.address, marketAddress, tokenVaultFactory.address, auctionId
-  );
+  ); */
   return {
     market: marketContract,
     marketWrapper,
@@ -287,8 +287,8 @@ async function deployTestContractSetup(
   }
 
   const { market, marketWrapper, auctionId } = marketContracts;
-  console.log("Deploy:289: market %s, marketWrapper %s, auctionId %s",
-    market.address, marketWrapper.address, auctionId);
+  //console.log("Deploy:289: market %s, marketWrapper %s, auctionId %s",
+//    market.address, marketWrapper.address, auctionId);
   // Deploy PartyDAO multisig
   let partyDAOMultisig;
   if (!fakeMultisig) {

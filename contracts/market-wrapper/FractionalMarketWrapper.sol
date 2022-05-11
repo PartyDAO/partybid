@@ -59,28 +59,29 @@ contract FractionalMarketWrapper is IMarketWrapper {
     function getMinimumBid(uint256 auctionId) external view returns (uint256) {
         TokenVault auction = TokenVault(vaultFactory.vaults(auctionId));
         
-        // see ERC721TokenVault, line 338:339
-        uint256 increase = settings.minBidIncrease() + 1000;
-        return auction.livePrice() * increase / 1000; // do we need to add 999 wei in case of integer errors?
+        if (auction.auctionState() == TokenVault.State.inactive) {
+            return auction.reservePrice();
+        } else if (auction.auctionState() == TokenVault.State.live){
+            // see ERC721TokenVault, line 338:339
+            uint256 increase = settings.minBidIncrease() + 1000;
+            uint256 toAdd = (auction.livePrice() * increase) % 1000 == 0 ? 0 : 1; // should this be different?
+            return ((auction.livePrice() * increase) / 1000) + toAdd;
+        } else {
+            // undefined
+            require(false, "FractionalMarketWrapper::getMinimumBid: auction cant be bid");
+            return 0;
+        }
     }
 
     function bid(uint256 auctionId, uint256 bidAmount) external {
-        //console.log("bid: entered with auctionId %s, bidAmount %s", auctionId, bidAmount);
-        console.log("bid: entered with auctionId, bidAmount, msg.value");
-        console.log(auctionId, bidAmount);
         TokenVault auction = TokenVault(vaultFactory.vaults(auctionId));
         TokenVault.State auctionState = auction.auctionState();
-        //console.log("bid: auction %s, state %s", auction, auctionState);
-        console.log("bid: auction, state");
-        console.log(address(auction), uint(auctionState));
+
         if (auctionState == TokenVault.State.inactive) {
             auction.start{value: bidAmount}();
-            console.log("bid: started");
         } else if (auctionState == TokenVault.State.live) {
             auction.bid{value: bidAmount}();
-            console.log("bid: bid");
         } else {
-            console.log("bid: auction is not live");
         }
     }
 

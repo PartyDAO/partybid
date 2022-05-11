@@ -8,7 +8,7 @@ const { encodeData, emergencyCall } = require('../helpers/utils');
 const { deployTestContractSetup } = require('../helpers/deploy');
 const { MARKET_NAMES } = require('../helpers/constants');
 
-describe.skip('Emergency Call', async () => {
+describe('Emergency Call', async () => {
   // instantiate test vars
   let partyBid, nftContract, partyDAOMultisig, calldata, tokenOwner;
   const signers = provider.getWallets();
