@@ -1,20 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Interfaces/IWETH.sol";
-import "./OpenZeppelin/math/Math.sol";
-import "./OpenZeppelin/token/ERC20/ERC20.sol";
-import "./OpenZeppelin/token/ERC721/ERC721.sol";
-import "./OpenZeppelin/token/ERC721/ERC721Holder.sol";
 import "./Settings.sol";
-import {
-ERC721HolderUpgradeable
-} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import {
-ERC20Upgradeable
-} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-
-import "hardhat/console.sol";
+import "./Interfaces/IWETH.sol";
+import "./OpenZeppelin/token/ERC721/ERC721.sol";
+import "./OpenZeppelin/upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "./OpenZeppelin/upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 
 contract TokenVault is ERC20Upgradeable, ERC721HolderUpgradeable {
     using Address for address;
