@@ -98,6 +98,7 @@ async function expire(partyBidContract, signer) {
   return signer.sendTransaction({
     to: partyBidContract.address,
     data,
+    gasLimit: 900000 /* hardhat test cannot estimate gas */,
   });
 }
 
@@ -115,6 +116,7 @@ async function bidThroughParty(partyBidContract, signer) {
   return signer.sendTransaction({
     to: partyBidContract.address,
     data,
+    gasLimit: 900000 /* hardhat test cannot estimate gas */,
   });
 }
 

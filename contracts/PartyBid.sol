@@ -37,8 +37,8 @@ contract PartyBid is Party {
 
     // ============ Internal Constants ============
 
-    // PartyBid version 3
-    uint16 public constant VERSION = 3;
+    // PartyBid version 4
+    uint16 public constant VERSION = 4;
 
     // ============ Public Not-Mutated Storage ============
 
@@ -203,6 +203,11 @@ contract PartyBid is Party {
         // after the auction has been finalized,
         // if the NFT is owned by the PartyBid, then the PartyBid won the auction
         address _owner = _getOwner();
+
+        // withdraw the wETH balance that could have been possibly deposited to the Party by 
+        // actions like Fractional.
+        weth.withdraw(weth.balanceOf(address(this)));
+
         partyStatus = _owner == address(this)
             ? PartyStatus.WON
             : PartyStatus.LOST;
@@ -238,10 +243,13 @@ contract PartyBid is Party {
         // In case there's some variation in how contracts define a "high bid"
         // we fall back to making sure none of the eth contributed is outstanding.
         // If we ever add any features that can send eth for any other purpose we
-        // will revisit/remove this.
+        // will revisit/remove this. For the outstanding eth contributed we compare to the total
+        // of ETH and wETH balance for the Party, since some markets like Fractional will send back
+        // wETH when another entity out bids the Party's bid.
+        uint256 ethAndWethBalance = weth.balanceOf(address(this)) + address(this).balance;
         if (
             address(this) == marketWrapper.getCurrentHighestBidder(auctionId) ||
-            address(this).balance < totalContributedToParty
+            ethAndWethBalance < totalContributedToParty
         ) {
             return ExpireCapability.CurrentlyWinning;
         }
@@ -276,6 +284,9 @@ contract PartyBid is Party {
             expireCapability == ExpireCapability.CanExpire,
             errorStringForCapability(expireCapability)
         );
+        // withdraw the wETH balance that could have been possibly deposited to the Party by 
+        // actions like Fractional.
+        weth.withdraw(weth.balanceOf(address(this)));
         partyStatus = PartyStatus.LOST;
         emit Finalized(partyStatus, 0, 0, totalContributedToParty, true);
     }

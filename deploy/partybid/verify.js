@@ -20,7 +20,7 @@ async function verify() {
     // load deployed contracts
     const {contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
     const {partyBidFactory, partyBidLogic, marketWrappers} = contractAddresses;
-    const {foundation, zora, nouns, koans} = marketWrappers;
+    const {foundation, zora, nouns, koans, fractional} = marketWrappers;
 
     console.log(`Verifying ${CHAIN_NAME}`);
 
@@ -51,6 +51,10 @@ async function verify() {
     // Verify Koans Market Wrapper
     console.log(`Verify Koans Market Wrapper`);
     await verifyContract(koans, [koansAuctionHouse]);
+
+    // Verify Fractional Market Wrapper
+    console.log(`Verify Fractional Market Wrapper`);
+    await verifyContract(fractional, [fractionalArtERC721VaultFactory, weth]);
 }
 
 module.exports = {

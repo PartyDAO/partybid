@@ -76,10 +76,23 @@ describe('Bid', async () => {
               });
             } else if (!placedByPartyBid && success) {
               it('Accepts external bid', async () => {
-                const eventName =
-                  marketName == MARKET_NAMES.FOUNDATION
-                    ? 'ReserveAuctionBidPlaced'
-                    : 'AuctionBid';
+                let emittingContract = market;
+                let eventName = 'AuctionBid';
+
+                if(marketName == MARKET_NAMES.FRACTIONAL) {
+                  const fractionalTokenVaultAddress = await market.vaults(auctionId);
+                  const logic = await ethers.getContractFactory('TokenVault');
+                  emittingContract = new ethers.Contract(fractionalTokenVaultAddress, logic.interface, signers[0]);
+                  const tokenState = await emittingContract.auctionState();
+                  if(tokenState == 0) {
+                    eventName = 'Start';
+                  } else if (tokenState == 1) {
+                    eventName = 'Bid';
+                  }
+                } else if(marketName == MARKET_NAMES.FOUNDATION) {
+                  eventName = 'ReserveAuctionBidPlaced';
+                }
+
                 await expect(
                   placeBid(
                     signers[0],
@@ -88,7 +101,7 @@ describe('Bid', async () => {
                     eth(amount),
                     marketName,
                   ),
-                ).to.emit(market, eventName);
+                ).to.emit(emittingContract, eventName);
               });
             } else if (!placedByPartyBid && !success) {
               it('Does not accept external bid', async () => {

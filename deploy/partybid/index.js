@@ -159,6 +159,46 @@ async function deployKoansMarketWrapper() {
     console.log(`Koans Market Wrapper written to ${filename}`);
 }
 
+async function deployFractionalMarketWrapper() {
+    // load .env
+    const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
+
+    // load config.json
+    const config = loadConfig(CHAIN_NAME);
+    const {fractionalArtERC721VaultFactory, weth} = config;
+    if (!fractionalArtERC721VaultFactory) {
+        throw new Error("Must populate config with Fractional.Art ERC721VaultFactory address");
+    }
+
+    // setup deployer wallet
+    const deployer = getDeployer(RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY);
+
+    // Deploy Zora Market Wrapper
+    console.log(`Deploy Fractional Market Wrapper to ${CHAIN_NAME}`);
+    const fractionalMarketWrapper = await deploy(
+        deployer,'FractionalMarketWrapper', 
+        [fractionalArtERC721VaultFactory, weth]
+    );
+    console.log(`Deployed Fractional Market Wrapper to ${CHAIN_NAME}: `, fractionalMarketWrapper.address);
+
+    // get the existing deployed addresses
+    let {directory, filename, contractAddresses} = getDeployedAddresses('partybid', CHAIN_NAME);
+
+    // update the zora market wrapper address
+    if (contractAddresses["marketWrappers"]) {
+        contractAddresses["marketWrappers"]["fractional"] = fractionalMarketWrapper.address;
+    } else {
+        contractAddresses["marketWrappers"] = {
+            fractional: fractionalMarketWrapper.address
+        };
+    }
+
+    // write the updated object
+    writeDeployedAddresses(directory, filename, contractAddresses);
+
+    console.log(`Fractional Market Wrapper written to ${filename}`);
+}
+
 async function deployPartyBidFactory() {
     // load .env
     const {CHAIN_NAME, RPC_ENDPOINT, DEPLOYER_PRIVATE_KEY} = loadEnv();
@@ -203,5 +243,6 @@ async function deployChain() {
     await deployZoraMarketWrapper();
     await deployFoundationMarketWrapper();
     await deployNounsMarketWrapper();
+    await deployFractionalMarketWrapper();
     await deployPartyBidFactory();
 }

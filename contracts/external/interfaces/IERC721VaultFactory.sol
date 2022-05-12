@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 interface IERC721VaultFactory {
     /// @notice the mapping of vault number to vault address
-    function vaults(uint256) external returns (address);
+    function vaults(uint256) external view returns (address);
 
     /// @notice the function to mint a new vault
     /// @param _name the desired name of the vault
