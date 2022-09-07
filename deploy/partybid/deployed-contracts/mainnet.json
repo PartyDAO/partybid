@@ -1,7 +1,7 @@
 {
   "chain": "mainnet",
-  "partyBidFactory": "0x0accf637e4F05eeA8B1D215C8C9e9E576dC63D33",
-  "partyBidLogic": "0x744c2BE04d079eDdb21c1a9BB13bB5259A368614",
+  "partyBidFactory": "0x1E8dc6C2533c6Cbe369c229D44d762515241CE6e",
+  "partyBidLogic": "0xc6E9c413Bed466a6AE858A1a6D517B243bEf405B",
   "marketWrappers": {
     "foundation": "0x96e5b0519983f2f984324b926e6d28C3A4Eb92A1",
     "zora": "0x11c07cE1315a3b92C9755F90cDF40B04b88c5731",
